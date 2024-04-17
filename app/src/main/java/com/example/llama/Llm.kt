@@ -12,9 +12,11 @@ import kotlin.concurrent.thread
 
 class Llm {
     private val tag: String? = this::class.simpleName
-
+    private var stopGeneration: Boolean = false
     private val threadLocalState: ThreadLocal<State> = ThreadLocal.withInitial { State.Idle }
-
+    fun stopTextGeneration() {
+        stopGeneration = true
+    }
     private val runLoop: CoroutineDispatcher = Executors.newSingleThreadExecutor {
         thread(start = false, name = "Llm-RunLoop") {
             Log.d(tag, "Dedicated thread for native code: ${Thread.currentThread().name}")
@@ -109,11 +111,12 @@ class Llm {
         }
     }
 
-    fun send(message: String): Flow<String> = flow {
+    suspend fun send(message: String): Flow<String> = flow {
+        stopGeneration = false  // Reset the stopGeneration flag
         when (val state = threadLocalState.get()) {
             is State.Loaded -> {
                 val ncur = IntVar(completion_init(state.context, state.batch, message, nlen))
-                while (ncur.value <= nlen) {
+                while (ncur.value <= nlen && !stopGeneration) {  // Check the stopGeneration flag
                     val str = completion_loop(state.context, state.batch, nlen, ncur)
                     if (str == null) {
                         break

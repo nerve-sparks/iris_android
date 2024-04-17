@@ -133,12 +133,14 @@ fun MainCompose(
             Button({ viewModel.send() }) { Text("Send") }
             Button({ viewModel.bench(8, 4, 1) }) { Text("Bench") }
             Button({ viewModel.clear() }) { Text("Clear") }
-            Button({
-                viewModel.messages.joinToString("\n").let {
-                    clipboard.setPrimaryClip(ClipData.newPlainText("", it))
-                }
-            }) { Text("Copy") }
+            Button({ viewModel.stop() }) { Text("Stop") }
+
         }
+        Button({
+            viewModel.messages.joinToString("\n").let {
+                clipboard.setPrimaryClip(ClipData.newPlainText("", it))
+            }
+        }) { Text("Copy") }
 
         Column {
             for (model in models) {

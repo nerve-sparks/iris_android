@@ -101,4 +101,8 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
     fun log(message: String) {
         messages += message
     }
+
+    fun stop() {
+        Llm.instance().stopTextGeneration()
+    }
 }
