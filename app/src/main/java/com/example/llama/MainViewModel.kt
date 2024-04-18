@@ -36,11 +36,12 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
     }
 
     fun send() {
-        val text = message
+        val text = "system \nYou are a friendly chat-bot who always responds. \nuser \n$message \nassistant \n"
+        val temp =message
         message = ""
 
         // Add to messages console.
-        messages += text
+        messages += temp
         messages += ""
 
         viewModelScope.launch {
