@@ -38,7 +38,7 @@ class Llm {
         }
     }.asCoroutineDispatcher()
 
-    private val nlen: Int = 1024
+    private val nlen: Int = 512
 
     private external fun log_to_android()
     private external fun load_model(filename: String): Long
@@ -119,6 +119,9 @@ class Llm {
                 while (ncur.value <= nlen && !stopGeneration) {  // Check the stopGeneration flag
                     val str = completion_loop(state.context, state.batch, nlen, ncur)
                     if (str == null) {
+                        break
+                    }
+                    if (str == "User" || str == "user") {
                         break
                     }
                     emit(str)

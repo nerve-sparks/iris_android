@@ -36,11 +36,12 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
     }
 
     fun send() {
-        val text = message
+        val text = "system \n You are a friendly chat-bot who always responds in the style of a pirate\n user \n$message \nassistant \n"
+        val temp =message
         message = ""
 
         // Add to messages console.
-        messages += text
+        messages += temp
         messages += ""
 
         viewModelScope.launch {
@@ -50,8 +51,8 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
                     messages += it.message!!
                 }
                 .collect { messages = messages.dropLast(1) + (messages.last() + it) }
+            }
         }
-    }
 
     fun bench(pp: Int, tg: Int, pl: Int, nr: Int = 1) {
         viewModelScope.launch {
