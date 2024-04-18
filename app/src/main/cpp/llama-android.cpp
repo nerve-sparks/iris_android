@@ -121,7 +121,7 @@ Java_com_example_llama_Llm_new_1context(JNIEnv *env, jobject, jlong jmodel) {
 
     llama_context_params ctx_params = llama_context_default_params();
     ctx_params.seed  = 1234;
-    ctx_params.n_ctx = 4096;
+    ctx_params.n_ctx = 2048;
     ctx_params.n_threads       = n_threads;
     ctx_params.n_threads_batch = n_threads;
 
