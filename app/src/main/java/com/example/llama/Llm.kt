@@ -121,7 +121,7 @@ class Llm {
                     if (str == null) {
                         break
                     }
-                    if (str == "User" || str =="user") {
+                    if (str == "User") {
                         break
                     }
                     emit(str)
