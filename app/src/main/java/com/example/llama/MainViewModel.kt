@@ -36,7 +36,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
     }
 
     fun send() {
-        val text = "system \n You are a friendly chat-bot who always responds in the style of a pirate\n user \n$message \nassistant \n"
+        val text = "system \nYou are a friendly chat-bot who always responds. \nuser \n$message \nassistant \n"
         val temp =message
         message = ""
 
