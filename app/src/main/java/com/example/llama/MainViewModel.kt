@@ -17,7 +17,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
 
     private val tag: String? = this::class.simpleName
 
-    var messages by mutableStateOf(listOf("Initializing..."))
+    var messages by mutableStateOf(listOf("NerveSparks"))
         private set
 
     var message by mutableStateOf("")

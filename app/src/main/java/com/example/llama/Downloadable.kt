@@ -3,6 +3,7 @@ package com.example.llama
 import android.app.DownloadManager
 import android.net.Uri
 import android.util.Log
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,6 +13,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.core.database.getLongOrNull
 import androidx.core.net.toUri
 import kotlinx.coroutines.delay
@@ -105,12 +108,28 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 }
             }
 
-            Button(onClick = { onClick() }, enabled = status !is Downloading) {
+            Button(
+                onClick = { onClick() },
+                enabled = status !is Downloading,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 when (status) {
-                    is Downloading -> Text(text = "Downloading ${(progress * 100).toInt()}%")
-                    is Downloaded -> Text("Load ${item.name}")
-                    is Ready -> Text("Download ${item.name}")
-                    is Error -> Text("Download ${item.name}")
+                    is Downloading -> Text(
+                        text = "Downloading ${(progress * 100).toInt()}%",
+                        color = Color.White
+                    )
+                    is Downloaded -> Text(
+                        "Load ${item.name}",
+                        color = Color.White
+                    )
+                    is Ready -> Text(
+                        "Download ${item.name}",
+                        color = Color.White
+                    )
+                    is Error -> Text(
+                        "Download ${item.name}",
+                        color = Color.White
+                    )
                 }
             }
         }
