@@ -115,27 +115,37 @@ fun MainCompose(
     dm: DownloadManager,
     models: List<Downloadable>
 ) {
-    Column (modifier = Modifier.padding(10.dp)){
+    Column(modifier = Modifier.padding(10.dp)) {
         val scrollState = rememberLazyListState()
 
         Box(modifier = Modifier.weight(1f)) {
             LazyColumn(state = scrollState) {
-                itemsIndexed(viewModel.messages.drop(1)) { index, message ->
+                itemsIndexed(viewModel.messages.drop(1)) { index, messageMap ->
+                    val role = messageMap["role"] ?: ""
+                    val content = messageMap["content"] ?: ""
+
                     Box(
                         modifier = Modifier
-                            .background(if (index % 2 == 0) Color(0xFF232627) else Color.Transparent).fillMaxWidth().padding(bottom = 4.dp)
+                            .background(
+                                when (role) {
+                                    "user" -> Color(0xFF232627)
+                                    "assistant" -> Color.Transparent
+                                    else -> Color.Transparent
+                                }
+                            )
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp)
                     ) {
                         Row(
-
                             modifier = Modifier.padding(10.dp)
                         ) {
                             Image(
-                                painter = painterResource(id = if (index % 2 == 0) R.drawable.bot_icon else R.drawable.human_icon),
-                                contentDescription = if (index % 2 == 0) "Bot Icon" else "Human Icon",
-                                modifier = Modifier.size(32.dp)
+                                painter = painterResource(id = if (role == "assistant") R.drawable.bot_icon else R.drawable.human_icon),
+                                contentDescription = if (role == "assistant") "Bot Icon" else "Human Icon",
+                                modifier = Modifier.size(20.dp)
                             )
                             Text(
-                                message,
+                                content,
                                 style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
                                 modifier = Modifier.padding(start = 16.dp)
                             )
@@ -144,6 +154,7 @@ fun MainCompose(
                 }
             }
         }
+
         Box {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -157,7 +168,7 @@ fun MainCompose(
                     modifier = Modifier.weight(1f)
                 )
 
-                IconButton(onClick = { viewModel.send()}) {
+                IconButton(onClick = { viewModel.send() }) {
                     Icon(
                         imageVector = Icons.Default.Send,
                         contentDescription = "Send",
@@ -195,7 +206,7 @@ fun MainCompose(
             }
             Button(
                 onClick = {
-                    viewModel.messages.joinToString("\n").let {
+                    viewModel.messages.joinToString("\n") { it["content"] ?: "" }.let {
                         clipboard.setPrimaryClip(ClipData.newPlainText("", it))
                     }
                 },
@@ -216,3 +227,4 @@ fun MainCompose(
         }
     }
 }
+
