@@ -17,7 +17,9 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
 
     private val tag: String? = this::class.simpleName
 
-    var messages by mutableStateOf(listOf("NerveSparks"))
+    var messages by mutableStateOf(listOf<Map<String, String>>(
+        mapOf("role" to "assistant", "content" to "Nervesparks")
+    ))
         private set
 
     var message by mutableStateOf("")
@@ -30,51 +32,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
             try {
                 llm.unload()
             } catch (exc: IllegalStateException) {
-                messages += exc.message!!
-            }
-        }
-    }
-
-    fun send() {
-        val text = "system \nYou are a friendly chat-bot who always responds. \nuser \n$message \nassistant \n"
-        val temp =message
-        message = ""
-
-        // Add to messages console.
-        messages += temp
-        messages += ""
-
-        viewModelScope.launch {
-            llm.send(text)
-                .catch {
-                    Log.e(tag, "send() failed", it)
-                    messages += it.message!!
-                }
-                .collect { messages = messages.dropLast(1) + (messages.last() + it) }
-            }
-        }
-
-    fun bench(pp: Int, tg: Int, pl: Int, nr: Int = 1) {
-        viewModelScope.launch {
-            try {
-                val start = System.nanoTime()
-                val warmupResult = llm.bench(pp, tg, pl, nr)
-                val end = System.nanoTime()
-
-                messages += warmupResult
-
-                val warmup = (end - start).toDouble() / NanosPerSecond
-                messages += "Warm up time: $warmup seconds, please wait..."
-
-                if (warmup > 5.0) {
-                    messages += "Warm up took too long, aborting benchmark"
-                    return@launch
-                }
-
-                messages += llm.bench(512, 128, 1, 3)
-            } catch (exc: IllegalStateException) {
-                Log.e(tag, "bench() failed", exc)
-                messages += exc.message!!
+                addMessage("error", exc.message ?: "")
             }
         }
     }
@@ -83,27 +41,70 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
         viewModelScope.launch {
             try {
                 llm.load(pathToModel)
-                messages += "Loaded $pathToModel"
+                addMessage("assistant", "Loaded $pathToModel")
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "load() failed", exc)
-                messages += exc.message!!
+                addMessage("error", exc.message ?: "")
             }
         }
     }
 
-    fun updateMessage(newMessage: String) {
-        message = newMessage
+    private fun addMessage(role: String, content: String) {
+        val newMessage = mapOf("role" to role, "content" to content)
+
+        if (messages.isNotEmpty() && messages.last()["role"] == role) {
+            val lastMessageContent = messages.last()["content"] ?: ""
+            val updatedContent = "$lastMessageContent$content"
+            val updatedLastMessage = messages.last() + ("content" to updatedContent)
+            messages = messages.toMutableList().apply {
+                set(messages.lastIndex, updatedLastMessage)
+            }
+        } else {
+            messages = messages + listOf(newMessage)
+        }
     }
 
+
+    fun send() {
+        val userMessage = message
+        message = ""
+
+        // Append user's message
+        addMessage("user", userMessage)
+
+        val text = "system \nYou are a friendly chat-bot who always responds. \n user \n$userMessage \nassistant \n"
+
+        viewModelScope.launch {
+            llm.send(text)
+                .catch {
+                    Log.e(tag, "send() failed", it)
+                    addMessage("error", it.message ?: "")
+                }
+                .collect { response ->
+                    // Create a new assistant message with the response
+                    addMessage("assistant", response)
+                }
+        }
+    }
+
+
+
+    // ... (rest of the functions remain mostly the same)
+
     fun clear() {
-        messages = listOf()
+        messages = listOf<Map<String, String>>(
+            mapOf("role" to "assistant", "content" to "Nervesparks")
+        )
     }
 
     fun log(message: String) {
-        messages += message
+        addMessage("log", message)
     }
 
     fun stop() {
         Llm.instance().stopTextGeneration()
+    }
+    fun updateMessage(newMessage: String) {
+        message = newMessage
     }
 }
