@@ -121,6 +121,13 @@ fun MainCompose(
         Box(modifier = Modifier.weight(1f)) {
             LazyColumn(state = scrollState) {
                 itemsIndexed(viewModel.messages.drop(1)) { index, message ->
+                    // Check for newline character at the end
+                    val trimmedMessage = if (message.endsWith("\n")) {
+                        message.substring(startIndex = 0, endIndex = message.length - 1)
+                    } else {
+                        message
+                    }
+
                     Box(
                         modifier = Modifier
                             .background(if (index % 2 == 0) Color(0xFF232627) else Color.Transparent).fillMaxWidth().padding(bottom = 4.dp)
@@ -135,7 +142,7 @@ fun MainCompose(
                                 modifier = Modifier.size(32.dp)
                             )
                             Text(
-                                message,
+                                trimmedMessage,
                                 style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
                                 modifier = Modifier.padding(start = 16.dp)
                             )
