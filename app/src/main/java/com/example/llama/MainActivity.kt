@@ -14,12 +14,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -38,10 +41,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.getSystemService
 import com.example.llama.ui.theme.LlamaAndroidTheme
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 
 class MainActivity(
@@ -115,43 +123,95 @@ fun MainCompose(
     dm: DownloadManager,
     models: List<Downloadable>
 ) {
-    Column (modifier = Modifier.padding(10.dp)){
+    Column(modifier = Modifier.padding(bottom = 10.dp)) {
+
+
+                Row(
+
+                    modifier = Modifier
+                        .background(Color(0xFF232627))
+                        .padding(start = 5.dp)
+                        .height(50.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.human_icon),
+                        contentDescription = "Logo",
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .size(40.dp)
+                    )
+                    Spacer(modifier = Modifier.padding(4.dp))
+                    Text(
+                        text = "NS GPT",
+                        color = Color.White,
+                        modifier = Modifier.weight(1f),
+                        fontSize = 24.sp
+                    )
+                }
+
+
         val scrollState = rememberLazyListState()
 
         Box(modifier = Modifier.weight(1f)) {
             LazyColumn(state = scrollState) {
-                itemsIndexed(viewModel.messages.drop(1)) { index, message ->
-                    // Check for newline character at the end
-                    val trimmedMessage = if (message.endsWith("\n")) {
-                        message.substring(startIndex = 0, endIndex = message.length - 1)
-                    } else {
-                        message
-                    }
+                itemsIndexed(viewModel.messages) { index, messageMap ->
+                    val role = messageMap["role"] ?: ""
+                    val content = messageMap["content"] ?: ""
 
                     Box(
                         modifier = Modifier
-                            .background(if (index % 2 == 0) Color(0xFF232627) else Color.Transparent).fillMaxWidth().padding(bottom = 4.dp)
+                            .background(
+                                when (role) {
+                                    "user" -> Color(0xFF232627)
+                                    "assistant" -> Color.Transparent
+                                    else -> Color.Transparent
+                                }
+                            )
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp)
                     ) {
-                        Row(
+                        Column {
 
-                            modifier = Modifier.padding(10.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = if (index % 2 == 0) R.drawable.bot_icon else R.drawable.human_icon),
-                                contentDescription = if (index % 2 == 0) "Bot Icon" else "Human Icon",
-                                modifier = Modifier.size(32.dp)
-                            )
-                            Text(
-                                trimmedMessage,
-                                style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
-                                modifier = Modifier.padding(start = 16.dp)
-                            )
+
+
+                                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth().padding(top= 8.dp, bottom = 8.dp, start = 6.dp, end = 6.dp)){
+                                    Image(
+                                    painter = painterResource(id = if (role == "assistant") R.drawable.logo else R.drawable.bot_icon),
+                                    contentDescription = if (role == "assistant") "Bot Icon" else "Human Icon",
+                                    modifier = Modifier.size(20.dp)
+                                )
+
+                                    Image(
+                                        painter = painterResource(id = if (role == "assistant") R.drawable.copybutton else R.drawable.copybutton),
+                                        contentDescription = if (role == "assistant") "Copy Icon" else "Copy Icon",
+                                        modifier = Modifier.size(22.dp).clickable {
+                                            // Copy text to clipboard
+                                            clipboard.setPrimaryClip(
+                                                android.content.ClipData.newPlainText("Text", content)
+                                            )
+                                        }
+                                    )
+                                }
+                                Text(
+                                    content,
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        color = Color(
+                                            0xFFA0A0A5
+                                        )
+                                    ),
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+
                         }
                     }
                 }
             }
         }
-        Box {
+
+        Box(modifier = Modifier.padding(horizontal = 5.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -164,7 +224,7 @@ fun MainCompose(
                     modifier = Modifier.weight(1f)
                 )
 
-                IconButton(onClick = { viewModel.send()}) {
+                IconButton(onClick = { viewModel.send() }) {
                     Icon(
                         imageVector = Icons.Default.Send,
                         contentDescription = "Send",
@@ -202,7 +262,7 @@ fun MainCompose(
             }
             Button(
                 onClick = {
-                    viewModel.messages.joinToString("\n").let {
+                    viewModel.messages.joinToString("\n") { it["content"] ?: "" }.let {
                         clipboard.setPrimaryClip(ClipData.newPlainText("", it))
                     }
                 },
@@ -223,3 +283,4 @@ fun MainCompose(
         }
     }
 }
+
