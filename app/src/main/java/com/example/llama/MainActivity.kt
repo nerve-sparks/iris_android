@@ -179,7 +179,7 @@ fun MainCompose(
 
                                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth().padding(top= 8.dp, bottom = 8.dp, start = 6.dp, end = 6.dp)){
                                     Image(
-                                    painter = painterResource(id = if (role == "assistant") R.drawable.bot_icon else R.drawable.human_icon),
+                                    painter = painterResource(id = if (role == "assistant") R.drawable.logo else R.drawable.bot_icon),
                                     contentDescription = if (role == "assistant") "Bot Icon" else "Human Icon",
                                     modifier = Modifier.size(20.dp)
                                 )
