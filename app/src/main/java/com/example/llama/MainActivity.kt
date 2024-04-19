@@ -137,7 +137,7 @@ fun MainCompose(
                     verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.human_icon),
+                        painter = painterResource(id = R.drawable.logo),
                         contentDescription = "Logo",
                         modifier = Modifier
                             .padding(2.dp)
@@ -160,6 +160,11 @@ fun MainCompose(
                 itemsIndexed(viewModel.messages) { index, messageMap ->
                     val role = messageMap["role"] ?: ""
                     val content = messageMap["content"] ?: ""
+                    val trimmedMessage = if (content.endsWith("\n")) {
+                        content.substring(startIndex = 0, endIndex = content.length - 1)
+                    } else {
+                        content
+                    }
 
                     Box(
                         modifier = Modifier
@@ -185,7 +190,7 @@ fun MainCompose(
                                 )
 
                                     Image(
-                                        painter = painterResource(id = if (role == "assistant") R.drawable.copybutton else R.drawable.copybutton),
+                                        painter = painterResource(id = if (role == "assistant") R.drawable.copy1 else R.drawable.copy1),
                                         contentDescription = if (role == "assistant") "Copy Icon" else "Copy Icon",
                                         modifier = Modifier.size(22.dp).clickable {
                                             // Copy text to clipboard
@@ -196,7 +201,7 @@ fun MainCompose(
                                     )
                                 }
                                 Text(
-                                    content,
+                                    trimmedMessage,
                                     style = MaterialTheme.typography.bodyLarge.copy(
                                         color = Color(
                                             0xFFA0A0A5
