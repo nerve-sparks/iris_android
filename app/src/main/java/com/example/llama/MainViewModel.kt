@@ -92,7 +92,9 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
     // ... (rest of the functions remain mostly the same)
 
     fun clear() {
-        messages = listOf()
+        messages = listOf<Map<String, String>>(
+            mapOf("role" to "assistant", "content" to "Nervesparks")
+        )
     }
 
     fun log(message: String) {
