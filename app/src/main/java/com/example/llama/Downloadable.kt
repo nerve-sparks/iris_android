@@ -108,28 +108,33 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 }
             }
 
-            Button(
-                onClick = { onClick() },
-                enabled = status !is Downloading,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                when (status) {
-                    is Downloading -> Text(
-                        text = "Downloading ${(progress * 100).toInt()}%",
-                        color = Color.White
-                    )
-                    is Downloaded -> Text(
-                        "Load ${item.name}",
-                        color = Color.White
-                    )
-                    is Ready -> Text(
-                        "Download ${item.name}",
-                        color = Color.White
-                    )
-                    is Error -> Text(
-                        "Download ${item.name}",
-                        color = Color.White
-                    )
+            if (status !is Downloaded) {
+                Button(
+                    onClick = { onClick() },
+                    enabled = status !is Downloading,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    when (status) {
+                        is Downloading -> Text(
+                            text = "Downloading ${(progress * 100).toInt()}%",
+                            color = Color.White
+                        )
+
+                        is Downloaded -> Text(
+                            "Load ${item.name}",
+                            color = Color.White
+                        )
+
+                        is Ready -> Text(
+                            "Download ${item.name}",
+                            color = Color.White
+                        )
+
+                        is Error -> Text(
+                            "Download ${item.name}",
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }

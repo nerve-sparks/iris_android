@@ -97,6 +97,12 @@ class MainActivity(
                 File(extFilesDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
             ),
         )
+        models.forEach { model ->
+            if (model.destination.exists()) {
+                viewModel.load(model.destination.path)
+            }
+        }
+
 
         setContent {
             LlamaAndroidTheme {
