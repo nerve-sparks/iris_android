@@ -63,27 +63,33 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
             messages = messages + listOf(newMessage)
         }
     }
+    private fun removeExtraWhiteSpaces(input: String): String {
+        // Replace multiple white spaces with a single space
+        return input.replace("\\s+".toRegex(), " ")
+    }
 
 
     fun send() {
-        val userMessage = message
+        val userMessage = removeExtraWhiteSpaces(message);
         message = ""
+        if(userMessage!="" && userMessage!=" ") {
+            // Append user's message
+            addMessage("user", userMessage)
 
-        // Append user's message
-        addMessage("user", userMessage)
+            val text =
+                "system \nYou are a friendly chat-bot who always responds. \n user \n$userMessage \nassistant \n"
 
-        val text = "system \nYou are a friendly chat-bot who always responds. \n user \n$userMessage \nassistant \n"
-
-        viewModelScope.launch {
-            llm.send(text)
-                .catch {
-                    Log.e(tag, "send() failed", it)
-                    addMessage("error", it.message ?: "")
-                }
-                .collect { response ->
-                    // Create a new assistant message with the response
-                    addMessage("assistant", response)
-                }
+            viewModelScope.launch {
+                llm.send(text)
+                    .catch {
+                        Log.e(tag, "send() failed", it)
+                        addMessage("error", it.message ?: "")
+                    }
+                    .collect { response ->
+                        // Create a new assistant message with the response
+                        addMessage("assistant", response)
+                    }
+            }
         }
     }
 
