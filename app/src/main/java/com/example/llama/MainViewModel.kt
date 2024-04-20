@@ -18,7 +18,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
     private val tag: String? = this::class.simpleName
 
     var messages by mutableStateOf(listOf<Map<String, String>>(
-        mapOf("role" to "assistant", "content" to "Nervesparks")
+
     ))
         private set
 
@@ -99,7 +99,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
 
     fun clear() {
         messages = listOf<Map<String, String>>(
-            mapOf("role" to "assistant", "content" to "Nervesparks")
+
         )
     }
 

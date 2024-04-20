@@ -159,6 +159,21 @@ fun MainCompose(
         Column {
 
 
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                when (role) {
+                                    "user" -> Color.Transparent
+                                    "assistant" -> Color(0xFF232627)
+                                    else -> Color.Transparent
+                                }
+                            )
+                            .fillMaxWidth()
+                            .padding(bottom = 10.dp)
+                    ) {
+                        Column {
+
+
             val scrollState = rememberLazyListState()
 
             Box(modifier = Modifier.weight(1f)) {
@@ -227,7 +242,7 @@ fun MainCompose(
                                             0xFFA0A0A5
                                         )
                                     ),
-                                    modifier = Modifier.padding(start = 8.dp)
+                                    modifier = Modifier.padding(start = 18.dp, end = 14.dp)
                                 )
 
                             }
