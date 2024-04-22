@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -257,14 +258,26 @@ fun MainCompose(
                                 label = { Text("Message") },
                                 modifier = Modifier.weight(1f)
                             )
+                            if(!viewModel.getIsSending()){
 
-                            IconButton(onClick = { viewModel.send() }) {
-                                Icon(
-                                    imageVector = Icons.Default.Send,
-                                    contentDescription = "Send",
-                                    tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
-                                )
+                                IconButton(onClick = { viewModel.send() }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Send,
+                                        contentDescription = "Send",
+                                        tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
+                                    )
+                                }
                             }
+                            else if(viewModel.getIsSending()){
+                                IconButton(onClick = { viewModel.stop() }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Stop",
+                                        tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
+                                    )
+                                }
+                            }
+
                         }
                     }
 
