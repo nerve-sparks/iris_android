@@ -161,6 +161,17 @@ fun MainCompose(
                     modifier = Modifier.weight(1f),
                     fontSize = 24.sp
                 )
+                Button(
+                    onClick = { viewModel.clear() },
+                    modifier = Modifier
+                        .background(Color(0xFF232627))
+                ) {
+                    Text(
+                        "Clear",
+                        color = Color.White
+                    )
+                }
+
             }
         }
         Column {
@@ -287,27 +298,27 @@ fun MainCompose(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp)  // Adding top margin
-                    ) {
-                        Button(
-                            onClick = { viewModel.clear() },
-                            modifier = Modifier
-                                .background(Color(0xFF232627))
-                        ) {
-                            Text(
-                                "Clear",
-                                color = Color.White
-                            )
-                        }
-                        Button(
-                            onClick = { viewModel.stop() },
-                            modifier = Modifier
-                                .background(Color(0xFF232627))
-                        ) {
-                            Text(
-                                "Stop",
-                                color = Color.White
-                            )
-                        }
+                       ) {
+//                        Button(
+//                            onClick = { viewModel.clear() },
+//                            modifier = Modifier
+//                                .background(Color(0xFF232627))
+//                        ) {
+//                            Text(
+//                                "Clear",
+//                                color = Color.White
+//                            )
+//                        }
+//                        Button(
+//                            onClick = { viewModel.stop() },
+//                            modifier = Modifier
+//                                .background(Color(0xFF232627))
+//                        ) {
+//                            Text(
+//                                "Stop",
+//                                color = Color.White
+//                            )
+//                        }
 
                     }
 
