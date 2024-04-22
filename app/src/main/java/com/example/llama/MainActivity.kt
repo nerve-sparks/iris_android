@@ -33,6 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,7 +52,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.getSystemService
-import com.example.llama.ui.theme.LlamaAndroidTheme
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 
@@ -106,7 +106,7 @@ class MainActivity(
 
 
         setContent {
-            LlamaAndroidTheme {
+
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -120,7 +120,7 @@ class MainActivity(
                     )
                 }
 
-            }
+
         }
     }
 }
@@ -164,13 +164,15 @@ fun MainCompose(
                 Button(
                     onClick = { viewModel.clear() },
                     modifier = Modifier
-                        .background(Color(0xFF232627))
+                        .background(Color.Transparent),
+                            colors = ButtonDefaults.buttonColors(Color.Transparent)
                 ) {
                     Text(
                         "Clear",
                         color = Color.White
                     )
                 }
+
 
             }
         }
@@ -268,7 +270,7 @@ fun MainCompose(
                                 onValueChange = { viewModel.updateMessage(it) },
                                 label = { Text("Message") },
                                 modifier = Modifier.weight(1f),
-                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor=Color.White)
+                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor=Color.White, focusedBorderColor = Color.White, focusedLabelColor = Color.White, cursorColor = Color.White)
                             )
                             if(!viewModel.getIsSending()){
 
