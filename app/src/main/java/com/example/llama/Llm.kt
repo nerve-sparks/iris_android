@@ -129,15 +129,18 @@ class Llm {
                     _isSending.value = true
                     val str = completion_loop(state.context, state.batch, nlen, ncur)
                     if (str == null) {
+                        _isSending.value = false
                         break
                     }
                     if (str == "User" || str == "user") {
+                        _isSending.value = false
                         break
+
                     }
                     emit(str)
                 }
-                kv_cache_clear(state.context)
                 _isSending.value = false
+                kv_cache_clear(state.context)
             }
             else -> {_isSending.value = false}
         }
