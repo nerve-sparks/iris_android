@@ -141,6 +141,7 @@ class Llm {
             }
             else -> {_isSending.value = false}
         }
+        _isSending.value = false
     }.flowOn(runLoop)
 
     /**
