@@ -139,7 +139,7 @@ class Llm {
                 kv_cache_clear(state.context)
                 _isSending.value = false
             }
-            else -> {}
+            else -> {_isSending.value = false}
         }
     }.flowOn(runLoop)
 
