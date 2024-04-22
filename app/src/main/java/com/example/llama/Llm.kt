@@ -132,7 +132,8 @@ class Llm {
                         _isSending.value = false
                         break
                     }
-                    if (str == "User" || str == "user" || str == "<|im_end|>") {
+                    if (str == "User" || str == "user" || str == "<|im_end|>" || str == "\n" +
+                        "                                                                                                    ") {
                         _isSending.value = false
                         break
 
