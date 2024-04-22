@@ -256,7 +256,8 @@ fun MainCompose(
                                 value = viewModel.message,
                                 onValueChange = { viewModel.updateMessage(it) },
                                 label = { Text("Message") },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                colors = OutlinedTextFieldDefaults.colors(focusedTextColor=Color.White)
                             )
                             if(!viewModel.getIsSending()){
 
