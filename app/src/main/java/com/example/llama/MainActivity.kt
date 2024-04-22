@@ -261,7 +261,7 @@ fun MainCompose(
                             )
                             if(!viewModel.getIsSending()){
 
-                                IconButton(onClick = { viewModel.send() }) {
+                                IconButton(onClick = { viewModel.send()  }) {
                                     Icon(
                                         imageVector = Icons.Default.Send,
                                         contentDescription = "Send",
