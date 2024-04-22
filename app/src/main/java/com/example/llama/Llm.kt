@@ -1,6 +1,8 @@
 package com.example.llama
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +16,13 @@ class Llm {
     private val tag: String? = this::class.simpleName
     private var stopGeneration: Boolean = false
     private val threadLocalState: ThreadLocal<State> = ThreadLocal.withInitial { State.Idle }
+
+    private val _isSending = mutableStateOf(false)
+    private val isSending: Boolean by _isSending
+
+    fun getIsSending(): Boolean {
+        return isSending
+    }
     fun stopTextGeneration() {
         stopGeneration = true
     }
@@ -117,19 +126,25 @@ class Llm {
             is State.Loaded -> {
                 val ncur = IntVar(completion_init(state.context, state.batch, message, nlen))
                 while (ncur.value <= nlen && !stopGeneration) {  // Check the stopGeneration flag
+                    _isSending.value = true
                     val str = completion_loop(state.context, state.batch, nlen, ncur)
                     if (str == null) {
+                        _isSending.value = false
                         break
                     }
                     if (str == "User" || str == "user") {
+                        _isSending.value = false
                         break
+
                     }
                     emit(str)
                 }
+                _isSending.value = false
                 kv_cache_clear(state.context)
             }
-            else -> {}
+            else -> {_isSending.value = false}
         }
+        _isSending.value = false
     }.flowOn(runLoop)
 
     /**

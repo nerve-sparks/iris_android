@@ -107,6 +107,10 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
         addMessage("log", message)
     }
 
+    fun getIsSending(): Boolean {
+        return llm.getIsSending()
+    }
+
     fun stop() {
         Llm.instance().stopTextGeneration()
     }
