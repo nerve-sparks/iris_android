@@ -227,7 +227,6 @@ fun MainCompose(
                                                     end = 6.dp
                                                 )
                                         ) {
-                                            if (role != "codeBlock") {
                                                 Image(
                                                     painter = painterResource(
                                                         id = if (role == "assistant") R.drawable.logo
@@ -236,7 +235,6 @@ fun MainCompose(
                                                     contentDescription = if (role == "assistant") "Bot Icon" else "Human Icon",
                                                     modifier = Modifier.size(20.dp)
                                                 )
-                                            }
 
                                             Image(
                                                 painter = painterResource(id = if (role == "assistant") R.drawable.copy1 else R.drawable.copy1),
@@ -255,9 +253,8 @@ fun MainCompose(
                                             )
 
                                         }
-                                        Text(text = if(trimmedMessage.startsWith("```")||trimmedMessage.startsWith("\n" +
-                                                    "                                                                                                    "))
-                                        {trimmedMessage.substring(4)}else{trimmedMessage.trimStart()},
+                                        Text(text = if(trimmedMessage.startsWith("```"))
+                                        {trimmedMessage.substring(3)}else{trimmedMessage},
                                             style = MaterialTheme.typography.bodyLarge.copy(
                                                 color = Color(
                                                     0xFFA0A0A5
@@ -273,12 +270,13 @@ fun MainCompose(
                                 else{
                                     Box(
                                         modifier = Modifier
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                            .padding(horizontal = 10.dp, vertical = 4.dp)
                                             .background(
                                                 Color.Black,
                                                 shape = RoundedCornerShape(8.dp)
                                             )
                                             .fillMaxWidth()
+
                                     ) {
                                         Column {
                                             Row(

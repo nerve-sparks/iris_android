@@ -146,15 +146,16 @@ class Llm {
                         _isSending.value = false
                         break
                     }
-                    if (str == "User" || str == "user" || str == "<|im_end|>" || str == "\n" +
+                    if (str == "User" || str == "user" || str == "<|im_end|>" || str =="\n" +
                         "                                                                                                    ") {
                         _isSending.value = false
                         break
 
                     }
-                    if(!stopGeneration) {
-                        emit(str)
+                    if(stopGeneration){
+                        break
                     }
+                    emit(str)
                 }
                 _isSending.value = false
                 kv_cache_clear(state.context)
