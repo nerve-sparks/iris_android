@@ -32,8 +32,9 @@ class Llm {
     }
 
     fun stopTextGeneration() {
-        _isMarked.value=false
+
         stopGeneration = true
+        _isMarked.value=false
     }
     private val runLoop: CoroutineDispatcher = Executors.newSingleThreadExecutor {
         thread(start = false, name = "Llm-RunLoop") {
@@ -139,7 +140,6 @@ class Llm {
                     val str = completion_loop(state.context, state.batch, nlen, ncur)
                     if(str=="```"||str=="``"){
                         _isMarked.value = !_isMarked.value
-                        emit("markchanged")
                     }
 
                     if (str == null) {

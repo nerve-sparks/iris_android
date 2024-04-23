@@ -201,6 +201,7 @@ fun MainCompose(
                                             when (role) {
                                                 "user" -> Color.Transparent
                                                 "assistant" -> Color(0xFF232627)
+                                                "codeBlock" -> Color.LightGray
                                                 else -> Color.Transparent
                                             }
                                         )
@@ -221,27 +222,33 @@ fun MainCompose(
                                                     end = 6.dp
                                                 )
                                         ) {
-                                            Image(
-                                                painter = painterResource(id = if (role == "assistant") R.drawable.logo else R.drawable.bot_icon),
-                                                contentDescription = if (role == "assistant") "Bot Icon" else "Human Icon",
-                                                modifier = Modifier.size(20.dp)
-                                            )
+                                            if(role!="codeBlock") {
+                                                Image(
+                                                    painter = painterResource(
+                                                        id = if (role == "assistant") R.drawable.logo
+                                                        else R.drawable.bot_icon
+                                                    ),
+                                                    contentDescription = if (role == "assistant") "Bot Icon" else "Human Icon",
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
 
-                                            Image(
-                                                painter = painterResource(id = if (role == "assistant") R.drawable.copy1 else R.drawable.copy1),
-                                                contentDescription = if (role == "assistant") "Copy Icon" else "Copy Icon",
-                                                modifier = Modifier
-                                                    .size(22.dp)
-                                                    .clickable {
-                                                        // Copy text to clipboard
-                                                        clipboard.setPrimaryClip(
-                                                            android.content.ClipData.newPlainText(
-                                                                "Text",
-                                                                content
+                                                Image(
+                                                    painter = painterResource(id = if (role == "assistant" || role=="codeBlock") R.drawable.copy1 else R.drawable.copy1),
+                                                    contentDescription = if (role == "assistant") "Copy Icon" else "Copy Icon",
+                                                    modifier = Modifier
+                                                        .size(22.dp)
+                                                        .clickable {
+                                                            // Copy text to clipboard
+                                                            clipboard.setPrimaryClip(
+                                                                android.content.ClipData.newPlainText(
+                                                                    "Text",
+                                                                    content
+                                                                )
                                                             )
-                                                        )
-                                                    }
-                                            )
+                                                        }
+                                                )
+
                                         }
                                         Text(
                                             trimmedMessage,

@@ -87,7 +87,13 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
                     }
                     .collect { response ->
                         // Create a new assistant message with the response
-                        addMessage("assistant", response)
+                        if(getIsMarked()){
+                                addMessage("codeBlock", response)
+
+                        }
+                        else {
+                            addMessage("assistant", response)
+                        }
                     }
             }
         }
