@@ -28,12 +28,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +53,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.core.content.getSystemService
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
@@ -195,18 +198,20 @@ fun MainCompose(
                                     content
                                 }
 
+                                if(role!="codeBlock"){
                                 Box(
                                     modifier = Modifier
                                         .background(
                                             when (role) {
                                                 "user" -> Color.Transparent
                                                 "assistant" -> Color(0xFF232627)
-                                                "codeBlock" -> Color.LightGray
                                                 else -> Color.Transparent
                                             }
                                         )
                                         .fillMaxWidth()
-                                        .padding(bottom = 4.dp)
+                                        .padding(
+                                            bottom = 4.dp
+                                        )
                                 ) {
                                     Column {
 
@@ -222,7 +227,7 @@ fun MainCompose(
                                                     end = 6.dp
                                                 )
                                         ) {
-                                            if(role!="codeBlock") {
+                                            if (role != "codeBlock") {
                                                 Image(
                                                     painter = painterResource(
                                                         id = if (role == "assistant") R.drawable.logo
@@ -233,9 +238,65 @@ fun MainCompose(
                                                 )
                                             }
 
+                                            Image(
+                                                painter = painterResource(id = if (role == "assistant") R.drawable.copy1 else R.drawable.copy1),
+                                                contentDescription = if (role == "assistant") "Copy Icon" else "Copy Icon",
+                                                modifier = Modifier
+                                                    .size(22.dp)
+                                                    .clickable {
+                                                        // Copy text to clipboard
+                                                        clipboard.setPrimaryClip(
+                                                            android.content.ClipData.newPlainText(
+                                                                "Text",
+                                                                content
+                                                            )
+                                                        )
+                                                    }
+                                            )
+
+                                        }
+                                        Text(text = if(trimmedMessage.startsWith("```")||trimmedMessage.startsWith("\n" +
+                                                    "                                                                                                    "))
+                                        {trimmedMessage.substring(4)}else{trimmedMessage.trimStart()},
+                                            style = MaterialTheme.typography.bodyLarge.copy(
+                                                color = Color(
+                                                    0xFFA0A0A5
+                                                )
+                                            ),
+                                            modifier = Modifier.padding(start = 18.dp, end = 14.dp)
+                                        )
+
+                                    }
+                                }
+
+                                }
+                                else{
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                            .background(
+                                                Color.Black,
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                            .fillMaxWidth()
+                                    ) {
+                                        Column {
+                                            Row(
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(
+                                                        top = 8.dp,
+                                                        bottom = 8.dp,
+                                                        start = 6.dp,
+                                                        end = 6.dp
+                                                    )
+                                            ) {
+
+
                                                 Image(
-                                                    painter = painterResource(id = if (role == "assistant" || role=="codeBlock") R.drawable.copy1 else R.drawable.copy1),
-                                                    contentDescription = if (role == "assistant") "Copy Icon" else "Copy Icon",
+                                                    painter = painterResource(id = R.drawable.copy1),
+                                                    contentDescription =  "Copy Icon",
                                                     modifier = Modifier
                                                         .size(22.dp)
                                                         .clickable {
@@ -249,18 +310,16 @@ fun MainCompose(
                                                         }
                                                 )
 
+                                            }
+                                            Text(
+                                                text = if(trimmedMessage.startsWith("```")){trimmedMessage.substring(3)}else{trimmedMessage},
+                                                modifier = Modifier.padding(16.dp) // Add padding for content
+                                            )
                                         }
-                                        Text(
-                                            trimmedMessage,
-                                            style = MaterialTheme.typography.bodyLarge.copy(
-                                                color = Color(
-                                                    0xFFA0A0A5
-                                                )
-                                            ),
-                                            modifier = Modifier.padding(start = 18.dp, end = 14.dp)
-                                        )
+
 
                                     }
+
                                 }
                             }
                         }
