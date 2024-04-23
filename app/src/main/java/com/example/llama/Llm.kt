@@ -20,10 +20,19 @@ class Llm {
     private val _isSending = mutableStateOf(false)
     private val isSending: Boolean by _isSending
 
+    private val _isMarked = mutableStateOf(false)
+    private val isMarked: Boolean by _isMarked
+
     fun getIsSending(): Boolean {
         return isSending
     }
+
+    fun getIsMarked(): Boolean{
+        return isMarked
+    }
+
     fun stopTextGeneration() {
+        _isMarked.value=false
         stopGeneration = true
     }
     private val runLoop: CoroutineDispatcher = Executors.newSingleThreadExecutor {
@@ -128,6 +137,11 @@ class Llm {
                 while (ncur.value <= nlen && !stopGeneration) {  // Check the stopGeneration flag
                     _isSending.value = true
                     val str = completion_loop(state.context, state.batch, nlen, ncur)
+                    if(str=="```"||str=="``"){
+                        _isMarked.value = !_isMarked.value
+                        emit("markchanged")
+                    }
+
                     if (str == null) {
                         _isSending.value = false
                         break

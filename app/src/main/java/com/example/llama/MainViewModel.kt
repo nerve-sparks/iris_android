@@ -110,6 +110,9 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
     fun getIsSending(): Boolean {
         return llm.getIsSending()
     }
+    fun getIsMarked():Boolean{
+        return llm.getIsMarked()
+    }
 
     fun stop() {
         Llm.instance().stopTextGeneration()
