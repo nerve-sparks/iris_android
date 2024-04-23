@@ -152,7 +152,9 @@ class Llm {
                         break
 
                     }
-                    emit(str)
+                    if(!stopGeneration) {
+                        emit(str)
+                    }
                 }
                 _isSending.value = false
                 kv_cache_clear(state.context)
