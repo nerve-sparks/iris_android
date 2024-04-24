@@ -97,6 +97,12 @@ class MainActivity(
 
         val models = listOf(
 
+            //            Downloadable(
+//                "Phi-3-mini 4k Instruct(Q4 2.2 GiB)",
+//                Uri.parse("https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf?download=true"),
+//                File(extFilesDir, "Phi-3-mini-4k-instruct-q4.gguf")
+//            ),
+
             Downloadable(
                 "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
                 Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
