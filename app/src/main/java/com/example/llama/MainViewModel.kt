@@ -41,7 +41,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
         viewModelScope.launch {
             try {
                 llm.load(pathToModel)
-                addMessage("assistant", "Model Loaded Successfully.")
+                addMessage("assistant", "Loaded $pathToModel")
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "load() failed", exc)
                 addMessage("error", exc.message ?: "")
