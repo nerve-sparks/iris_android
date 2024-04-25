@@ -18,7 +18,8 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.LlamaAndroid">
+            android:theme="@style/Theme.LlamaAndroid"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
