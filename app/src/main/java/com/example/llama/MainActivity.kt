@@ -173,7 +173,7 @@ fun MainCompose(
                     fontSize = 24.sp
                 )
                 Button(
-                    onClick = { viewModel.clear() },
+                    onClick = { viewModel.clear(); viewModel.stop() },
                     modifier = Modifier
                         .background(Color.Transparent),
                     colors = ButtonDefaults.buttonColors(Color.Transparent)
