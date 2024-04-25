@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
@@ -50,6 +51,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.AlignmentLine
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -173,15 +176,26 @@ fun MainCompose(
                     fontSize = 24.sp
                 )
                 Button(
-                    onClick = { viewModel.clear(); viewModel.stop() },
+                    onClick = { viewModel.stop()
+                        viewModel.clear()
+                        },
                     modifier = Modifier
                         .background(Color.Transparent),
                     colors = ButtonDefaults.buttonColors(Color.Transparent)
                 ) {
                     Text(
-                        "Clear",
-                        color = Color.White
+                        "New ",
+                        color = Color.White,
+                        style = TextStyle(fontWeight = FontWeight.W400),
+                        fontSize = 18.sp
                     )
+
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "newChat",
+                        tint = Color.White // Optional: set the color of the icon
+                    )
+
                 }
 
 
