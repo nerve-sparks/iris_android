@@ -99,8 +99,8 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                             setDestinationUri(item.destination.toUri())
                         }
 
-                        viewModel.log("Saving ${item.name} to ${item.destination.path}")
-                        Log.i(tag, "Saving ${item.name} to ${item.destination.path}")
+                        viewModel.log("Saving ${item.name} to ${item.destination.path} \n \n Please ensure a good wifi connection to download the model or enable download using mobile data.")
+                        Log.i(tag, "Saving ${item.name} to ${item.destination.path} \n \n Please ensure a good wifi connection to download the model or enable download using mobile data.")
 
                         val id = dm.enqueue(request)
                         status = Downloading(id)
