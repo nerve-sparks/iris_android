@@ -2,7 +2,6 @@ package com.example.llama
 
 import android.app.ActivityManager
 import android.app.DownloadManager
-import android.content.ClipData
 import android.content.ClipboardManager
 import android.net.Uri
 import android.os.Bundle
@@ -29,14 +28,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,17 +45,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.AlignmentLine
-import androidx.compose.ui.modifier.modifierLocalConsumer
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.core.content.getSystemService
-import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 
 class MainActivity(
@@ -139,6 +132,7 @@ class MainActivity(
     }
 }
 
+
 @Composable
 fun MainCompose(
     viewModel: MainViewModel,
@@ -146,6 +140,8 @@ fun MainCompose(
     dm: DownloadManager,
     models: List<Downloadable>
 ) {
+    //val kc = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     Column(modifier = Modifier.padding(bottom = 10.dp)) {
 
         Column() {
@@ -176,9 +172,10 @@ fun MainCompose(
                     fontSize = 24.sp
                 )
                 Button(
-                    onClick = { viewModel.stop()
+                    onClick = {
+                        viewModel.stop()
                         viewModel.clear()
-                        },
+                    },
                     modifier = Modifier
                         .background(Color.Transparent),
                     colors = ButtonDefaults.buttonColors(Color.Transparent)
@@ -371,11 +368,25 @@ fun MainCompose(
                             focusedBorderColor = Color.White,
                             focusedLabelColor = Color.White,
                             cursorColor = Color.White
+                        ),
+//                        keyboardOptions = KeyboardOptions(
+//                            keyboardType = KeyboardType.Ascii,
+//                            imeAction = ImeAction.Done
+//                        ),
+//                        keyboardActions = KeyboardActions(
+//                            onDone = {
+//                                //kc?.show()
+//                                //kc?.hide()
+//                            },
+//
+//                        ),
+
                         )
-                    )
                     if (!viewModel.getIsSending()) {
 
-                        IconButton(onClick = { viewModel.send() }) {
+                        IconButton(onClick = {
+                            viewModel.send()
+                            focusManager.clearFocus() }) {
                             Icon(
                                 imageVector = Icons.Default.Send,
                                 contentDescription = "Send",
