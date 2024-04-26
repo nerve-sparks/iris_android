@@ -43,4 +43,4 @@ Contributing
 - Create your feature branch (git checkout -b my-new-feature)
 - Commit your changes (git commit -m 'Add some feature')
 - Push your branch (git push origin my-new-feature)
-- Create a new Pull Request
+- Create a new Pull request.
