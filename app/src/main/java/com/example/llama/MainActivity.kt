@@ -44,6 +44,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.getSystemService
+import kotlinx.coroutines.launch
 import java.io.File
 
 class MainActivity(
@@ -208,9 +210,17 @@ fun MainCompose(
 
 
             val scrollState = rememberLazyListState()
+            val corroutineScope = rememberCoroutineScope()
 
             Box(modifier = Modifier.weight(1f)) {
-                LazyColumn(state = scrollState) {
+                LazyColumn(state = scrollState){
+
+                    corroutineScope.launch {
+
+
+                        scrollState.scrollToItem(viewModel.messages.size);
+
+                    }
                     itemsIndexed(viewModel.messages) { index, messageMap ->
                         val role = messageMap["role"] ?: ""
                         val content = messageMap["content"] ?: ""
