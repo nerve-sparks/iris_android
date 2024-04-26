@@ -10,7 +10,7 @@ Project Description
 
 Run
 -------------
-- Go to releases
+- Go to releases : https://github.com/nerve-sparks/iris_android/releases
 - Download app
 - Install app
 
