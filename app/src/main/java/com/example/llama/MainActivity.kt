@@ -1,5 +1,6 @@
 package com.example.llama
 
+//import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import android.app.ActivityManager
 import android.app.DownloadManager
 import android.content.ClipboardManager
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,9 +44,11 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -52,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.getSystemService
+import kotlinx.coroutines.launch
 import java.io.File
 
 class MainActivity(
@@ -78,6 +83,8 @@ class MainActivity(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.statusBarColor = android.graphics.Color.parseColor("#FF232627")//for status bar color
+
 
         StrictMode.setVmPolicy(
             VmPolicy.Builder(StrictMode.getVmPolicy())
@@ -87,6 +94,10 @@ class MainActivity(
 
         val free = Formatter.formatFileSize(this, availableMemory().availMem)
         val total = Formatter.formatFileSize(this, availableMemory().totalMem)
+//        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        val transparentColor = Color.Transparent.toArgb()
+        window.decorView.rootView.setBackgroundColor(transparentColor)
+
 
 
         val extFilesDir = getExternalFilesDir(null)
@@ -117,7 +128,7 @@ class MainActivity(
             // A surface container using the 'background' color from the theme
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = Color(0xFF141718)
+                color = Color(0xFF141718),
             ) {
                 MainCompose(
                     viewModel,
@@ -133,6 +144,7 @@ class MainActivity(
 }
 
 
+
 @Composable
 fun MainCompose(
     viewModel: MainViewModel,
@@ -141,7 +153,13 @@ fun MainCompose(
     models: List<Downloadable>
 ) {
     //val kc = LocalSoftwareKeyboardController.current
+//    val systemUiController = rememberSystemUiController()
+//
+//    systemUiController.setSystemBarsColor(
+//        color = Color(0xFF232627)
+//    )
     val focusManager = LocalFocusManager.current
+
     Column(modifier = Modifier.padding(bottom = 10.dp)) {
 
         Column() {
@@ -151,10 +169,11 @@ fun MainCompose(
 
                 modifier = Modifier
                     .background(Color(0xFF232627))
-                    .padding(start = 5.dp)
-                    .height(50.dp)
+                    .padding(start = 5.dp,)
+                    .height(60.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
+
                 verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
             ) {
                 Image(
@@ -166,7 +185,8 @@ fun MainCompose(
                 )
                 Spacer(modifier = Modifier.padding(4.dp))
                 Text(
-                    text = "NS GPT",
+                    text = "Iris",
+                    fontWeight = FontWeight(500),
                     color = Color.White,
                     modifier = Modifier.weight(1f),
                     fontSize = 24.sp
@@ -197,14 +217,24 @@ fun MainCompose(
 
 
             }
+            Box(modifier = Modifier.fillMaxWidth().height(0.2.dp).background(color =  Color.White )){}
         }
+       Divider(color = Color(0xFFA0A0A5))
         Column {
 
 
             val scrollState = rememberLazyListState()
+            val corroutineScope = rememberCoroutineScope()
 
             Box(modifier = Modifier.weight(1f)) {
-                LazyColumn(state = scrollState) {
+                LazyColumn(state = scrollState){
+
+                    corroutineScope.launch {
+
+
+                        scrollState.scrollToItem(viewModel.messages.size);
+
+                    }
                     itemsIndexed(viewModel.messages) { index, messageMap ->
                         val role = messageMap["role"] ?: ""
                         val content = messageMap["content"] ?: ""
