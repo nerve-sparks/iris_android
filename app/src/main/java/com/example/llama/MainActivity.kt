@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.app.DownloadManager
 import android.content.ClipboardManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
@@ -48,6 +49,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -55,7 +57,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -95,6 +99,8 @@ class MainActivity(
 //        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
         val transparentColor = Color.Transparent.toArgb()
         window.decorView.rootView.setBackgroundColor(transparentColor)
+
+
 
         val extFilesDir = getExternalFilesDir(null)
 
@@ -148,6 +154,11 @@ fun MainCompose(
     models: List<Downloadable>
 ) {
     //val kc = LocalSoftwareKeyboardController.current
+    val systemUiController = rememberSystemUiController()
+
+    systemUiController.setSystemBarsColor(
+        color = Color(0xFF232627)
+    )
     val focusManager = LocalFocusManager.current
 
     Column(modifier = Modifier.padding(bottom = 10.dp)) {
