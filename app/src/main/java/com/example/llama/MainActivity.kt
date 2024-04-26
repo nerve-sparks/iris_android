@@ -78,7 +78,7 @@ class MainActivity(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.statusBarColor = android.graphics.Color.parseColor("#FF232627")
+        window.statusBarColor = android.graphics.Color.parseColor("#FF232627")//for status bar color
 
 
         StrictMode.setVmPolicy(
