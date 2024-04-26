@@ -49,6 +49,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradientShader
@@ -61,7 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+//import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -156,11 +157,11 @@ fun MainCompose(
     models: List<Downloadable>
 ) {
     //val kc = LocalSoftwareKeyboardController.current
-    val systemUiController = rememberSystemUiController()
-
-    systemUiController.setSystemBarsColor(
-        color = Color(0xFF232627)
-    )
+//    val systemUiController = rememberSystemUiController()
+//
+//    systemUiController.setSystemBarsColor(
+//        color = Color(0xFF232627)
+//    )
     val focusManager = LocalFocusManager.current
 
     Column(modifier = Modifier.padding(bottom = 10.dp)) {
