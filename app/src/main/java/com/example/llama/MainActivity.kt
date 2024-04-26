@@ -92,6 +92,8 @@ class MainActivity(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.statusBarColor = android.graphics.Color.parseColor("#FF232627")//for status bar color
+
 
         StrictMode.setVmPolicy(
             VmPolicy.Builder(StrictMode.getVmPolicy())
@@ -135,7 +137,7 @@ class MainActivity(
             // A surface container using the 'background' color from the theme
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = Color(0xFF141718)
+                color = Color(0xFF141718),
             ) {
                 MainCompose(
                     viewModel,
@@ -149,6 +151,7 @@ class MainActivity(
         }
     }
 }
+
 
 
 @Composable
@@ -222,6 +225,7 @@ fun MainCompose(
 
 
             }
+            Box(modifier = Modifier.fillMaxWidth().height(0.2.dp).background(color =  Color.White )){}
         }
        Divider(color = Color(0xFFA0A0A5))
         Column {
