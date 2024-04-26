@@ -15,6 +15,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +49,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.toArgb
@@ -170,10 +172,11 @@ fun MainCompose(
 
                 modifier = Modifier
                     .background(Color(0xFF232627))
-                    .padding(start = 5.dp)
-                    .height(50.dp)
+                    .padding(start = 5.dp,)
+                    .height(60.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
+
                 verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
             ) {
                 Image(
@@ -216,6 +219,10 @@ fun MainCompose(
 
 
             }
+        }
+        Box (modifier = Modifier.fillMaxWidth().height(0.2.dp).background(Color(0xFFA0A0A5))){
+
+
         }
         Column {
 
