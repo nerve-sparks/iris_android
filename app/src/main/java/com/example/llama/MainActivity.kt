@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
 import android.text.format.Formatter
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -42,9 +43,11 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -87,7 +90,9 @@ class MainActivity(
 
         val free = Formatter.formatFileSize(this, availableMemory().availMem)
         val total = Formatter.formatFileSize(this, availableMemory().totalMem)
-
+//        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        val transparentColor = Color.Transparent.toArgb()
+        window.decorView.rootView.setBackgroundColor(transparentColor)
 
         val extFilesDir = getExternalFilesDir(null)
 
@@ -142,6 +147,7 @@ fun MainCompose(
 ) {
     //val kc = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+
     Column(modifier = Modifier.padding(bottom = 10.dp)) {
 
         Column() {
