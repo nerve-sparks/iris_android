@@ -77,7 +77,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
             addMessage("user", userMessage)
 
             val text =
-                "system \nYou are a friendly and precise chat-bot who always responds in brief responses. \n user \n$userMessage \nassistant \n"
+                "system \nYou are a friendly and precise chat-bot named Iris, who always responds in brief responses. \n user \n$userMessage \nassistant \n"
 
             viewModelScope.launch {
                 llm.send(text)
