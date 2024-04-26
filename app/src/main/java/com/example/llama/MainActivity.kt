@@ -4,19 +4,23 @@ import android.app.ActivityManager
 import android.app.DownloadManager
 import android.content.ClipboardManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
 import android.text.format.Formatter
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +38,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,16 +47,25 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.LinearGradientShader
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+//import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlinx.coroutines.launch
 import java.io.File
 
 class MainActivity(
@@ -89,6 +103,10 @@ class MainActivity(
 
         val free = Formatter.formatFileSize(this, availableMemory().availMem)
         val total = Formatter.formatFileSize(this, availableMemory().totalMem)
+//        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        val transparentColor = Color.Transparent.toArgb()
+        window.decorView.rootView.setBackgroundColor(transparentColor)
+
 
 
         val extFilesDir = getExternalFilesDir(null)
@@ -144,7 +162,13 @@ fun MainCompose(
     models: List<Downloadable>
 ) {
     //val kc = LocalSoftwareKeyboardController.current
+//    val systemUiController = rememberSystemUiController()
+//
+//    systemUiController.setSystemBarsColor(
+//        color = Color(0xFF232627)
+//    )
     val focusManager = LocalFocusManager.current
+
     Column(modifier = Modifier.padding(bottom = 10.dp)) {
 
         Column() {
@@ -154,10 +178,11 @@ fun MainCompose(
 
                 modifier = Modifier
                     .background(Color(0xFF232627))
-                    .padding(start = 5.dp)
-                    .height(50.dp)
+                    .padding(start = 5.dp,)
+                    .height(60.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
+
                 verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
             ) {
                 Image(
@@ -202,13 +227,22 @@ fun MainCompose(
             }
             Box(modifier = Modifier.fillMaxWidth().height(0.2.dp).background(color =  Color.White )){}
         }
+       Divider(color = Color(0xFFA0A0A5))
         Column {
 
 
             val scrollState = rememberLazyListState()
+            val corroutineScope = rememberCoroutineScope()
 
             Box(modifier = Modifier.weight(1f)) {
-                LazyColumn(state = scrollState) {
+                LazyColumn(state = scrollState){
+
+                    corroutineScope.launch {
+
+
+                        scrollState.scrollToItem(viewModel.messages.size);
+
+                    }
                     itemsIndexed(viewModel.messages) { index, messageMap ->
                         val role = messageMap["role"] ?: ""
                         val content = messageMap["content"] ?: ""
