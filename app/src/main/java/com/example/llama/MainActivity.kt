@@ -232,7 +232,7 @@ fun MainCompose(
                     corroutineScope.launch {
 
 
-                        scrollState.scrollToItem(viewModel.messages.size);
+                        scrollState.scrollToItem(viewModel.messages.size + 1);
 
                     }
                     itemsIndexed(viewModel.messages) { index, messageMap ->
