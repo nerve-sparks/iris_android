@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
-class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
+class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     companion object {
         @JvmStatic
         private val NanosPerSecond = 1_000_000_000.0
@@ -17,9 +17,11 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
 
     private val tag: String? = this::class.simpleName
 
-    var messages by mutableStateOf(listOf<Map<String, String>>(
+    var messages by mutableStateOf(
+        listOf<Map<String, String>>(
 
-    ))
+        )
+    )
         private set
 
     var message by mutableStateOf("")
@@ -63,6 +65,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
             messages = messages + listOf(newMessage)
         }
     }
+
     private fun removeExtraWhiteSpaces(input: String): String {
         // Replace multiple white spaces with a single space
         return input.replace("\\s+".toRegex(), " ")
@@ -72,7 +75,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
     fun send() {
         val userMessage = removeExtraWhiteSpaces(message);
         message = ""
-        if(userMessage!="" && userMessage!=" ") {
+        if (userMessage != "" && userMessage != " ") {
             // Append user's message
             addMessage("user", userMessage)
 
@@ -87,18 +90,16 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
                     }
                     .collect { response ->
                         // Create a new assistant message with the response
-                        if(getIsMarked()){
-                                addMessage("codeBlock", response)
+                        if (getIsMarked()) {
+                            addMessage("codeBlock", response)
 
-                        }
-                        else {
+                        } else {
                             addMessage("assistant", response)
                         }
                     }
             }
         }
     }
-
 
 
     // ... (rest of the functions remain mostly the same)
@@ -116,13 +117,15 @@ class MainViewModel(private val llm: Llm = Llm.instance()): ViewModel() {
     fun getIsSending(): Boolean {
         return llm.getIsSending()
     }
-    fun getIsMarked():Boolean{
+
+    fun getIsMarked(): Boolean {
         return llm.getIsMarked()
     }
 
     fun stop() {
         Llm.instance().stopTextGeneration()
     }
+
     fun updateMessage(newMessage: String) {
         message = newMessage
     }
