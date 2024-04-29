@@ -27,10 +27,10 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
         private val tag: String? = this::class.qualifiedName
 
         sealed interface State
-        data object Ready: State
-        data class Downloading(val id: Long): State
-        data class Downloaded(val downloadable: Downloadable): State
-        data class Error(val message: String): State
+        data object Ready : State
+        data class Downloading(val id: Long) : State
+        data class Downloaded(val downloadable: Downloadable) : State
+        data class Error(val message: String) : State
 
         @JvmStatic
         @Composable
@@ -56,7 +56,10 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
 
                     if (!cursor.moveToFirst() || cursor.count < 1) {
                         cursor.close()
-                        Log.i(tag, "cursor.moveToFirst() returned false or cursor.count < 1, download canceled?")
+                        Log.i(
+                            tag,
+                            "cursor.moveToFirst() returned false or cursor.count < 1, download canceled?"
+                        )
                         return Ready
                     }
 
@@ -100,7 +103,10 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                         }
 
                         viewModel.log("Saving ${item.name} to ${item.destination.path} \n \n Download only on Wifi.")
-                        Log.i(tag, "Saving ${item.name} to ${item.destination.path} \n \n Download only on Wifi.")
+                        Log.i(
+                            tag,
+                            "Saving ${item.name} to ${item.destination.path} \n \n Download only on Wifi."
+                        )
 
                         val id = dm.enqueue(request)
                         status = Downloading(id)
