@@ -9,12 +9,14 @@ import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
 import android.text.format.Formatter
+import android.view.GestureDetector
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,11 +46,16 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -64,8 +71,8 @@ class MainActivity(
     downloadManager: DownloadManager? = null,
     clipboardManager: ClipboardManager? = null,
 ) : ComponentActivity() {
-    private val tag: String? = this::class.simpleName
 
+    private val tag: String? = this::class.simpleName
     private val activityManager by lazy { activityManager ?: getSystemService<ActivityManager>()!! }
     private val downloadManager by lazy { downloadManager ?: getSystemService<DownloadManager>()!! }
     private val clipboardManager by lazy {
@@ -125,6 +132,7 @@ class MainActivity(
         setContent {
 
             // A surface container using the 'background' color from the theme
+
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = Color(0xFF141718),
@@ -156,7 +164,10 @@ fun MainCompose(
 //    systemUiController.setSystemBarsColor(
 //        color = Color(0xFF232627)
 //    )
+    var autoScrollEnabled by remember { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
+
+
 
     Column(modifier = Modifier.padding(bottom = 10.dp)) {
 
@@ -227,17 +238,27 @@ fun MainCompose(
 
 
             val scrollState = rememberLazyListState()
-            val corroutineScope = rememberCoroutineScope()
+            val coroutineScope = rememberCoroutineScope()
 
-            Box(modifier = Modifier.weight(1f)) {
+            Box(modifier = Modifier.weight(1f).pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {autoScrollEnabled = false},
+                    onDoubleTap = {autoScrollEnabled = false },
+                    onLongPress = { autoScrollEnabled = false},
+                    onPress = { autoScrollEnabled = false},
+
+
+                )
+            }) {
                 LazyColumn(state = scrollState) {
 
-                    corroutineScope.launch {
+                    coroutineScope.launch {
 
-
-                        scrollState.scrollToItem(viewModel.messages.size + 1);
-
+                        if(autoScrollEnabled) {
+                            scrollState.scrollToItem(viewModel.messages.size);
+                        }
                     }
+
                     itemsIndexed(viewModel.messages) { index, messageMap ->
                         val role = messageMap["role"] ?: ""
                         val content = messageMap["content"] ?: ""
@@ -418,6 +439,7 @@ fun MainCompose(
                     if (!viewModel.getIsSending()) {
 
                         IconButton(onClick = {
+                            autoScrollEnabled = true;
                             viewModel.send()
                             focusManager.clearFocus()
                         }) {
@@ -476,5 +498,6 @@ fun MainCompose(
             }
         }
     }
+
 }
 

@@ -129,4 +129,5 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     fun updateMessage(newMessage: String) {
         message = newMessage
     }
+
 }
