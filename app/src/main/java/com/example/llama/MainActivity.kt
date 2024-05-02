@@ -101,7 +101,6 @@ class MainActivity(
 
         val free = Formatter.formatFileSize(this, availableMemory().availMem)
         val total = Formatter.formatFileSize(this, availableMemory().totalMem)
-//        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
         val transparentColor = Color.Transparent.toArgb()
         window.decorView.rootView.setBackgroundColor(transparentColor)
 
@@ -164,7 +163,10 @@ fun MainCompose(
 //    systemUiController.setSystemBarsColor(
 //        color = Color(0xFF232627)
 //    )
+
+    //variable to toggle auto-scrolling
     var autoScrollEnabled by remember { mutableStateOf(true) }
+
     val focusManager = LocalFocusManager.current
 
 
@@ -173,7 +175,7 @@ fun MainCompose(
 
         Column() {
 
-
+          //Top app bar starts here.
             Row(
 
                 modifier = Modifier
@@ -191,7 +193,7 @@ fun MainCompose(
                     modifier = Modifier
                         .padding(2.dp)
                         .size(40.dp)
-                )
+                ) //Logo
                 Spacer(modifier = Modifier.padding(4.dp))
                 Text(
                     text = "Iris",
@@ -199,7 +201,9 @@ fun MainCompose(
                     color = Color.White,
                     modifier = Modifier.weight(1f),
                     fontSize = 24.sp
-                )
+                ) //Name
+
+                //New Text Button
                 Button(
                     onClick = {
                         viewModel.stop()
@@ -231,9 +235,12 @@ fun MainCompose(
                     .fillMaxWidth()
                     .height(0.2.dp)
                     .background(color = Color.White)
-            ) {}
+            ) {}//extra spacing
         }
+        //Top app bar stops here
         Divider(color = Color(0xFFA0A0A5))
+
+
         Column {
 
 
@@ -250,7 +257,7 @@ fun MainCompose(
 
                 )
             }) {
-                LazyColumn(state = scrollState) {
+                LazyColumn(state = scrollState) {  //chat section starts here
 
                     coroutineScope.launch {
 
@@ -403,9 +410,9 @@ fun MainCompose(
 
                         }
                     }
-                }
+                } //chat section ends here
             }
-
+            //Prompt input field
             Box(modifier = Modifier.padding(horizontal = 5.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
