@@ -27,15 +27,16 @@ class Llm {
         return isSending
     }
 
-    fun getIsMarked(): Boolean{
+    fun getIsMarked(): Boolean {
         return isMarked
     }
 
     fun stopTextGeneration() {
 
         stopGeneration = true
-        _isMarked.value=false
+        _isMarked.value = false
     }
+
     private val runLoop: CoroutineDispatcher = Executors.newSingleThreadExecutor {
         thread(start = false, name = "Llm-RunLoop") {
             Log.d(tag, "Dedicated thread for native code: ${Thread.currentThread().name}")
@@ -114,7 +115,7 @@ class Llm {
             when (threadLocalState.get()) {
                 is State.Idle -> {
                     val model = load_model(pathToModel)
-                    if (model == 0L)  throw IllegalStateException("load_model() failed")
+                    if (model == 0L) throw IllegalStateException("load_model() failed")
 
                     val context = new_context(model)
                     if (context == 0L) throw IllegalStateException("new_context() failed")
@@ -125,6 +126,7 @@ class Llm {
                     Log.i(tag, "Loaded model $pathToModel")
                     threadLocalState.set(State.Loaded(model, context, batch))
                 }
+
                 else -> throw IllegalStateException("Model already loaded")
             }
         }
@@ -138,7 +140,7 @@ class Llm {
                 while (ncur.value <= nlen && !stopGeneration) {  // Check the stopGeneration flag
                     _isSending.value = true
                     val str = completion_loop(state.context, state.batch, nlen, ncur)
-                    if(str=="```"||str=="``"){
+                    if (str == "```" || str == "``") {
                         _isMarked.value = !_isMarked.value
                     }
 
@@ -146,13 +148,14 @@ class Llm {
                         _isSending.value = false
                         break
                     }
-                    if (str == "User" || str == "user" || str == "<|im_end|>" || str =="\n" +
-                        "                                                                                                    ") {
+                    if (str == "User" || str == "user" || str == "<|im_end|>" || str == "\n" +
+                        "                                                                                                    "
+                    ) {
                         _isSending.value = false
                         break
 
                     }
-                    if(stopGeneration){
+                    if (stopGeneration) {
                         break
                     }
                     emit(str)
@@ -160,7 +163,10 @@ class Llm {
                 _isSending.value = false
                 kv_cache_clear(state.context)
             }
-            else -> {_isSending.value = false}
+
+            else -> {
+                _isSending.value = false
+            }
         }
         _isSending.value = false
     }.flowOn(runLoop)
@@ -180,6 +186,7 @@ class Llm {
 
                     threadLocalState.set(State.Idle)
                 }
+
                 else -> {}
             }
         }
@@ -199,8 +206,8 @@ class Llm {
         }
 
         private sealed interface State {
-            data object Idle: State
-            data class Loaded(val model: Long, val context: Long, val batch: Long): State
+            data object Idle : State
+            data class Loaded(val model: Long, val context: Long, val batch: Long) : State
         }
 
         // Enforce only one instance of Llm.

@@ -99,7 +99,6 @@ class MainActivity(
         window.decorView.rootView.setBackgroundColor(transparentColor)
 
 
-
         val extFilesDir = getExternalFilesDir(null)
 
         val models = listOf(
@@ -144,7 +143,6 @@ class MainActivity(
 }
 
 
-
 @Composable
 fun MainCompose(
     viewModel: MainViewModel,
@@ -169,7 +167,7 @@ fun MainCompose(
 
                 modifier = Modifier
                     .background(Color(0xFF232627))
-                    .padding(start = 5.dp,)
+                    .padding(start = 5.dp)
                     .height(60.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -217,9 +215,14 @@ fun MainCompose(
 
 
             }
-            Box(modifier = Modifier.fillMaxWidth().height(0.2.dp).background(color =  Color.White )){}
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(0.2.dp)
+                    .background(color = Color.White)
+            ) {}
         }
-       Divider(color = Color(0xFFA0A0A5))
+        Divider(color = Color(0xFFA0A0A5))
         Column {
 
 
@@ -227,7 +230,7 @@ fun MainCompose(
             val corroutineScope = rememberCoroutineScope()
 
             Box(modifier = Modifier.weight(1f)) {
-                LazyColumn(state = scrollState){
+                LazyColumn(state = scrollState) {
 
                     corroutineScope.launch {
 
@@ -411,12 +414,13 @@ fun MainCompose(
 //
 //                        ),
 
-                        )
+                    )
                     if (!viewModel.getIsSending()) {
 
                         IconButton(onClick = {
                             viewModel.send()
-                            focusManager.clearFocus() }) {
+                            focusManager.clearFocus()
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.Send,
                                 contentDescription = "Send",
