@@ -88,7 +88,12 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
                 val role = msg["role"]
                 val content = msg["content"]
                 if (role != null && content != null) {
-                    builder.append("$role\n$content\n")
+                    if (role =="user"){
+                    builder.append("$role\n$content\n assistant \n")
+                    }
+                    else{
+                        builder.append("$role\n$content\n")
+                    }
                 }
             }
 

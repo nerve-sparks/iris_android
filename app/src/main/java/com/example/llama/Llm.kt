@@ -60,7 +60,7 @@ class Llm {
         }
     }.asCoroutineDispatcher()
 
-    private val nlen: Int = 512
+    private val nlen: Int = 4096
 
     private external fun log_to_android()
     private external fun load_model(filename: String): Long
