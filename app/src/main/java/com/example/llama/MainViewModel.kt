@@ -73,14 +73,29 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
 
 
     fun send() {
-        val userMessage = removeExtraWhiteSpaces(message);
+        val userMessage = removeExtraWhiteSpaces(message)
         message = ""
-        if (userMessage != "" && userMessage != " ") {
-            // Append user's message
+        if (userMessage.isNotBlank()) {
             addMessage("user", userMessage)
+            val builder = StringBuilder()
 
-            val text =
-                "system \nYou are a friendly and precise chat-bot named Iris, who always responds in brief responses. \n user \n$userMessage \nassistant \n"
+            // Append initial system message
+            builder.append("system\nYou are a friendly and precise chat-bot named Iris, who always responds in brief responses.\n")
+
+            // Append all previous messages
+            for (i in 1 until messages.size) { // Start iterating from the second message
+                val msg = messages[i]
+                val role = msg["role"]
+                val content = msg["content"]
+                if (role != null && content != null) {
+                    builder.append("$role\n$content\n")
+                }
+            }
+
+            // Append the new user message
+            builder.append("user\n$userMessage\n")
+
+            val text = builder.toString()
 
             viewModelScope.launch {
                 llm.send(text)
