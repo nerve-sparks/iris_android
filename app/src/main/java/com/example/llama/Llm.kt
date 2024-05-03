@@ -20,12 +20,14 @@ class Llm {
     private val _isSending = mutableStateOf(false)
     private val isSending: Boolean by _isSending
 
+
     private val _isMarked = mutableStateOf(false)
     private val isMarked: Boolean by _isMarked
 
     fun getIsSending(): Boolean {
         return isSending
     }
+
 
     fun getIsMarked(): Boolean {
         return isMarked
