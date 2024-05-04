@@ -100,34 +100,37 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
 //            }
 //        }
 //    }
+   private fun PromptBuilder(msg: String): String{
+    val builder = StringBuilder()
 
+    // Append initial system message
+    builder.append("This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately, briefly and with precision.\n\n")
+
+    // Append all previous messages
+    for (i in 1 until messages.size) { // Start iterating from the second message
+        val msg = messages[i]
+        val role = msg["role"]
+        val content = msg["content"]
+        if (role != null && content != null) {
+
+            builder.append("$role: $content\n")
+        }
+    }
+
+    // Append the new user message
+    builder.append("Iris: ")
+
+    val text = builder.toString()
+    return text;
+   }
 
     fun send() {
         val userMessage = removeExtraWhiteSpaces(message)
         message = ""
         if (userMessage.isNotBlank()) {
             addMessage("user", userMessage)
-            val builder = StringBuilder()
 
-            // Append initial system message
-            builder.append("This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately, briefly and with precision.\n\n")
-
-            // Append all previous messages
-            for (i in 1 until messages.size) { // Start iterating from the second message
-                val msg = messages[i]
-                val role = msg["role"]
-                val content = msg["content"]
-                if (role != null && content != null) {
-
-                    builder.append("$role: $content\n")
-                }
-            }
-
-            // Append the new user message
-            builder.append("Iris: ")
-
-            val text = builder.toString()
-
+           val text = PromptBuilder(userMessage)
             viewModelScope.launch {
                 llm.send(text)
                     .catch {
