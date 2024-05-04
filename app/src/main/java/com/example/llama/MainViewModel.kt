@@ -100,7 +100,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
 //            }
 //        }
 //    }
-   private fun PromptBuilder(msg: String): String{
+   private fun PromptBuilder(): String{
     val builder = StringBuilder()
 
     // Append initial system message
@@ -130,7 +130,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         if (userMessage.isNotBlank()) {
             addMessage("user", userMessage)
 
-           val text = PromptBuilder(userMessage)
+           val text = PromptBuilder()
             viewModelScope.launch {
                 llm.send(text)
                     .catch {
