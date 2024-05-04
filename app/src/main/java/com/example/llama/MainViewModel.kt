@@ -72,15 +72,61 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     }
 
 
-    fun send() {
-        val userMessage = removeExtraWhiteSpaces(message);
-        message = ""
-        if (userMessage != "" && userMessage != " ") {
-            // Append user's message
-            addMessage("user", userMessage)
+//    fun send() {
+//        val userMessage = removeExtraWhiteSpaces(message);
+//        message = ""
+//        if (userMessage != "" && userMessage != " ") {
+//            // Append user's message
+//            addMessage("user", userMessage)
+//
+//            val text =
+//                "system \nYou are a friendly and precise chat-bot named Iris, who always responds in brief responses. \n user \n$userMessage \nassistant \n"
+//
+//            viewModelScope.launch {
+//                llm.send(text)
+//                    .catch {
+//                        Log.e(tag, "send() failed", it)
+//                        addMessage("error", it.message ?: "")
+//                    }
+//                    .collect { response ->
+//                        // Create a new assistant message with the response
+//                        if (getIsMarked()) {
+//                            addMessage("codeBlock", response)
+//
+//                        } else {
+//                            addMessage("assistant", response)
+//                        }
+//                    }
+//            }
+//        }
+//    }
 
-            val text =
-                "system \nYou are a friendly and precise chat-bot named Iris, who always responds in brief responses. \n user \n$userMessage \nassistant \n"
+
+    fun send() {
+        val userMessage = removeExtraWhiteSpaces(message)
+        message = ""
+        if (userMessage.isNotBlank()) {
+            addMessage("user", userMessage)
+            val builder = StringBuilder()
+
+            // Append initial system message
+            builder.append("This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately, briefly and with precision.\n\n")
+
+            // Append all previous messages
+            for (i in 1 until messages.size) { // Start iterating from the second message
+                val msg = messages[i]
+                val role = msg["role"]
+                val content = msg["content"]
+                if (role != null && content != null) {
+
+                    builder.append("$role: $content\n")
+                }
+            }
+
+            // Append the new user message
+            builder.append("Iris: ")
+
+            val text = builder.toString()
 
             viewModelScope.launch {
                 llm.send(text)
@@ -89,20 +135,15 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
                         addMessage("error", it.message ?: "")
                     }
                     .collect { response ->
-                        // Create a new assistant message with the response
-                        if (getIsMarked()) {
-                            addMessage("codeBlock", response)
-
-                        } else {
-                            addMessage("assistant", response)
-                        }
+                        // Treat code blocks as assistant messages
+                        val role = if (response.startsWith("```")) "codeBlock" else "assistant"
+                        addMessage(role, response)
                     }
             }
         }
     }
 
 
-    // ... (rest of the functions remain mostly the same)
 
     fun clear() {
         messages = listOf<Map<String, String>>(
