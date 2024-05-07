@@ -11,8 +11,8 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     companion object {
-        @JvmStatic
-        private val NanosPerSecond = 1_000_000_000.0
+//        @JvmStatic
+//        private val NanosPerSecond = 1_000_000_000.0
     }
 
     private val tag: String? = this::class.simpleName
@@ -54,15 +54,15 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     private fun addMessage(role: String, content: String) {
         val newMessage = mapOf("role" to role, "content" to content)
 
-        if (messages.isNotEmpty() && messages.last()["role"] == role) {
+        messages = if (messages.isNotEmpty() && messages.last()["role"] == role) {
             val lastMessageContent = messages.last()["content"] ?: ""
             val updatedContent = "$lastMessageContent$content"
             val updatedLastMessage = messages.last() + ("content" to updatedContent)
-            messages = messages.toMutableList().apply {
+            messages.toMutableList().apply {
                 set(messages.lastIndex, updatedLastMessage)
             }
         } else {
-            messages = messages + listOf(newMessage)
+            messages + listOf(newMessage)
         }
     }
 
@@ -73,7 +73,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
 
 
     fun send() {
-        val userMessage = removeExtraWhiteSpaces(message);
+        val userMessage = removeExtraWhiteSpaces(message)
         message = ""
         if (userMessage != "" && userMessage != " ") {
             // Append user's message
@@ -105,7 +105,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     // ... (rest of the functions remain mostly the same)
 
     fun clear() {
-        messages = listOf<Map<String, String>>(
+        messages = listOf(
 
         )
     }
@@ -118,7 +118,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         return llm.getIsSending()
     }
 
-    fun getIsMarked(): Boolean {
+    private fun getIsMarked(): Boolean {
         return llm.getIsMarked()
     }
 

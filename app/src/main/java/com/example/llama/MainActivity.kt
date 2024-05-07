@@ -1,15 +1,15 @@
 package com.example.llama
 
 //import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import android.app.ActivityManager
+//import android.app.ActivityManager
 import android.app.DownloadManager
 import android.content.ClipboardManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
-import android.text.format.Formatter
-import android.view.GestureDetector
+//import android.text.format.Formatter
+//import android.view.GestureDetector
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -67,13 +67,13 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class MainActivity(
-    activityManager: ActivityManager? = null,
+    //activityManager: ActivityManager? = null,
     downloadManager: DownloadManager? = null,
     clipboardManager: ClipboardManager? = null,
 ) : ComponentActivity() {
 
-    private val tag: String? = this::class.simpleName
-    private val activityManager by lazy { activityManager ?: getSystemService<ActivityManager>()!! }
+//    private val tag: String? = this::class.simpleName
+//    private val activityManager by lazy { activityManager ?: getSystemService<ActivityManager>()!! }
     private val downloadManager by lazy { downloadManager ?: getSystemService<DownloadManager>()!! }
     private val clipboardManager by lazy {
         clipboardManager ?: getSystemService<ClipboardManager>()!!
@@ -82,11 +82,11 @@ class MainActivity(
     private val viewModel: MainViewModel by viewModels()
 
     // Get a MemoryInfo object for the device's current memory status.
-    private fun availableMemory(): ActivityManager.MemoryInfo {
-        return ActivityManager.MemoryInfo().also { memoryInfo ->
-            activityManager.getMemoryInfo(memoryInfo)
-        }
-    }
+//    private fun availableMemory(): ActivityManager.MemoryInfo {
+//        return ActivityManager.MemoryInfo().also { memoryInfo ->
+//            activityManager.getMemoryInfo(memoryInfo)
+//        }
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,8 +99,8 @@ class MainActivity(
                 .build()
         )
 
-        val free = Formatter.formatFileSize(this, availableMemory().availMem)
-        val total = Formatter.formatFileSize(this, availableMemory().totalMem)
+//        val free = Formatter.formatFileSize(this, availableMemory().availMem)
+//        val total = Formatter.formatFileSize(this, availableMemory().totalMem)
         val transparentColor = Color.Transparent.toArgb()
         window.decorView.rootView.setBackgroundColor(transparentColor)
 
@@ -173,7 +173,7 @@ fun MainCompose(
 
     Column(modifier = Modifier.padding(bottom = 10.dp)) {
 
-        Column() {
+        Column{
 
           //Top app bar starts here.
             Row(
@@ -262,11 +262,11 @@ fun MainCompose(
                     coroutineScope.launch {
 
                         if(autoScrollEnabled) {
-                            scrollState.scrollToItem(viewModel.messages.size);
+                            scrollState.scrollToItem(viewModel.messages.size)
                         }
                     }
 
-                    itemsIndexed(viewModel.messages) { index, messageMap ->
+                    itemsIndexed(viewModel.messages) { _, messageMap ->
                         val role = messageMap["role"] ?: ""
                         val content = messageMap["content"] ?: ""
                         val trimmedMessage = if (content.endsWith("\n")) {
@@ -446,7 +446,7 @@ fun MainCompose(
                     if (!viewModel.getIsSending()) {
 
                         IconButton(onClick = {
-                            autoScrollEnabled = true;
+                            autoScrollEnabled = true
                             viewModel.send()
                             focusManager.clearFocus()
                         }) {
