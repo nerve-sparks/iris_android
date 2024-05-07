@@ -24,6 +24,10 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     )
         private set
 
+    var first by mutableStateOf(
+        true
+    )
+    private set
     var message by mutableStateOf("")
         private set
 
@@ -42,8 +46,13 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     fun load(pathToModel: String) {
         viewModelScope.launch {
             try {
+                llm.unload()
+            } catch (exc: IllegalStateException) {
+                Log.e(tag, "load() failed", exc)
+            }
+            try {
                 llm.load(pathToModel)
-                addMessage("assistant", "Loaded $pathToModel")
+                addMessage("data", "Loaded $pathToModel")
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "load() failed", exc)
                 addMessage("error", exc.message ?: "")
@@ -71,16 +80,35 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         return input.replace("\\s+".toRegex(), " ")
     }
 
+    private fun parse_template_json(chat_data: List<Map<String, String>> ):String{
+        var chat_str = ""
+        for (data in chat_data){
+            val role = data["role"]
+            val content = data["content"]
+            if (role != "data"){
+                chat_str += "$role \n$content \n"
+            }
+
+        }
+        return chat_str
+    }
 
     fun send() {
         val userMessage = removeExtraWhiteSpaces(message);
         message = ""
         if (userMessage != "" && userMessage != " ") {
-            // Append user's message
+            if(first){
+                addMessage("system", "This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.")
+                first = false
+            }
+
             addMessage("user", userMessage)
 
-            val text =
-                "system \nYou are a friendly and precise chat-bot named Iris, who always responds in brief responses. \n user \n$userMessage \nassistant \n"
+
+            val text = parse_template_json(messages)+"assistant \n"
+
+//            val text =
+//                "system \nYou are a friendly and precise chat-bot named Iris, who always responds in brief responses. \n user \n$userMessage \nassistant \n"
 
             viewModelScope.launch {
                 llm.send(text)

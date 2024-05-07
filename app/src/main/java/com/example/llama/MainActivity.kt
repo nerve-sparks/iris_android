@@ -274,140 +274,141 @@ fun MainCompose(
                         } else {
                             content
                         }
+                        if(index!=1) {
+                            if (role != "codeBlock") {
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            when (role) {
+                                                "user" -> Color.Transparent
+                                                "assistant" -> Color(0xFF232627)
+                                                else -> Color.Transparent
+                                            }
+                                        )
+                                        .fillMaxWidth()
+                                        .padding(
+                                            bottom = 4.dp
+                                        )
+                                ) {
+                                    Column {
 
-                        if (role != "codeBlock") {
-                            Box(
-                                modifier = Modifier
-                                    .background(
-                                        when (role) {
-                                            "user" -> Color.Transparent
-                                            "assistant" -> Color(0xFF232627)
-                                            else -> Color.Transparent
+
+                                        Row(
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(
+                                                    top = 8.dp,
+                                                    bottom = 8.dp,
+                                                    start = 6.dp,
+                                                    end = 6.dp
+                                                )
+                                        ) {
+                                            Image(
+                                                painter = painterResource(
+                                                    id = if (role == "assistant") R.drawable.logo
+                                                    else R.drawable.bot_icon
+                                                ),
+                                                contentDescription = if (role == "assistant") "Bot Icon" else "Human Icon",
+                                                modifier = Modifier.size(20.dp)
+                                            )
+
+                                            Image(
+                                                painter = painterResource(id = if (role == "assistant") R.drawable.copy1 else R.drawable.copy1),
+                                                contentDescription = if (role == "assistant") "Copy Icon" else "Copy Icon",
+                                                modifier = Modifier
+                                                    .size(22.dp)
+                                                    .clickable {
+                                                        // Copy text to clipboard
+                                                        clipboard.setPrimaryClip(
+                                                            android.content.ClipData.newPlainText(
+                                                                "Text",
+                                                                content
+                                                            )
+                                                        )
+                                                    }
+                                            )
+
                                         }
-                                    )
-                                    .fillMaxWidth()
-                                    .padding(
-                                        bottom = 4.dp
-                                    )
-                            ) {
-                                Column {
-
-
-                                    Row(
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(
-                                                top = 8.dp,
-                                                bottom = 8.dp,
-                                                start = 6.dp,
-                                                end = 6.dp
-                                            )
-                                    ) {
-                                        Image(
-                                            painter = painterResource(
-                                                id = if (role == "assistant") R.drawable.logo
-                                                else R.drawable.bot_icon
+                                        Text(
+                                            text = if (trimmedMessage.startsWith("```")) {
+                                                trimmedMessage.substring(3)
+                                            } else {
+                                                trimmedMessage
+                                            },
+                                            style = MaterialTheme.typography.bodyLarge.copy(
+                                                color = Color(
+                                                    0xFFA0A0A5
+                                                )
                                             ),
-                                            contentDescription = if (role == "assistant") "Bot Icon" else "Human Icon",
-                                            modifier = Modifier.size(20.dp)
-                                        )
+                                            modifier = Modifier.padding(start = 18.dp, end = 14.dp)
 
-                                        Image(
-                                            painter = painterResource(id = if (role == "assistant") R.drawable.copy1 else R.drawable.copy1),
-                                            contentDescription = if (role == "assistant") "Copy Icon" else "Copy Icon",
-                                            modifier = Modifier
-                                                .size(22.dp)
-                                                .clickable {
-                                                    // Copy text to clipboard
-                                                    clipboard.setPrimaryClip(
-                                                        android.content.ClipData.newPlainText(
-                                                            "Text",
-                                                            content
-                                                        )
-                                                    )
-                                                }
                                         )
 
                                     }
-                                    Text(
-                                        text = if (trimmedMessage.startsWith("```")) {
-                                            trimmedMessage.substring(3)
-                                        } else {
-                                            trimmedMessage
-                                        },
-                                        style = MaterialTheme.typography.bodyLarge.copy(
-                                            color = Color(
-                                                0xFFA0A0A5
-                                            )
-                                        ),
-                                        modifier = Modifier.padding(start = 18.dp, end = 14.dp)
-
-                                    )
-
                                 }
-                            }
 
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .padding(horizontal = 10.dp, vertical = 4.dp)
-                                    .background(
-                                        Color.Black,
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .fillMaxWidth()
-
-                            ) {
-                                Column {
-                                    Row(
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(
-                                                top = 8.dp,
-                                                bottom = 8.dp,
-                                                start = 6.dp,
-                                                end = 6.dp
-                                            )
-                                    ) {
-
-
-                                        Image(
-                                            painter = painterResource(id = R.drawable.copy1),
-                                            contentDescription = "Copy Icon",
-                                            modifier = Modifier
-                                                .size(22.dp)
-                                                .clickable {
-                                                    // Copy text to clipboard
-                                                    clipboard.setPrimaryClip(
-                                                        android.content.ClipData.newPlainText(
-                                                            "Text",
-                                                            content
-                                                        )
-                                                    )
-                                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                                        .background(
+                                            Color.Black,
+                                            shape = RoundedCornerShape(8.dp)
                                         )
+                                        .fillMaxWidth()
 
-                                    }
-                                    Text(
-                                        text = if (trimmedMessage.startsWith("```")) {
-                                            trimmedMessage.substring(3)
-                                        } else {
-                                            trimmedMessage
-                                        },
-                                        style = MaterialTheme.typography.bodyLarge.copy(
-                                            color = Color(
-                                                0xFFA0A0A5
+                                ) {
+                                    Column {
+                                        Row(
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(
+                                                    top = 8.dp,
+                                                    bottom = 8.dp,
+                                                    start = 6.dp,
+                                                    end = 6.dp
+                                                )
+                                        ) {
+
+
+                                            Image(
+                                                painter = painterResource(id = R.drawable.copy1),
+                                                contentDescription = "Copy Icon",
+                                                modifier = Modifier
+                                                    .size(22.dp)
+                                                    .clickable {
+                                                        // Copy text to clipboard
+                                                        clipboard.setPrimaryClip(
+                                                            android.content.ClipData.newPlainText(
+                                                                "Text",
+                                                                content
+                                                            )
+                                                        )
+                                                    }
                                             )
-                                        ),
-                                        modifier = Modifier.padding(16.dp) // Add padding for content
-                                    )
+
+                                        }
+                                        Text(
+                                            text = if (trimmedMessage.startsWith("```")) {
+                                                trimmedMessage.substring(3)
+                                            } else {
+                                                trimmedMessage
+                                            },
+                                            style = MaterialTheme.typography.bodyLarge.copy(
+                                                color = Color(
+                                                    0xFFA0A0A5
+                                                )
+                                            ),
+                                            modifier = Modifier.padding(16.dp) // Add padding for content
+                                        )
+                                    }
+
+
                                 }
 
-
                             }
-
                         }
                     }
                 } //chat section ends here
