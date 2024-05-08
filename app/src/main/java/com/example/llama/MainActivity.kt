@@ -274,7 +274,7 @@ fun MainCompose(
                         } else {
                             content
                         }
-                        if(index!=1) {
+                        if(role != "system") {
                             if (role != "codeBlock") {
                                 Box(
                                     modifier = Modifier
@@ -282,6 +282,7 @@ fun MainCompose(
                                             when (role) {
                                                 "user" -> Color.Transparent
                                                 "assistant" -> Color(0xFF232627)
+                                                "log" -> Color(0xFF232627)
                                                 else -> Color.Transparent
                                             }
                                         )
@@ -306,16 +307,16 @@ fun MainCompose(
                                         ) {
                                             Image(
                                                 painter = painterResource(
-                                                    id = if (role == "assistant") R.drawable.logo
+                                                    id = if (role == "assistant" || role == "log") R.drawable.logo
                                                     else R.drawable.bot_icon
                                                 ),
-                                                contentDescription = if (role == "assistant") "Bot Icon" else "Human Icon",
+                                                contentDescription = if (role == "assistant" || role == "log") "Bot Icon" else "Human Icon",
                                                 modifier = Modifier.size(20.dp)
                                             )
 
                                             Image(
-                                                painter = painterResource(id = if (role == "assistant") R.drawable.copy1 else R.drawable.copy1),
-                                                contentDescription = if (role == "assistant") "Copy Icon" else "Copy Icon",
+                                                painter = painterResource(id = R.drawable.copy1),
+                                                contentDescription = "Copy Icon",
                                                 modifier = Modifier
                                                     .size(22.dp)
                                                     .clickable {

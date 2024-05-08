@@ -52,7 +52,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
             }
             try {
                 llm.load(pathToModel)
-                addMessage("data", "Loaded $pathToModel")
+                addMessage("log", "Loaded $pathToModel")
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "load() failed", exc)
                 addMessage("error", exc.message ?: "")
@@ -85,7 +85,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         for (data in chat_data){
             val role = data["role"]
             val content = data["content"]
-            if (role != "data"){
+            if (role != "log"){
                 chat_str += "$role \n$content \n"
             }
 
@@ -107,8 +107,6 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
 
             val text = parse_template_json(messages)+"assistant \n"
 
-//            val text =
-//                "system \nYou are a friendly and precise chat-bot named Iris, who always responds in brief responses. \n user \n$userMessage \nassistant \n"
 
             viewModelScope.launch {
                 llm.send(text)
@@ -130,12 +128,11 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     }
 
 
-    // ... (rest of the functions remain mostly the same)
-
     fun clear() {
         messages = listOf<Map<String, String>>(
 
         )
+        first = true;
     }
 
     fun log(message: String) {
