@@ -308,7 +308,7 @@ fun MainCompose(
                                             Image(
                                                 painter = painterResource(
                                                     id = if (role == "assistant" || role == "log") R.drawable.logo
-                                                    else R.drawable.bot_icon
+                                                    else R.drawable.user_icon
                                                 ),
                                                 contentDescription = if (role == "assistant" || role == "log") "Bot Icon" else "Human Icon",
                                                 modifier = Modifier.size(20.dp)
