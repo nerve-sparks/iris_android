@@ -413,15 +413,21 @@ Java_com_example_llama_Llm_completionLoop(
     }
 
     auto new_token_chars = llama_token_to_piece(context, new_token_id);
-    cached_token_chars += new_token_chars;
 
-    jstring new_token = nullptr;
-    if (is_valid_utf8(cached_token_chars.c_str())) {
-        new_token = env->NewStringUTF(cached_token_chars.c_str());
-        LOGi("cached: %s, new_token_chars: `%s`, id: %d", cached_token_chars.c_str(), new_token_chars.c_str(), new_token_id);
+    jstring new_token;
+    if (is_valid_utf8(new_token_chars.c_str())) {
+        new_token = env->NewStringUTF(new_token_chars.c_str());
+        LOGi("cached1: %s, new_token_chars: `%s`, id: %d", cached_token_chars.c_str(), new_token_chars.c_str(), new_token_id);
         cached_token_chars.clear();
     } else {
-        new_token = env->NewStringUTF("");
+        cached_token_chars += new_token_chars;
+        if (is_valid_utf8(cached_token_chars.c_str())) {
+            new_token = env->NewStringUTF(cached_token_chars.c_str());
+            LOGi("cached2: %s, new_token_chars: `%s`, id: %d", cached_token_chars.c_str(), new_token_chars.c_str(), new_token_id);
+            cached_token_chars.clear();
+        } else {
+            new_token = env->NewStringUTF("");
+        }
     }
 
     llama_batch_clear(*batch);
