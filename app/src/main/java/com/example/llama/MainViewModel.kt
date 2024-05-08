@@ -24,10 +24,9 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     )
         private set
 
-    var first by mutableStateOf(
+    private var first by mutableStateOf(
         true
     )
-    private set
     var message by mutableStateOf("")
         private set
 
@@ -80,17 +79,17 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         return input.replace("\\s+".toRegex(), " ")
     }
 
-    private fun parse_template_json(chat_data: List<Map<String, String>> ):String{
-        var chat_str = ""
-        for (data in chat_data){
+    private fun parseTemplateJson(chatData: List<Map<String, String>> ):String{
+        var chatStr = ""
+        for (data in chatData){
             val role = data["role"]
             val content = data["content"]
             if (role != "log"){
-                chat_str += "$role \n$content \n"
+                chatStr += "$role \n$content \n"
             }
 
         }
-        return chat_str
+        return chatStr
     }
 
     fun send() {
@@ -105,7 +104,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
             addMessage("user", userMessage)
 
 
-            val text = parse_template_json(messages)+"assistant \n"
+            val text = parseTemplateJson(messages)+"assistant \n"
 
 
             viewModelScope.launch {
@@ -132,7 +131,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         messages = listOf(
 
         )
-        first = true;
+        first = true
     }
 
     fun log(message: String) {
