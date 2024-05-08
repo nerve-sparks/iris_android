@@ -102,10 +102,10 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                             setDestinationUri(item.destination.toUri())
                         }
 
-                        viewModel.log("Saving ${item.name} to ${item.destination.path} \n \n Download only on Wifi.")
+                        viewModel.log("Saving ${item.name} to ${item.destination.path} \n Download only on Wifi. \n")
                         Log.i(
                             tag,
-                            "Saving ${item.name} to ${item.destination.path} \n \n Download only on Wifi."
+                            "Saving ${item.name} to ${item.destination.path} \n Download only on Wifi. \n"
                         )
 
                         val id = dm.enqueue(request)
