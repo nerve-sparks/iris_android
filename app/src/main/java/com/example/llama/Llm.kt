@@ -139,31 +139,40 @@ class Llm {
         when (val state = threadLocalState.get()) {
             is State.Loaded -> {
                 val ncur = IntVar(completionInit(state.context, state.batch, message, nlen))
-                while (ncur.value <= nlen && !stopGeneration) {  // Check the stopGeneration flag
-                    _isSending.value = true
-                    val str = completionLoop(state.context, state.batch, nlen, ncur)
-                    if (str == "```" || str == "``") {
-                        _isMarked.value = !_isMarked.value
-                    }
+                while (ncur.value <= nlen) {
+                    if (!stopGeneration)// Check the stopGeneration flag
+                    {
+                        _isSending.value = true
+                        val str = completionLoop(state.context, state.batch, nlen, ncur)
+                        if (str == "```" || str == "``") {
+                            _isMarked.value = !_isMarked.value
+                        }
 
-                    if (str == null) {
+                        if (str == null) {
+                            _isSending.value = false
+                            break
+                        }
+                        if (str == "User" || str == "user" || str == "<|im_end|>" || str == "\n" +
+                            "                                                                                                    "
+                        ) {
+                            _isSending.value = false
+                            break
+
+                        }
+                        if (stopGeneration) {
+                            break
+                        }
+                        emit(str)
+                    }
+                    else {
                         _isSending.value = false
                         break
                     }
-                    if (str == "User" || str == "user" || str == "<|im_end|>" || str == "\n" +
-                        "                                                                                                    "
-                    ) {
-                        _isSending.value = false
-                        break
 
-                    }
-                    if (stopGeneration) {
-                        break
-                    }
-                    emit(str)
                 }
                 _isSending.value = false
                 kvCacheClear(state.context)
+                Log.i(tag, "kv cache cleared ??")
             }
 
             else -> {

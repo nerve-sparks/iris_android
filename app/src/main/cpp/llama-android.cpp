@@ -83,6 +83,8 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_com_example_llama_Llm_loadModel(JNIEnv *env, jobject, jstring filename) {
     llama_model_params model_params = llama_model_default_params();
+//    model_params.n_gpu_layers = 30;
+    model_params.use_mmap = 0;
 
     auto path_to_model = env->GetStringUTFChars(filename, 0);
     LOGi("Loading model from %s", path_to_model);
@@ -117,13 +119,17 @@ Java_com_example_llama_Llm_newContext(JNIEnv *env, jobject, jlong jmodel) {
     }
 
     int n_threads = std::max(1, std::min(8, (int) sysconf(_SC_NPROCESSORS_ONLN) - 2));
+    //n_threads = 4;
     LOGi("Using %d threads", n_threads);
+    bool gpu_support = llama_supports_gpu_offload();
+    LOGi("GPU offload supported: %d",gpu_support);
 
     llama_context_params ctx_params = llama_context_default_params();
     ctx_params.seed  = 1234;
     ctx_params.n_ctx = 4096;
-    ctx_params.n_threads       = 4;//n_threads
-    ctx_params.n_threads_batch = 4;//n_threads
+    ctx_params.n_threads       = n_threads;
+    ctx_params.n_threads_batch = n_threads;
+    ctx_params.flash_attn = 1;
 
     llama_context * context = llama_new_context_with_model(model, ctx_params);
 
@@ -435,6 +441,17 @@ Java_com_example_llama_Llm_completionLoop(
 
     return new_token;
 }
+
+//extern "C"
+//JNIEXPORT jstring JNICALL
+//Java_com_example_llama_Llm_applyChatTemplate(
+//        JNIEnv *env,
+//        jobject,
+//        jlong model_pointer,
+//        jlong context
+//) {
+//    llama_kv_cache_clear(reinterpret_cast<llama_context *>(context));
+//}
 
 extern "C"
 JNIEXPORT void JNICALL
