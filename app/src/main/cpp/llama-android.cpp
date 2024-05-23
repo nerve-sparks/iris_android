@@ -123,7 +123,8 @@ Java_com_example_llama_Llm_newContext(JNIEnv *env, jobject, jlong jmodel) {
     ctx_params.seed  = 1234;
     ctx_params.n_ctx = 4096;
     ctx_params.n_threads       = 4;//n_threads
-    ctx_params.n_threads_batch = 4;//n_threads
+    ctx_params.n_threads_batch = 8;//n_threads
+  
 
     llama_context * context = llama_new_context_with_model(model, ctx_params);
 
@@ -403,9 +404,9 @@ Java_com_example_llama_Llm_completionLoop(
     }
 
     llama_token_data_array candidates_p = { candidates.data(), candidates.size(), false };
-
+    llama_sample_temp(context, &candidates_p, 0.3f);
     // sample the most likely token
-    const auto new_token_id = llama_sample_token_greedy(context, &candidates_p);
+    const auto new_token_id = llama_sample_token(context, &candidates_p);
 
     const auto n_cur = env->CallIntMethod(intvar_ncur, la_int_var_value);
     if (new_token_id == llama_token_eos(model) || n_cur == n_len) {

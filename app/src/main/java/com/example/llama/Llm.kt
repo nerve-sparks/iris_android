@@ -60,7 +60,7 @@ class Llm {
         }
     }.asCoroutineDispatcher()
 
-    private val nlen: Int = 512
+    private val nlen: Int = 400;
 
     private external fun logToAndroid()
     private external fun loadModel(filename: String): Long
@@ -139,7 +139,7 @@ class Llm {
         when (val state = threadLocalState.get()) {
             is State.Loaded -> {
                 val ncur = IntVar(completionInit(state.context, state.batch, message, nlen))
-                while (ncur.value <= nlen && !stopGeneration) {  // Check the stopGeneration flag
+                while (ncur.value <= nlen-20 && !stopGeneration) {  // Check the stopGeneration flag
                     _isSending.value = true
                     val str = completionLoop(state.context, state.batch, nlen, ncur)
                     if (str == "```" || str == "``") {
