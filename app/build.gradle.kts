@@ -26,7 +26,7 @@ android {
         }
         externalNativeBuild {
             cmake {
-                arguments += "-DCMAKE_BUILD_TYPE=Release"
+                arguments += "-DLLAMA_BLAS=ON -DLLAMA_BLAS_VENDOR=OpenBLAS -DCMAKE_BUILD_TYPE=Release"
                 cppFlags += listOf()
                 arguments += listOf()
             }
