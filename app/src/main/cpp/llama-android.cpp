@@ -81,7 +81,7 @@ static void log_callback(ggml_log_level level, const char * fmt, void * data) {
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_example_llama_Llm_load_1model(JNIEnv *env, jobject, jstring filename) {
+Java_com_example_llama_Llm_loadModel(JNIEnv *env, jobject, jstring filename) {
     llama_model_params model_params = llama_model_default_params();
 
     auto path_to_model = env->GetStringUTFChars(filename, 0);
@@ -101,13 +101,13 @@ Java_com_example_llama_Llm_load_1model(JNIEnv *env, jobject, jstring filename) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_llama_Llm_free_1model(JNIEnv *, jobject, jlong model) {
+Java_com_example_llama_Llm_freeModel(JNIEnv *, jobject, jlong model) {
     llama_free_model(reinterpret_cast<llama_model *>(model));
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_example_llama_Llm_new_1context(JNIEnv *env, jobject, jlong jmodel) {
+Java_com_example_llama_Llm_newContext(JNIEnv *env, jobject, jlong jmodel) {
     auto model = reinterpret_cast<llama_model *>(jmodel);
 
     if (!model) {
@@ -139,25 +139,25 @@ Java_com_example_llama_Llm_new_1context(JNIEnv *env, jobject, jlong jmodel) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_llama_Llm_free_1context(JNIEnv *, jobject, jlong context) {
+Java_com_example_llama_Llm_freeContext(JNIEnv *, jobject, jlong context) {
     llama_free(reinterpret_cast<llama_context *>(context));
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_llama_Llm_backend_1free(JNIEnv *, jobject) {
+Java_com_example_llama_Llm_backendFree(JNIEnv *, jobject) {
     llama_backend_free();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_llama_Llm_log_1to_1android(JNIEnv *, jobject) {
+Java_com_example_llama_Llm_logToAndroid(JNIEnv *, jobject) {
     llama_log_set(log_callback, NULL);
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_example_llama_Llm_bench_1model(
+Java_com_example_llama_Llm_benchModel(
         JNIEnv *env,
         jobject,
         jlong context_pointer,
@@ -271,13 +271,13 @@ Java_com_example_llama_Llm_bench_1model(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_llama_Llm_free_1batch(JNIEnv *, jobject, jlong batch_pointer) {
+Java_com_example_llama_Llm_freeBatch(JNIEnv *, jobject, jlong batch_pointer) {
     llama_batch_free(*reinterpret_cast<llama_batch *>(batch_pointer));
 }
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_example_llama_Llm_new_1batch(JNIEnv *, jobject, jint n_tokens, jint embd, jint n_seq_max) {
+Java_com_example_llama_Llm_newBatch(JNIEnv *, jobject, jint n_tokens, jint embd, jint n_seq_max) {
 
     // Source: Copy of llama.cpp:llama_batch_init but heap-allocated.
 
@@ -313,19 +313,19 @@ Java_com_example_llama_Llm_new_1batch(JNIEnv *, jobject, jint n_tokens, jint emb
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_llama_Llm_backend_1init(JNIEnv *, jobject) {
+Java_com_example_llama_Llm_backendInit(JNIEnv *, jobject) {
     llama_backend_init();
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_example_llama_Llm_system_1info(JNIEnv *env, jobject) {
+Java_com_example_llama_Llm_systemInfo(JNIEnv *env, jobject) {
     return env->NewStringUTF(llama_print_system_info());
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_example_llama_Llm_completion_1init(
+Java_com_example_llama_Llm_completionInit(
         JNIEnv *env,
         jobject,
         jlong context_pointer,
@@ -376,7 +376,7 @@ Java_com_example_llama_Llm_completion_1init(
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_example_llama_Llm_completion_1loop(
+Java_com_example_llama_Llm_completionLoop(
         JNIEnv * env,
         jobject,
         jlong context_pointer,
@@ -403,9 +403,9 @@ Java_com_example_llama_Llm_completion_1loop(
     }
 
     llama_token_data_array candidates_p = { candidates.data(), candidates.size(), false };
-
+    llama_sample_temp(context, &candidates_p, 0.3f);
     // sample the most likely token
-    const auto new_token_id = llama_sample_token_greedy(context, &candidates_p);
+    const auto new_token_id = llama_sample_token(context, &candidates_p);
 
     const auto n_cur = env->CallIntMethod(intvar_ncur, la_int_var_value);
     if (new_token_id == llama_token_eos(model) || n_cur == n_len) {
@@ -438,6 +438,6 @@ Java_com_example_llama_Llm_completion_1loop(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_llama_Llm_kv_1cache_1clear(JNIEnv *, jobject, jlong context) {
+Java_com_example_llama_Llm_kvCacheClear(JNIEnv *, jobject, jlong context) {
     llama_kv_cache_clear(reinterpret_cast<llama_context *>(context));
 }
