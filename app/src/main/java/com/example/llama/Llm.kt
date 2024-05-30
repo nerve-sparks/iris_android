@@ -61,18 +61,18 @@ class Llm {
     }.asCoroutineDispatcher()
 
 
-    private val nlen: Int = 1024
+    private val nlen: Int = 1024;
 
-    private external fun log_to_android()
-    private external fun load_model(filename: String): Long
-    private external fun free_model(model: Long)
-    private external fun new_context(model: Long): Long
-    private external fun free_context(context: Long)
-    private external fun backend_init(numa: Boolean)
-    private external fun backend_free()
-    private external fun free_batch(batch: Long)
-    private external fun new_batch(nTokens: Int, embd: Int, nSeqMax: Int): Long
-    private external fun bench_model(
+    private external fun logToAndroid()
+    private external fun loadModel(filename: String): Long
+    private external fun freeModel(model: Long)
+    private external fun newContext(model: Long): Long
+    private external fun freeContext(context: Long)
+    private external fun backendInit(numa: Boolean)
+    private external fun backendFree()
+    private external fun freeBatch(batch: Long)
+    private external fun newBatch(nTokens: Int, embd: Int, nSeqMax: Int): Long
+    private external fun benchModel(
         context: Long,
         model: Long,
         batch: Long,
@@ -123,7 +123,7 @@ class Llm {
                     val context = newContext(model)
                     if (context == 0L) throw IllegalStateException("new_context() failed")
 
-                    val batch = new_batch(2048, 0, 1)
+                    val batch = newBatch(2048, 0, 1)
 
                     if (batch == 0L) throw IllegalStateException("new_batch() failed")
 
@@ -140,7 +140,7 @@ class Llm {
         stopGeneration = false  // Reset the stopGeneration flag
         when (val state = threadLocalState.get()) {
             is State.Loaded -> {
-                val ncur = IntVar(completion_init(state.context, state.batch, message, nlen))
+                val ncur = IntVar(completionInit(state.context, state.batch, message, nlen))
                 while (ncur.value <= nlen-112 && !stopGeneration) {  // Check the stopGeneration flag
 
                     _isSending.value = true
