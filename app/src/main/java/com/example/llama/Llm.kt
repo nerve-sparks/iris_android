@@ -139,7 +139,7 @@ class Llm {
         when (val state = threadLocalState.get()) {
             is State.Loaded -> {
                 val ncur = IntVar(completion_init(state.context, state.batch, message, nlen))
-                while (ncur.value <= nlen && !stopGeneration) {  // Check the stopGeneration flag
+                while (ncur.value <= nlen-112 && !stopGeneration) {  // Check the stopGeneration flag
                     _isSending.value = true
                     val str = completion_loop(state.context, state.batch, nlen, ncur)
                     if (str == "```" || str == "``") {
