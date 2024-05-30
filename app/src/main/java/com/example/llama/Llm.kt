@@ -60,7 +60,7 @@ class Llm {
         }
     }.asCoroutineDispatcher()
 
-    private val nlen: Int = 512
+    private val nlen: Int = 1024
 
     private external fun log_to_android()
     private external fun load_model(filename: String): Long
@@ -122,7 +122,7 @@ class Llm {
                     val context = new_context(model)
                     if (context == 0L) throw IllegalStateException("new_context() failed")
 
-                    val batch = new_batch(512, 0, 1)
+                    val batch = new_batch(2048, 0, 1)
                     if (batch == 0L) throw IllegalStateException("new_batch() failed")
 
                     Log.i(tag, "Loaded model $pathToModel")
