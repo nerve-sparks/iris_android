@@ -60,8 +60,7 @@ class Llm {
         }
     }.asCoroutineDispatcher()
 
-
-    private val nlen: Int = 1024;
+    private val nlen: Int = 512
 
     private external fun logToAndroid()
     private external fun loadModel(filename: String): Long
@@ -72,6 +71,8 @@ class Llm {
     private external fun backendFree()
     private external fun freeBatch(batch: Long)
     private external fun newBatch(nTokens: Int, embd: Int, nSeqMax: Int): Long
+    private external fun new_sampler(): Long
+    private external fun free_sampler(sampler: Long)
     private external fun benchModel(
         context: Long,
         model: Long,
@@ -94,8 +95,10 @@ class Llm {
     private external fun completionLoop(
         context: Long,
         batch: Long,
+        sampler: Long,
         nLen: Int,
-        ncur: IntVar
+        ncur: IntVar,
+
     ): String?
 
     private external fun kvCacheClear(context: Long)
@@ -123,12 +126,14 @@ class Llm {
                     val context = newContext(model)
                     if (context == 0L) throw IllegalStateException("new_context() failed")
 
-                    val batch = newBatch(2048, 0, 1)
-
+                    val batch = newBatch(512, 0, 1)
                     if (batch == 0L) throw IllegalStateException("new_batch() failed")
 
+                    val sampler = new_sampler()
+                    if (sampler == 0L) throw IllegalStateException("new_sampler() failed")
+
                     Log.i(tag, "Loaded model $pathToModel")
-                    threadLocalState.set(State.Loaded(model, context, batch))
+                    threadLocalState.set(State.Loaded(model, context, batch,sampler))
                 }
 
                 else -> throw IllegalStateException("Model already loaded")
@@ -141,10 +146,9 @@ class Llm {
         when (val state = threadLocalState.get()) {
             is State.Loaded -> {
                 val ncur = IntVar(completionInit(state.context, state.batch, message, nlen))
-                while (ncur.value <= nlen-112 && !stopGeneration) {  // Check the stopGeneration flag
-
+                while (ncur.value <= nlen && !stopGeneration) {  // Check the stopGeneration flag
                     _isSending.value = true
-                    val str = completionLoop(state.context, state.batch, nlen, ncur)
+                    val str = completionLoop(state.context, state.batch, state.sampler, nlen, ncur)
                     if (str == "```" || str == "``") {
                         _isMarked.value = !_isMarked.value
                     }
@@ -188,6 +192,7 @@ class Llm {
                     freeContext(state.context)
                     freeModel(state.model)
                     freeBatch(state.batch)
+                    free_sampler(state.sampler)
 
                     threadLocalState.set(State.Idle)
                 }
@@ -212,7 +217,7 @@ class Llm {
 
         private sealed interface State {
             data object Idle : State
-            data class Loaded(val model: Long, val context: Long, val batch: Long) : State
+            data class Loaded(val model: Long, val context: Long, val batch: Long, val sampler: Long) : State
         }
 
         // Enforce only one instance of Llm.

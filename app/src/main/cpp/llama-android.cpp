@@ -5,7 +5,7 @@
 #include <string>
 #include <unistd.h>
 #include "llama.h"
-#include "common/common.h"
+#include "common.h"
 
 // Write C++ code here.
 //
@@ -25,7 +25,7 @@
 //      }
 //    }
 
-#define TAG "llama-android.cpp"
+#define TAG "com_nervesparks_iris_Llm"
 #define LOGi(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #define LOGe(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 
@@ -121,7 +121,7 @@ Java_com_nervesparks_iris_Llm_newContext(JNIEnv *env, jobject, jlong jmodel) {
     LOGi("Using %d threads", n_threads);
 
     llama_context_params ctx_params = llama_context_default_params();
-    ctx_params.seed  = 1234;
+
     ctx_params.n_ctx = 2048;
     ctx_params.n_threads       = 4;//n_threads
     ctx_params.n_threads_batch = 8;//n_threads
@@ -168,7 +168,7 @@ Java_com_nervesparks_iris_Llm_benchModel(
         jint tg,
         jint pl,
         jint nr
-        ) {
+) {
     auto pp_avg = 0.0;
     auto tg_avg = 0.0;
     auto pp_std = 0.0;
@@ -283,16 +283,16 @@ Java_com_nervesparks_iris_Llm_newBatch(JNIEnv *, jobject, jint n_tokens, jint em
     // Source: Copy of llama.cpp:llama_batch_init but heap-allocated.
 
     llama_batch *batch = new llama_batch {
-        0,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        0,
-        0,
-        0,
+            0,
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr,
+            0,
+            0,
+            0,
     };
 
     if (embd) {
@@ -313,10 +313,28 @@ Java_com_nervesparks_iris_Llm_newBatch(JNIEnv *, jobject, jint n_tokens, jint em
 }
 
 extern "C"
+JNIEXPORT jlong JNICALL
+Java_com_nervesparks_iris_Llm_new_1sampler(JNIEnv *, jobject) {
+    auto sparams = llama_sampler_chain_default_params();
+    sparams.no_perf = true;
+    llama_sampler * smpl = llama_sampler_chain_init(sparams);
+    llama_sampler_chain_add(smpl, llama_sampler_init_greedy());
+
+    return reinterpret_cast<jlong>(smpl);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_nervesparks_iris_Llm_free_1sampler(JNIEnv *, jobject, jlong sampler_pointer) {
+    llama_sampler_free(reinterpret_cast<llama_sampler *>(sampler_pointer));
+}
+
+extern "C"
 JNIEXPORT void JNICALL
 Java_com_nervesparks_iris_Llm_backendInit(JNIEnv *, jobject) {
     llama_backend_init();
 }
+
 
 extern "C"
 JNIEXPORT jstring JNICALL
@@ -333,7 +351,7 @@ Java_com_nervesparks_iris_Llm_completionInit(
         jlong batch_pointer,
         jstring jtext,
         jint n_len
-    ) {
+) {
 
     cached_token_chars.clear();
 
@@ -382,35 +400,27 @@ Java_com_nervesparks_iris_Llm_completionLoop(
         jobject,
         jlong context_pointer,
         jlong batch_pointer,
+        jlong sampler_pointer,
         jint n_len,
         jobject intvar_ncur
 ) {
     const auto context = reinterpret_cast<llama_context *>(context_pointer);
     const auto batch = reinterpret_cast<llama_batch *>(batch_pointer);
+    const auto sampler = reinterpret_cast<llama_sampler *>(sampler_pointer);
     const auto model = llama_get_model(context);
 
     if (!la_int_var) la_int_var = env->GetObjectClass(intvar_ncur);
     if (!la_int_var_value) la_int_var_value = env->GetMethodID(la_int_var, "getValue", "()I");
     if (!la_int_var_inc) la_int_var_inc = env->GetMethodID(la_int_var, "inc", "()V");
 
-    auto n_vocab = llama_n_vocab(model);
-    auto logits = llama_get_logits_ith(context, batch->n_tokens - 1);
+    const auto new_token_id = llama_sampler_sample(sampler, context, -1);
 
-    std::vector<llama_token_data> candidates;
-    candidates.reserve(n_vocab);
+    llama_sampler_accept(sampler, new_token_id);
 
-    for (llama_token token_id = 0; token_id < n_vocab; token_id++) {
-        candidates.emplace_back(llama_token_data{ token_id, logits[token_id], 0.0f });
-    }
-
-    llama_token_data_array candidates_p = { candidates.data(), candidates.size(), false };
-    llama_sample_temp(context, &candidates_p, 0.3f);
-    // sample the most likely token
-    const auto new_token_id = llama_sample_token(context, &candidates_p);
 
     const auto n_cur = env->CallIntMethod(intvar_ncur, la_int_var_value);
-    if (new_token_id == llama_token_eos(model) || n_cur == n_len) {
-        return env->NewStringUTF("");
+    if (llama_token_is_eog(model, new_token_id) || n_cur == n_len) {
+        return nullptr;
     }
 
     auto new_token_chars = llama_token_to_piece(context, new_token_id);
