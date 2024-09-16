@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.llama"
+    namespace = "com.nervesparks.iris"
     compileSdk = 34
 
     ndkVersion = "26.1.10909125"
 
     defaultConfig {
-        applicationId = "com.example.llama"
+        applicationId = "com.nervesparks.iris"
         minSdk = 28
         targetSdk = 34
         versionCode = 1
@@ -26,7 +26,7 @@ android {
         }
         externalNativeBuild {
             cmake {
-                arguments += "-DCMAKE_BUILD_TYPE=Release"
+                arguments += "-DLLAMA_BLAS=ON -DLLAMA_BLAS_VENDOR=OpenBLAS -DCMAKE_BUILD_TYPE=Release"
                 cppFlags += listOf()
                 arguments += listOf()
             }

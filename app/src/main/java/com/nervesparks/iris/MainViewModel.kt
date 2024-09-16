@@ -1,4 +1,4 @@
-package com.example.llama
+package com.nervesparks.iris
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nervesparks.iris.Llm
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
