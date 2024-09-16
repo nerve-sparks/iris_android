@@ -45,6 +45,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +63,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.getSystemService
 import kotlinx.coroutines.launch
 import java.io.File
@@ -166,12 +168,55 @@ fun MainCompose(
 
     //variable to toggle auto-scrolling
     var autoScrollEnabled by remember { mutableStateOf(true) }
-
+//    var showModal by remember { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
 
+    val allModelsExist = models.all { model -> model.destination.exists() }
+
+    // Hide modal if all model destinations exist
+    if (allModelsExist) {
+        viewModel.showModal = false
+    }
 
 
     Column(modifier = Modifier.padding(bottom = 10.dp)) {
+
+        // Show modal if required
+        if (viewModel.showModal) {
+            // Modal dialog to show download options
+            Dialog(onDismissRequest = {}) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White,
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = "Download Required Models", fontWeight = FontWeight.Bold)
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        models.forEach { model ->
+                            if (!model.destination.exists()) {
+                                Text(text = model.name, modifier = Modifier.padding(8.dp))
+                                Downloadable.Button(viewModel, dm, model)
+                            }
+                        }
+
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        TextButton(onClick = { viewModel.showModal = false }) {
+                            Text(text = "Close")
+                        }
+
+                    }
+                }
+            }
+        }
+
 
         Column{
 

@@ -3,6 +3,7 @@ package com.nervesparks.iris
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -31,6 +32,8 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     var message by mutableStateOf("")
         private set
 
+    var showModal by  mutableStateOf(true)
+
     override fun onCleared() {
         super.onCleared()
 
@@ -57,6 +60,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
                 Log.e(tag, "load() failed", exc)
                 addMessage("error", exc.message ?: "")
             }
+            showModal = false
         }
     }
 

@@ -37,10 +37,13 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
         fun Button(viewModel: MainViewModel, dm: DownloadManager, item: Downloadable) {
             var status: State by remember {
                 mutableStateOf(
-                    if (item.destination.exists()) Downloaded(item)
+                    if (item.destination.exists()) {
+                        Downloaded(item)}
                     else Ready
                 )
             }
+
+
             var progress by remember { mutableDoubleStateOf(0.0) }
 
             val coroutineScope = rememberCoroutineScope()
@@ -83,6 +86,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
             fun onClick() {
                 when (val s = status) {
                     is Downloaded -> {
+                        viewModel.showModal = false
                         viewModel.load(item.destination.path)
                     }
 
