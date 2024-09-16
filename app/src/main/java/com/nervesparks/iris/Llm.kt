@@ -96,8 +96,10 @@ class Llm {
     private external fun completionLoop(
         context: Long,
         batch: Long,
+        sampler: Long,
         nLen: Int,
-        ncur: IntVar
+        ncur: IntVar,
+
     ): String?
 
     private external fun kvCacheClear(context: Long)
@@ -129,8 +131,11 @@ class Llm {
 
                     if (batch == 0L) throw IllegalStateException("new_batch() failed")
 
+                    val sampler = new_sampler()
+                    if (sampler == 0L) throw IllegalStateException("new_sampler() failed")
+
                     Log.i(tag, "Loaded model $pathToModel")
-                    threadLocalState.set(State.Loaded(model, context, batch))
+                    threadLocalState.set(State.Loaded(model, context, batch,sampler))
                 }
 
                 else -> throw IllegalStateException("Model already loaded")
@@ -146,7 +151,7 @@ class Llm {
                 while (ncur.value <= nlen-112 && !stopGeneration) {  // Check the stopGeneration flag
 
                     _isSending.value = true
-                    val str = completionLoop(state.context, state.batch, nlen, ncur)
+                    val str = completionLoop(state.context, state.batch, state.sampler, nlen, ncur)
                     if (str == "```" || str == "``") {
                         _isMarked.value = !_isMarked.value
                     }
@@ -190,6 +195,7 @@ class Llm {
                     freeContext(state.context)
                     freeModel(state.model)
                     freeBatch(state.batch)
+                    free_sampler(state.sampler)
 
                     threadLocalState.set(State.Idle)
                 }
@@ -214,7 +220,7 @@ class Llm {
 
         private sealed interface State {
             data object Idle : State
-            data class Loaded(val model: Long, val context: Long, val batch: Long) : State
+            data class Loaded(val model: Long, val context: Long, val batch: Long, val sampler: Long) : State
         }
 
         // Enforce only one instance of Llm.
