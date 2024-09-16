@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "LlamaAndroid"
+rootProject.name = "Iris"
 include(":app")
