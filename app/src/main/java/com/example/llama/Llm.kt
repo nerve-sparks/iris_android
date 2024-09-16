@@ -71,6 +71,8 @@ class Llm {
     private external fun backendFree()
     private external fun freeBatch(batch: Long)
     private external fun newBatch(nTokens: Int, embd: Int, nSeqMax: Int): Long
+    private external fun new_sampler(): Long
+    private external fun free_sampler(sampler: Long)
     private external fun benchModel(
         context: Long,
         model: Long,
