@@ -62,6 +62,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.getSystemService
 import kotlinx.coroutines.launch
 import java.io.File
@@ -72,7 +73,7 @@ class MainActivity(
     clipboardManager: ClipboardManager? = null,
 ) : ComponentActivity() {
 
-//    private val tag: String? = this::class.simpleName
+    //    private val tag: String? = this::class.simpleName
 //    private val activityManager by lazy { activityManager ?: getSystemService<ActivityManager>()!! }
     private val downloadManager by lazy { downloadManager ?: getSystemService<DownloadManager>()!! }
     private val clipboardManager by lazy {
@@ -166,16 +167,60 @@ fun MainCompose(
 
     //variable to toggle auto-scrolling
     var autoScrollEnabled by remember { mutableStateOf(true) }
-
+//    var showModal by remember { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
 
+    val allModelsExist = models.all { model -> model.destination.exists() }
+
+    // Hide modal if all model destinations exist
+    if (allModelsExist) {
+        viewModel.showModal = false
+    }
 
 
     Column(modifier = Modifier.padding(bottom = 10.dp)) {
 
+        // Show modal if required
+        if (viewModel.showModal) {
+            // Modal dialog to show download options
+            Dialog(onDismissRequest = {}) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White,
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+
+                    ) {
+                        Text(text = "Download Required", fontWeight = FontWeight.Bold,color = Color.Red)
+                        Text(text = "Don't close or minimize the app!", fontWeight = FontWeight.Bold, color = Color.Red)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        models.forEach { model ->
+                            if (!model.destination.exists()) {
+                                Text(text = model.name, modifier = Modifier.padding(8.dp))
+                                Downloadable.Button(viewModel, dm, model)
+                            }
+                        }
+
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+//                        TextButton(onClick = { viewModel.showModal = false }) {
+//                            Text(text = "Close")
+//                        }
+
+                    }
+                }
+            }
+        }
+
+
         Column{
 
-          //Top app bar starts here.
+            //Top app bar starts here.
             Row(
 
                 modifier = Modifier
@@ -255,7 +300,7 @@ fun MainCompose(
                     onPress = { autoScrollEnabled = false},
 
 
-                )
+                    )
             }) {
                 LazyColumn(state = scrollState) {  //chat section starts here
 
@@ -376,7 +421,7 @@ fun MainCompose(
 
                                             Image(
                                                 painter = painterResource(id = R.drawable.copy1),
-                                                contentDescription = "Copy Icon",
+                                                contentDescription = "Copy Icon user",
                                                 modifier = Modifier
                                                     .size(22.dp)
                                                     .clickable {
@@ -500,11 +545,11 @@ fun MainCompose(
 
             }
 
-            Column {
-                for (model in models) {
-                    Downloadable.Button(viewModel, dm, model)
-                }
-            }
+//            Column {
+//                for (model in models) {
+//                    Downloadable.Button(viewModel, dm, model)
+//                }
+//            }
         }
     }
 

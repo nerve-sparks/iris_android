@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nervesparks.iris.Llm
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
@@ -25,13 +24,13 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     )
         private set
 
-    var first by mutableStateOf(
+    private var first by mutableStateOf(
         true
     )
-    private set
-
     var message by mutableStateOf("")
         private set
+
+    var showModal by  mutableStateOf(true)
 
     override fun onCleared() {
         super.onCleared()
@@ -59,6 +58,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
                 Log.e(tag, "load() failed", exc)
                 addMessage("error", exc.message ?: "")
             }
+            showModal = false
         }
     }
 
@@ -82,7 +82,6 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         return input.replace("\\s+".toRegex(), " ")
     }
 
-
     private fun parseTemplateJson(chatData: List<Map<String, String>> ):String{
         var chatStr = ""
         for (data in chatData){
@@ -94,7 +93,6 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
 
         }
         return chatStr
-
     }
 
     fun send() {
@@ -109,8 +107,8 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
             addMessage("user", userMessage)
 
 
-
             val text = parseTemplateJson(messages)+"assistant \n"
+
 
             viewModelScope.launch {
                 llm.send(text)
@@ -136,8 +134,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         messages = listOf(
 
         )
-        first = true;
-
+        first = true
     }
 
     fun log(message: String) {
