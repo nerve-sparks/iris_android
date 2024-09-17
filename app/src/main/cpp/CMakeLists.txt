@@ -16,7 +16,7 @@ include(FetchContent)
 FetchContent_Declare(
         llama
         GIT_REPOSITORY https://github.com/ggerganov/llama.cpp
-        GIT_TAG        master
+        GIT_TAG        889bdd76866ea31a7625ec2dcea63ff469f3e981
 )
 
 # Also provides "common"
@@ -48,9 +48,10 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     common
     android
     log)
-if (${ANDROID_ABI} STREQUAL "arm64-v8a")
-    message(STATUS "llama.android: Added optimizations for arm64-v8a")
-    add_compile_options(-O3 -mcpu=native -march=armv8.2-a+fp16 -mfpu=neon-v8fp16_va)
-else()
-    message(STATUS "llama.android: No optimizations added")
-endif()
+#if (${ANDROID_ABI} STREQUAL "arm64-v8a")
+#    message(STATUS "llama.android: Added optimizations for arm64-v8a")
+#    add_compile_options(-O3 -mcpu=native -march=armv8.2-a+fp16 -mfpu=neon-v8fp16_va)
+#else()
+#    message(STATUS "llama.android: No optimizations added")
+#    add_compile_options(-O3)
+#endif()

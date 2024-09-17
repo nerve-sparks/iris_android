@@ -24,13 +24,13 @@ android {
             // Add NDK properties if wanted, e.g.
             // abiFilters += listOf("arm64-v8a")
         }
-        externalNativeBuild {
-            cmake {
-                arguments += "-DLLAMA_BLAS=ON -DLLAMA_BLAS_VENDOR=OpenBLAS -DCMAKE_BUILD_TYPE=Release"
-                cppFlags += listOf()
-                arguments += listOf()
-            }
-        }
+//        externalNativeBuild {
+//            cmake {
+//                arguments += "-DLLAMA_BLAS=ON -DLLAMA_BLAS_VENDOR=OpenBLAS -DCMAKE_BUILD_TYPE=Release"
+//                cppFlags += listOf()
+//                arguments += listOf()
+//            }
+//        }
     }
 
     buildTypes {
