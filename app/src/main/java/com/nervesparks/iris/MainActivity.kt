@@ -45,7 +45,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -193,9 +192,10 @@ fun MainCompose(
                     Column(
                         modifier = Modifier.padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = "Download Required Models", fontWeight = FontWeight.Bold)
 
+                    ) {
+                        Text(text = "Download Required", fontWeight = FontWeight.Bold,color = Color.Red)
+                        Text(text = "Don't close or minimize the app!", fontWeight = FontWeight.Bold, color = Color.Red)
                         Spacer(modifier = Modifier.height(16.dp))
 
                         models.forEach { model ->
@@ -208,9 +208,9 @@ fun MainCompose(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        TextButton(onClick = { viewModel.showModal = false }) {
-                            Text(text = "Close")
-                        }
+//                        TextButton(onClick = { viewModel.showModal = false }) {
+//                            Text(text = "Close")
+//                        }
 
                     }
                 }
@@ -421,7 +421,7 @@ fun MainCompose(
 
                                             Image(
                                                 painter = painterResource(id = R.drawable.copy1),
-                                                contentDescription = "Copy Icon",
+                                                contentDescription = "Copy Icon user",
                                                 modifier = Modifier
                                                     .size(22.dp)
                                                     .clickable {
@@ -545,11 +545,11 @@ fun MainCompose(
 
             }
 
-            Column {
-                for (model in models) {
-                    Downloadable.Button(viewModel, dm, model)
-                }
-            }
+//            Column {
+//                for (model in models) {
+//                    Downloadable.Button(viewModel, dm, model)
+//                }
+//            }
         }
     }
 
