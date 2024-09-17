@@ -11,8 +11,8 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     companion object {
-        //@JvmStatic
-        //private val NanosPerSecond = 1_000_000_000.0
+//        @JvmStatic
+//        private val NanosPerSecond = 1_000_000_000.0
     }
 
     private val tag: String? = this::class.simpleName
@@ -24,8 +24,13 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     )
         private set
 
+    private var first by mutableStateOf(
+        true
+    )
     var message by mutableStateOf("")
         private set
+
+    var showModal by  mutableStateOf(true)
 
     override fun onCleared() {
         super.onCleared()
@@ -42,12 +47,18 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     fun load(pathToModel: String) {
         viewModelScope.launch {
             try {
+                llm.unload()
+            } catch (exc: IllegalStateException) {
+                Log.e(tag, "load() failed", exc)
+            }
+            try {
                 llm.load(pathToModel)
-                addMessage("assistant", "Loaded $pathToModel")
+                addMessage("log", "Loaded $pathToModel")
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "load() failed", exc)
                 addMessage("error", exc.message ?: "")
             }
+            showModal = false
         }
     }
 
@@ -71,16 +82,33 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         return input.replace("\\s+".toRegex(), " ")
     }
 
+    private fun parseTemplateJson(chatData: List<Map<String, String>> ):String{
+        var chatStr = ""
+        for (data in chatData){
+            val role = data["role"]
+            val content = data["content"]
+            if (role != "log"){
+                chatStr += "$role \n$content \n"
+            }
+
+        }
+        return chatStr
+    }
 
     fun send() {
         val userMessage = removeExtraWhiteSpaces(message)
         message = ""
         if (userMessage != "" && userMessage != " ") {
-            // Append user's message
+            if(first){
+                addMessage("system", "This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.")
+                first = false
+            }
+
             addMessage("user", userMessage)
 
-            val text =
-                "system \nYou are a friendly and precise chat-bot named Iris, who always responds in brief responses. \n user \n$userMessage \nassistant \n"
+
+            val text = parseTemplateJson(messages)+"assistant \n"
+
 
             viewModelScope.launch {
                 llm.send(text)
@@ -102,12 +130,11 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     }
 
 
-    // ... (rest of the functions remain mostly the same)
-
     fun clear() {
         messages = listOf(
 
         )
+        first = true
     }
 
     fun log(message: String) {

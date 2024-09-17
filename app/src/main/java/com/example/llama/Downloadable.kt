@@ -1,5 +1,7 @@
 package com.example.llama
 
+
+
 import android.app.DownloadManager
 import android.net.Uri
 import android.util.Log
@@ -37,10 +39,13 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
         fun Button(viewModel: MainViewModel, dm: DownloadManager, item: Downloadable) {
             var status: State by remember {
                 mutableStateOf(
-                    if (item.destination.exists()) Downloaded(item)
+                    if (item.destination.exists()) {
+                        Downloaded(item)}
                     else Ready
                 )
             }
+
+
             var progress by remember { mutableDoubleStateOf(0.0) }
 
             val coroutineScope = rememberCoroutineScope()
@@ -83,6 +88,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
             fun onClick() {
                 when (val s = status) {
                     is Downloaded -> {
+                        viewModel.showModal = false
                         viewModel.load(item.destination.path)
                     }
 
@@ -102,10 +108,10 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                             setDestinationUri(item.destination.toUri())
                         }
 
-                        viewModel.log("Saving ${item.name} to ${item.destination.path} \n \n Download only on Wifi.")
+                        viewModel.log("Saving ${item.name} to ${item.destination.path} \n Download only on Wifi. \n")
                         Log.i(
                             tag,
-                            "Saving ${item.name} to ${item.destination.path} \n \n Download only on Wifi."
+                            "Saving ${item.name} to ${item.destination.path} \n Download only on Wifi. \n"
                         )
 
                         val id = dm.enqueue(request)
