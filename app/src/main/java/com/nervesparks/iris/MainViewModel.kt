@@ -10,31 +10,20 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
-    companion object {
-//        @JvmStatic
-//        private val NanosPerSecond = 1_000_000_000.0
-    }
-
     private val tag: String? = this::class.simpleName
 
-    var messages by mutableStateOf(
-        listOf<Map<String, String>>(
-
-        )
-    )
+    var messages by mutableStateOf(listOf<Map<String, String>>())
         private set
 
-    private var first by mutableStateOf(
-        true
-    )
+    private var systemMessage by mutableStateOf<Map<String, String>?>(null)
+
     var message by mutableStateOf("")
         private set
 
-    var showModal by  mutableStateOf(true)
+    var showModal by mutableStateOf(true)
 
     override fun onCleared() {
         super.onCleared()
-
         viewModelScope.launch {
             try {
                 llm.unload()
@@ -65,32 +54,34 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     private fun addMessage(role: String, content: String) {
         val newMessage = mapOf("role" to role, "content" to content)
 
-        messages = if (messages.isNotEmpty() && messages.last()["role"] == role) {
-            val lastMessageContent = messages.last()["content"] ?: ""
-            val updatedContent = "$lastMessageContent$content"
-            val updatedLastMessage = messages.last() + ("content" to updatedContent)
-            messages.toMutableList().apply {
-                set(messages.lastIndex, updatedLastMessage)
-            }
+        if (role == "system") {
+            systemMessage = newMessage
         } else {
-            messages + listOf(newMessage)
+            messages = if (messages.isNotEmpty() && messages.last()["role"] == role) {
+                val lastMessageContent = messages.last()["content"] ?: ""
+                val updatedContent = "$lastMessageContent$content"
+                val updatedLastMessage = messages.last() + ("content" to updatedContent)
+                messages.toMutableList().apply {
+                    set(messages.lastIndex, updatedLastMessage)
+                }
+            } else {
+                messages + listOf(newMessage)
+            }
         }
     }
 
     private fun removeExtraWhiteSpaces(input: String): String {
-        // Replace multiple white spaces with a single space
         return input.replace("\\s+".toRegex(), " ")
     }
 
-    private fun parseTemplateJson(chatData: List<Map<String, String>> ):String{
+    private fun parseTemplateJson(chatData: List<Map<String, String>>): String {
         var chatStr = ""
-        for (data in chatData){
+        for (data in chatData) {
             val role = data["role"]
             val content = data["content"]
-            if (role != "log"){
-                chatStr += "$role \n$content \n"
+            if (role != "log" && role != "error") {
+                chatStr += "$role\n$content\n"
             }
-
         }
         return chatStr
     }
@@ -98,17 +89,18 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     fun send() {
         val userMessage = removeExtraWhiteSpaces(message)
         message = ""
-        if (userMessage != "" && userMessage != " ") {
-            if(first){
+        if (userMessage.isNotBlank()) {
+            if (systemMessage == null) {
                 addMessage("system", "This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.")
-                first = false
             }
 
             addMessage("user", userMessage)
 
+            val messagesToSend = mutableListOf<Map<String, String>>()
+            systemMessage?.let { messagesToSend.add(it) }
+            messagesToSend.addAll(messages.takeLast(4).filter { it["role"] != "log" && it["role"] != "error" })
 
-            val text = parseTemplateJson(messages)+"assistant \n"
-
+            val text = parseTemplateJson(messagesToSend) + "assistant\n"
 
             viewModelScope.launch {
                 llm.send(text)
@@ -117,10 +109,8 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
                         addMessage("error", it.message ?: "")
                     }
                     .collect { response ->
-                        // Create a new assistant message with the response
                         if (getIsMarked()) {
                             addMessage("codeBlock", response)
-
                         } else {
                             addMessage("assistant", response)
                         }
@@ -129,12 +119,9 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         }
     }
 
-
     fun clear() {
-        messages = listOf(
-
-        )
-        first = true
+        messages = listOf()
+        systemMessage = null
     }
 
     fun log(message: String) {
@@ -156,5 +143,4 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     fun updateMessage(newMessage: String) {
         message = newMessage
     }
-
 }
