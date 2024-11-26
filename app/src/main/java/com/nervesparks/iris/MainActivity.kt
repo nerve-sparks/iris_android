@@ -20,6 +20,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -185,22 +187,22 @@ fun MainCompose(
             // Modal dialog to show download options
             Dialog(onDismissRequest = {}) {
                 Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color.White,
-                    modifier = Modifier.padding(16.dp)
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color.LightGray,
+                    modifier = Modifier.padding(10.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
 
                     ) {
-                        Text(text = "Download Required", fontWeight = FontWeight.Bold,color = Color.Red)
-                        Text(text = "Don't close or minimize the app!", fontWeight = FontWeight.Bold, color = Color.Red)
+                        Text(text = "Download Required", fontWeight = FontWeight.Bold,color = Color(0xFFDC3911))
+                        Text(text = "Don't close or minimize the app!", fontWeight = FontWeight.Bold, color = Color(0xFFDC3911))
                         Spacer(modifier = Modifier.height(16.dp))
 
                         models.forEach { model ->
                             if (!model.destination.exists()) {
-                                Text(text = model.name, modifier = Modifier.padding(8.dp))
+                                Text(text = model.name, modifier = Modifier.padding(5.dp))
                                 Downloadable.Button(viewModel, dm, model)
                             }
                         }
@@ -249,29 +251,29 @@ fun MainCompose(
                 ) //Name
 
                 //New Text Button
-                Button(
-                    onClick = {
-                        viewModel.stop()
-                        viewModel.clear()
-                    },
-                    modifier = Modifier
-                        .background(Color.Transparent),
-                    colors = ButtonDefaults.buttonColors(Color.Transparent)
-                ) {
-                    Text(
-                        "New ",
-                        color = Color.White,
-                        style = TextStyle(fontWeight = FontWeight.W400),
-                        fontSize = 18.sp
-                    )
-
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "newChat",
-                        tint = Color.White // Optional: set the color of the icon
-                    )
-
-                }
+//                Button(
+//                    onClick = {
+//                        viewModel.stop()
+//                        viewModel.clear()
+//                    },
+//                    modifier = Modifier
+//                        .background(Color.Transparent),
+//                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+//                ) {
+//                    Text(
+//                        "New ",
+//                        color = Color.White,
+//                        style = TextStyle(fontWeight = FontWeight.W400),
+//                        fontSize = 18.sp
+//                    )
+//
+//                    Icon(
+//                        imageVector = Icons.Default.Add,
+//                        contentDescription = "newChat",
+//                        tint = Color.White // Optional: set the color of the icon
+//                    )
+//
+//                }
 
 
             }
@@ -284,8 +286,53 @@ fun MainCompose(
         }
         //Top app bar stops here
         Divider(color = Color(0xFFA0A0A5))
+        //New Text Button
+        Column {
+            Box(
+                modifier = Modifier
+//                    .background(Color(0xFF232627))
+                    .padding(start = 20.dp, top = 8.dp, end = 8.dp, bottom = 8.dp)
+                    .fillMaxWidth()
+                    .height(60.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Button(
+                    onClick = {
+                        viewModel.stop()
+                        viewModel.clear()
+                    },
+                    modifier = Modifier
+                        .height(45.dp)
+                        .padding(0.dp),
 
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C61DD)),
+                    shape = RoundedCornerShape(22.dp),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 5.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(Color(0xFF000000), shape = RoundedCornerShape(20.dp))
+                            .height(24.dp)
+                            .padding(2.dp)
 
+                    ) {
+                        Icon(
+
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "newChat",
+                            tint = Color.White
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        "New Chat",
+                        color = Color.White,
+                        style = TextStyle(fontWeight = FontWeight.W400),
+                        fontSize = 15.sp
+                    )
+                }
+            }
+        }
         Column {
 
 
@@ -460,11 +507,17 @@ fun MainCompose(
                 } //chat section ends here
             }
             //Prompt input field
-            Box(modifier = Modifier.padding(horizontal = 5.dp)) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF232627))
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
+
                 ) {
                     OutlinedTextField(
                         value = viewModel.message,
@@ -516,34 +569,34 @@ fun MainCompose(
                 }
             }
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)  // Adding top margin
-            ) {
-//                        Button(
-//                            onClick = { viewModel.clear() },
-//                            modifier = Modifier
-//                                .background(Color(0xFF232627))
-//                        ) {
-//                            Text(
-//                                "Clear",
-//                                color = Color.White
-//                            )
-//                        }
-//                        Button(
-//                            onClick = { viewModel.stop() },
-//                            modifier = Modifier
-//                                .background(Color(0xFF232627))
-//                        ) {
-//                            Text(
-//                                "Stop",
-//                                color = Color.White
-//                            )
-//                        }
-
-            }
+//            Row(
+//                horizontalArrangement = Arrangement.SpaceEvenly,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(top = 1.dp)  // Adding top margin
+//            ) {
+////                        Button(
+////                            onClick = { viewModel.clear() },
+////                            modifier = Modifier
+////                                .background(Color(0xFF232627))
+////                        ) {
+////                            Text(
+////                                "Clear",
+////                                color = Color.White
+////                            )
+////                        }
+////                        Button(
+////                            onClick = { viewModel.stop() },
+////                            modifier = Modifier
+////                                .background(Color(0xFF232627))
+////                        ) {
+////                            Text(
+////                                "Stop",
+////                                color = Color.White
+////                            )
+////                        }
+//
+//            }
 
 //            Column {
 //                for (model in models) {
@@ -554,4 +607,5 @@ fun MainCompose(
     }
 
 }
+
 
