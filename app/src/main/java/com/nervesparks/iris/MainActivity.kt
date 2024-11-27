@@ -41,15 +41,23 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -187,359 +195,386 @@ fun MainCompose(
         viewModel.showModal = false
     }
 
-Box(
-    modifier = Modifier
-        .fillMaxSize(),
-){
-    Image(
-        painter = painterResource(id = R.drawable.logo),
-        contentDescription = "Centered Background Logo",
+    Box(
         modifier = Modifier
-            .align(Alignment.Center)
-            .size(50.dp),
-        contentScale = ContentScale.Fit
-    )
-    Column(modifier = Modifier.padding(bottom = 5.dp)) {
+            .fillMaxSize(),
+    ) {
+        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        val scope = rememberCoroutineScope()
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                ModalDrawerSheet { /* Drawer content */ }
+            },
+        ) {
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Centered Background Logo",
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(50.dp),
+            contentScale = ContentScale.Fit
+        )
 
-        // Show modal if required
-        if (viewModel.showModal) {
-            // Modal dialog to show download options
-            Dialog(onDismissRequest = {}) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = Color.LightGray,
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+        // Screen content
+        Column(modifier = Modifier.padding(bottom = 5.dp)) {
 
+            // Show modal if required
+            if (viewModel.showModal) {
+                // Modal dialog to show download options
+                Dialog(onDismissRequest = {}) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color.LightGray,
+                        modifier = Modifier.padding(10.dp)
                     ) {
-                        Text(text = "Download Required", fontWeight = FontWeight.Bold,color = Color(0xFFDC3911))
-                        Text(text = "Don't close or minimize the app!", fontWeight = FontWeight.Bold, color = Color(0xFFDC3911))
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
 
-                        models.forEach { model ->
-                            if (!model.destination.exists()) {
-                                Text(text = model.name, modifier = Modifier.padding(5.dp))
-                                Downloadable.Button(viewModel, dm, model)
+                        ) {
+                            Text(
+                                text = "Download Required",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFDC3911)
+                            )
+                            Text(
+                                text = "Don't close or minimize the app!",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFDC3911)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            models.forEach { model ->
+                                if (!model.destination.exists()) {
+                                    Text(text = model.name, modifier = Modifier.padding(5.dp))
+                                    Downloadable.Button(viewModel, dm, model)
+                                }
                             }
-                        }
 
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
 
 //                        TextButton(onClick = { viewModel.showModal = false }) {
 //                            Text(text = "Close")
 //                        }
 
+                        }
                     }
                 }
             }
-        }
 
 
-//        Column{
-//
-//          //Top app bar starts here.
-//            Row(
-//
-//                modifier = Modifier
-//                    .background(Color(0xFF232627))
-//                    .padding(start = 5.dp)
-//                    .height(60.dp)
-//                    .fillMaxWidth(),
-//                horizontalArrangement = Arrangement.Center,
-//
-//                verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
-//            ) {
+
+            Column {
+
+                //Top app bar starts here.
+                Row(
+
+                    modifier = Modifier
+                        .background(Color(0xFF232627))
+                        .padding(start = 20.dp, end = 10.dp)
+                        .height(60.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+
+                    verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
+                ) {
 //                Image(
 //                    painter = painterResource(id = R.drawable.logo),
 //                    contentDescription = "Logo",
 //                    modifier = Modifier
 //                        .padding(2.dp)
 //                        .size(40.dp)
-//                ) //Logo
-//                Spacer(modifier = Modifier.padding(4.dp))
-//                Text(
-//                    text = "Iris",
-//                    fontWeight = FontWeight(500),
-//                    color = Color.White,
-//                    modifier = Modifier.weight(1f),
-//                    fontSize = 24.sp
-//                ) //Name
-//
-//                //New Text Button
-////                Button(
-////                    onClick = {
-////                        viewModel.stop()
-////                        viewModel.clear()
-////                    },
-////                    modifier = Modifier
-////                        .background(Color.Transparent),
-////                    colors = ButtonDefaults.buttonColors(Color.Transparent)
-////                ) {
-////                    Text(
-////                        "New ",
-////                        color = Color.White,
-////                        style = TextStyle(fontWeight = FontWeight.W400),
-////                        fontSize = 18.sp
-////                    )
-////
-////                    Icon(
-////                        imageVector = Icons.Default.Add,
-////                        contentDescription = "newChat",
-////                        tint = Color.White // Optional: set the color of the icon
-////                    )
-////
-////                }
+//                )
 //
 //
-//            }
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(0.2.dp)
-//                    .background(color = Color.White)
-//            ) {}//extra spacing
-//        }
-        //Top app bar stops here
-        Divider(color = Color(0xFFA0A0A5))
-        //New Chat Button
-        Column {
-            Box(
-                modifier = Modifier
-//                    .background(Color(0xFF232627))
-                    .padding(start = 20.dp, top = 8.dp, end = 8.dp, bottom = 8.dp)
-                    .fillMaxWidth()
-                    .height(60.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Button(
-                    onClick = {
-                        viewModel.stop()
-                        viewModel.clear()
-                    },
-                    modifier = Modifier
-                        .height(45.dp)
-                        .padding(0.dp),
+//                  icon of drawer
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                drawerState.apply {
+                                    if (isClosed) open() else close()
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .height(26.dp)
+                            .padding(0.dp),
 
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C61DD)),
-                    shape = RoundedCornerShape(22.dp),
-                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 5.dp)
-                ) {
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        contentPadding = PaddingValues(horizontal = 1.dp, vertical = 0.dp)
+                    ) {
+
+                            Icon(
+                                painter = painterResource(id= R.drawable.burger_menu_left_svgrepo_com),
+                                contentDescription = "open side drawer",
+                                tint = Color.White
+                            )
+                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+
+                        Text(
+                            text = "Iris",
+                            fontWeight = FontWeight(500),
+                            color = Color.White,
+//                            modifier = Modifier.weight(),
+                            fontSize = 24.sp
+                        )
+                    }
+
+
+
+                        //New Text Button
+//                Button(
+//                    onClick = {
+//                        viewModel.stop()
+//                        viewModel.clear()
+//                    },
+//                    modifier = Modifier
+//                        .background(Color.Transparent),
+//                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+//                ) {
+//                    Text(
+//                        "New ",
+//                        color = Color.White,
+//                        style = TextStyle(fontWeight = FontWeight.W400),
+//                        fontSize = 18.sp
+//                    )
+//
+//                    Icon(
+//                        imageVector = Icons.Default.Add,
+//                        contentDescription = "newChat",
+//                        tint = Color.White // Optional: set the color of the icon
+//                    )
+//
+//                }
+                        //New Chat Button
+
+                                Button(
+                                    onClick = {
+                                        viewModel.stop()
+                                        viewModel.clear()
+                                    },
+                                    modifier = Modifier
+                                        .height(26.dp)
+                                        .padding(0.dp),
+
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+//                                    shape = RoundedCornerShape(22.dp),
+                                    contentPadding = PaddingValues(horizontal = 1.dp, vertical = 0.dp)
+                                ) {
+
+                                    Icon(
+
+                                        painter = painterResource(id = R.drawable.edit_3_svgrepo_com),
+                                        contentDescription = "newChat",
+                                        tint = Color.White
+                                    )
+                                }
+                    }
                     Box(
                         modifier = Modifier
-                            .background(Color(0xFF000000), shape = RoundedCornerShape(20.dp))
-                            .height(24.dp)
-                            .padding(2.dp)
-
-                    ) {
-                        Icon(
-
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "newChat",
-                            tint = Color.White
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        "New Chat",
-                        color = Color.White,
-                        style = TextStyle(fontWeight = FontWeight.W400),
-                        fontSize = 15.sp
-                    )
+                            .fillMaxWidth()
+                            .height(0.2.dp)
+                            .background(color = Color.White)
+                    ) {}//extra spacing
                 }
-            }
-        }
-        Column {
+                //Top app bar stops here
+                Divider(color = Color(0xFFA0A0A5))
 
 
-            val scrollState = rememberLazyListState()
-            val coroutineScope = rememberCoroutineScope()
-
-            Box(modifier = Modifier
-                .weight(1f)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = { autoScrollEnabled = false },
-                        onDoubleTap = { autoScrollEnabled = false },
-                        onLongPress = { autoScrollEnabled = false },
-                        onPress = { autoScrollEnabled = false },
+                Column {
 
 
-                        )
-                }) {
-                LazyColumn(state = scrollState) {  //chat section starts here
+                    val scrollState = rememberLazyListState()
+                    val coroutineScope = rememberCoroutineScope()
 
-                    coroutineScope.launch {
-
-                        if(autoScrollEnabled) {
-                            scrollState.scrollToItem(viewModel.messages.size)
-                        }
-                    }
-
-                    itemsIndexed(viewModel.messages) { _, messageMap ->
-                        val role = messageMap["role"] ?: ""
-                        val content = messageMap["content"] ?: ""
-                        val trimmedMessage = if (content.endsWith("\n")) {
-                            content.substring(startIndex = 0, endIndex = content.length - 1)
-                        } else {
-                            content
-                        }
-                        if(role != "system") {
-                            if (role != "codeBlock") {
-                                Box(
-                                    modifier = Modifier
-                                        .background(
-                                            when (role) {
-                                                "user" -> Color.Transparent
-                                                "assistant" -> Color(0xFF232627)
-                                                "log" -> Color(0xFF232627)
-                                                else -> Color.Transparent
-                                            }
-                                        )
-                                        .fillMaxWidth()
-                                        .padding(
-                                            bottom = 4.dp
-                                        )
-                                ) {
-                                    Column {
+                    Box(modifier = Modifier
+                        .weight(1f)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = { autoScrollEnabled = false },
+                                onDoubleTap = { autoScrollEnabled = false },
+                                onLongPress = { autoScrollEnabled = false },
+                                onPress = { autoScrollEnabled = false },
 
 
-                                        Row(
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(
-                                                    top = 8.dp,
-                                                    bottom = 8.dp,
-                                                    start = 6.dp,
-                                                    end = 6.dp
-                                                )
-                                        ) {
-                                            Image(
-                                                painter = painterResource(
-                                                    id = if (role == "assistant" || role == "log") R.drawable.logo
-                                                    else R.drawable.user_icon
-                                                ),
-                                                contentDescription = if (role == "assistant" || role == "log") "Bot Icon" else "Human Icon",
-                                                modifier = Modifier.size(20.dp)
-                                            )
+                                )
+                        }) {
+                        LazyColumn(state = scrollState) {  //chat section starts here
 
-                                            Image(
-                                                painter = painterResource(id = R.drawable.copy1),
-                                                contentDescription = "Copy Icon",
-                                                modifier = Modifier
-                                                    .size(22.dp)
-                                                    .clickable {
-                                                        // Copy text to clipboard
-                                                        clipboard.setPrimaryClip(
-                                                            android.content.ClipData.newPlainText(
-                                                                "Text",
-                                                                content
-                                                            )
-                                                        )
-                                                    }
-                                            )
+                            coroutineScope.launch {
 
-                                        }
-                                        Text(
-                                            text = if (trimmedMessage.startsWith("```")) {
-                                                trimmedMessage.substring(3)
-                                            } else {
-                                                trimmedMessage
-                                            },
-                                            style = MaterialTheme.typography.bodyLarge.copy(
-                                                color = Color(
-                                                    0xFFA0A0A5
-                                                )
-                                            ),
-                                            modifier = Modifier.padding(start = 18.dp, end = 14.dp)
-
-                                        )
-
-                                    }
+                                if (autoScrollEnabled) {
+                                    scrollState.scrollToItem(viewModel.messages.size)
                                 }
-
-                            } else {
-                                Box(
-                                    modifier = Modifier
-                                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                                        .background(
-                                            Color.Black,
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .fillMaxWidth()
-
-                                ) {
-                                    Column {
-                                        Row(
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(
-                                                    top = 8.dp,
-                                                    bottom = 8.dp,
-                                                    start = 6.dp,
-                                                    end = 6.dp
-                                                )
-                                        ) {
-
-
-                                            Image(
-                                                painter = painterResource(id = R.drawable.copy1),
-                                                contentDescription = "Copy Icon user",
-                                                modifier = Modifier
-                                                    .size(22.dp)
-                                                    .clickable {
-                                                        // Copy text to clipboard
-                                                        clipboard.setPrimaryClip(
-                                                            android.content.ClipData.newPlainText(
-                                                                "Text",
-                                                                content
-                                                            )
-                                                        )
-                                                    }
-                                            )
-
-                                        }
-                                        Text(
-                                            text = if (trimmedMessage.startsWith("```")) {
-                                                trimmedMessage.substring(3)
-                                            } else {
-                                                trimmedMessage
-                                            },
-                                            style = MaterialTheme.typography.bodyLarge.copy(
-                                                color = Color(
-                                                    0xFFA0A0A5
-                                                )
-                                            ),
-                                            modifier = Modifier.padding(16.dp) // Add padding for content
-                                        )
-                                    }
-
-
-                                }
-
                             }
-                        }
-                    }
-                } //chat section ends here
-            }
-            //Prompt input field
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF050B16))
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 20.dp, top = 8.dp, bottom = 8.dp, end = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
 
+                            itemsIndexed(viewModel.messages) { _, messageMap ->
+                                val role = messageMap["role"] ?: ""
+                                val content = messageMap["content"] ?: ""
+                                val trimmedMessage = if (content.endsWith("\n")) {
+                                    content.substring(startIndex = 0, endIndex = content.length - 1)
+                                } else {
+                                    content
+                                }
+                                if (role != "system") {
+                                    if (role != "codeBlock") {
+                                        Box(
+                                            modifier = Modifier
+                                                .background(
+                                                    when (role) {
+                                                        "user" -> Color.Transparent
+                                                        "assistant" -> Color(0xFF232627)
+                                                        "log" -> Color(0xFF232627)
+                                                        else -> Color.Transparent
+                                                    }
+                                                )
+                                                .fillMaxWidth()
+                                                .padding(
+                                                    bottom = 4.dp
+                                                )
+                                        ) {
+                                            Column {
+
+
+                                                Row(
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(
+                                                            top = 8.dp,
+                                                            bottom = 8.dp,
+                                                            start = 6.dp,
+                                                            end = 6.dp
+                                                        )
+                                                ) {
+                                                    Image(
+                                                        painter = painterResource(
+                                                            id = if (role == "assistant" || role == "log") R.drawable.logo
+                                                            else R.drawable.user_icon
+                                                        ),
+                                                        contentDescription = if (role == "assistant" || role == "log") "Bot Icon" else "Human Icon",
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
+
+                                                    Image(
+                                                        painter = painterResource(id = R.drawable.copy1),
+                                                        contentDescription = "Copy Icon",
+                                                        modifier = Modifier
+                                                            .size(22.dp)
+                                                            .clickable {
+                                                                // Copy text to clipboard
+                                                                clipboard.setPrimaryClip(
+                                                                    android.content.ClipData.newPlainText(
+                                                                        "Text",
+                                                                        content
+                                                                    )
+                                                                )
+                                                            }
+                                                    )
+
+                                                }
+                                                Text(
+                                                    text = if (trimmedMessage.startsWith("```")) {
+                                                        trimmedMessage.substring(3)
+                                                    } else {
+                                                        trimmedMessage
+                                                    },
+                                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                                        color = Color(
+                                                            0xFFA0A0A5
+                                                        )
+                                                    ),
+                                                    modifier = Modifier.padding(
+                                                        start = 18.dp,
+                                                        end = 14.dp
+                                                    )
+
+                                                )
+
+                                            }
+                                        }
+
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                                                .background(
+                                                    Color.Black,
+                                                    shape = RoundedCornerShape(8.dp)
+                                                )
+                                                .fillMaxWidth()
+
+                                        ) {
+                                            Column {
+                                                Row(
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(
+                                                            top = 8.dp,
+                                                            bottom = 8.dp,
+                                                            start = 6.dp,
+                                                            end = 6.dp
+                                                        )
+                                                ) {
+
+
+                                                    Image(
+                                                        painter = painterResource(id = R.drawable.copy1),
+                                                        contentDescription = "Copy Icon user",
+                                                        modifier = Modifier
+                                                            .size(22.dp)
+                                                            .clickable {
+                                                                // Copy text to clipboard
+                                                                clipboard.setPrimaryClip(
+                                                                    android.content.ClipData.newPlainText(
+                                                                        "Text",
+                                                                        content
+                                                                    )
+                                                                )
+                                                            }
+                                                    )
+
+                                                }
+                                                Text(
+                                                    text = if (trimmedMessage.startsWith("```")) {
+                                                        trimmedMessage.substring(3)
+                                                    } else {
+                                                        trimmedMessage
+                                                    },
+                                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                                        color = Color(
+                                                            0xFFA0A0A5
+                                                        )
+                                                    ),
+                                                    modifier = Modifier.padding(16.dp) // Add padding for content
+                                                )
+                                            }
+
+
+                                        }
+
+                                    }
+                                }
+                            }
+                        } //chat section ends here
+                    }
+                    //Prompt input field
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF050B16))
                     ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 20.dp, top = 8.dp, bottom = 8.dp, end = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+
+                            ) {
 //                    OutlinedTextField(
 //                        value = viewModel.message,
 //                        onValueChange = { viewModel.updateMessage(it) },
@@ -558,25 +593,25 @@ Box(
 //
 //                        ),
 
-                    TextField(
-                        value = viewModel.message,
-                        onValueChange = { viewModel.updateMessage(it) },
+                            TextField(
+                                value = viewModel.message,
+                                onValueChange = { viewModel.updateMessage(it) },
 //                        label = { Text("Message") } ,
-                        placeholder = { Text("Message") },
-                        modifier = Modifier
-                            .weight(1f),
-                        shape = RoundedCornerShape(size = 18.dp),
-                        colors = TextFieldDefaults.colors(
+                                placeholder = { Text("Message") },
+                                modifier = Modifier
+                                    .weight(1f),
+                                shape = RoundedCornerShape(size = 18.dp),
+                                colors = TextFieldDefaults.colors(
 
-                            focusedTextColor = Color(0xFFADB2B8),
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent, // Optional, makes the indicator disappear
-                            focusedLabelColor = Color(0xFF626568),
-                            cursorColor = Color(0xFF626568),
-                            unfocusedContainerColor = Color(0xFF171E2C),
-                            focusedContainerColor=Color(0xFF171E2C)
-                        )
-                    )
+                                    focusedTextColor = Color(0xFFBECBD1),
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent, // Optional, makes the indicator disappear
+                                    focusedLabelColor = Color(0xFF626568),
+                                    cursorColor = Color(0xFF626568),
+                                    unfocusedContainerColor = Color(0xFF171E2C),
+                                    focusedContainerColor = Color(0xFF22314A)
+                                )
+                            )
 
 //                        keyboardOptions = KeyboardOptions(
 //                            keyboardType = KeyboardType.Ascii,
@@ -591,37 +626,37 @@ Box(
 //                        ),
 
 
-                    if (!viewModel.getIsSending()) {
+                            if (!viewModel.getIsSending()) {
 
-                        IconButton(onClick = {
-                            autoScrollEnabled = true
-                            viewModel.send()
-                            focusManager.clearFocus()
-                        }) {
-                            Icon(
+                                IconButton(onClick = {
+                                    autoScrollEnabled = true
+                                    viewModel.send()
+                                    focusManager.clearFocus()
+                                }) {
+                                    Icon(
 //                                imageVector = Icons.Default.Send,
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .weight(1f),
-                                painter = painterResource(id = R.drawable.send_2_svgrepo_com),
-                                contentDescription = "Send",
-                                tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
-                            )
-                        }
-                    } else if (viewModel.getIsSending()) {
-                        IconButton(onClick = { viewModel.stop() }) {
-                            Icon(
-                                modifier = Modifier
-                                    .weight(1f),
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Stop",
-                                tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
-                            )
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .weight(1f),
+                                        painter = painterResource(id = R.drawable.send_2_svgrepo_com),
+                                        contentDescription = "Send",
+                                        tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
+                                    )
+                                }
+                            } else if (viewModel.getIsSending()) {
+                                IconButton(onClick = { viewModel.stop() }) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .weight(1f),
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Stop",
+                                        tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
+                                    )
+                                }
+                            }
+
                         }
                     }
-
-                }
-            }
 
 //            Row(
 //                horizontalArrangement = Arrangement.SpaceEvenly,
@@ -657,11 +692,20 @@ Box(
 //                    Downloadable.Button(viewModel, dm, model)
 //                }
 //            }
+                }
+            }
         }
     }
+}
 
-}
-}
+
+    // [END android_compose_layout_material_modal_drawer]
+
+
+
+
+
+
 
 
 
