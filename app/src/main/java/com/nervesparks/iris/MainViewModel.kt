@@ -53,7 +53,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
             }
             try {
                 llm.load(pathToModel)
-                addMessage("log", "Loaded $pathToModel")
+//                addMessage("log", "Loaded $pathToModel")
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "load() failed", exc)
                 addMessage("error", exc.message ?: "")
