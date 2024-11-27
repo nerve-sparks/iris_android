@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
+import android.text.style.BackgroundColorSpan
 //import android.text.format.Formatter
 //import android.view.GestureDetector
 import androidx.activity.ComponentActivity
@@ -47,6 +48,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,9 +58,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RenderEffect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -179,8 +187,19 @@ fun MainCompose(
         viewModel.showModal = false
     }
 
-
-    Column(modifier = Modifier.padding(bottom = 10.dp)) {
+Box(
+    modifier = Modifier
+        .fillMaxSize(),
+){
+    Image(
+        painter = painterResource(id = R.drawable.logo),
+        contentDescription = "Centered Background Logo",
+        modifier = Modifier
+            .align(Alignment.Center)
+            .size(50.dp),
+        contentScale = ContentScale.Fit
+    )
+    Column(modifier = Modifier.padding(bottom = 5.dp)) {
 
         // Show modal if required
         if (viewModel.showModal) {
@@ -220,73 +239,73 @@ fun MainCompose(
         }
 
 
-        Column{
-
-          //Top app bar starts here.
-            Row(
-
-                modifier = Modifier
-                    .background(Color(0xFF232627))
-                    .padding(start = 5.dp)
-                    .height(60.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-
-                verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Logo",
-                    modifier = Modifier
-                        .padding(2.dp)
-                        .size(40.dp)
-                ) //Logo
-                Spacer(modifier = Modifier.padding(4.dp))
-                Text(
-                    text = "Iris",
-                    fontWeight = FontWeight(500),
-                    color = Color.White,
-                    modifier = Modifier.weight(1f),
-                    fontSize = 24.sp
-                ) //Name
-
-                //New Text Button
-//                Button(
-//                    onClick = {
-//                        viewModel.stop()
-//                        viewModel.clear()
-//                    },
+//        Column{
+//
+//          //Top app bar starts here.
+//            Row(
+//
+//                modifier = Modifier
+//                    .background(Color(0xFF232627))
+//                    .padding(start = 5.dp)
+//                    .height(60.dp)
+//                    .fillMaxWidth(),
+//                horizontalArrangement = Arrangement.Center,
+//
+//                verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
+//            ) {
+//                Image(
+//                    painter = painterResource(id = R.drawable.logo),
+//                    contentDescription = "Logo",
 //                    modifier = Modifier
-//                        .background(Color.Transparent),
-//                    colors = ButtonDefaults.buttonColors(Color.Transparent)
-//                ) {
-//                    Text(
-//                        "New ",
-//                        color = Color.White,
-//                        style = TextStyle(fontWeight = FontWeight.W400),
-//                        fontSize = 18.sp
-//                    )
+//                        .padding(2.dp)
+//                        .size(40.dp)
+//                ) //Logo
+//                Spacer(modifier = Modifier.padding(4.dp))
+//                Text(
+//                    text = "Iris",
+//                    fontWeight = FontWeight(500),
+//                    color = Color.White,
+//                    modifier = Modifier.weight(1f),
+//                    fontSize = 24.sp
+//                ) //Name
 //
-//                    Icon(
-//                        imageVector = Icons.Default.Add,
-//                        contentDescription = "newChat",
-//                        tint = Color.White // Optional: set the color of the icon
-//                    )
+//                //New Text Button
+////                Button(
+////                    onClick = {
+////                        viewModel.stop()
+////                        viewModel.clear()
+////                    },
+////                    modifier = Modifier
+////                        .background(Color.Transparent),
+////                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+////                ) {
+////                    Text(
+////                        "New ",
+////                        color = Color.White,
+////                        style = TextStyle(fontWeight = FontWeight.W400),
+////                        fontSize = 18.sp
+////                    )
+////
+////                    Icon(
+////                        imageVector = Icons.Default.Add,
+////                        contentDescription = "newChat",
+////                        tint = Color.White // Optional: set the color of the icon
+////                    )
+////
+////                }
 //
-//                }
-
-
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(0.2.dp)
-                    .background(color = Color.White)
-            ) {}//extra spacing
-        }
+//
+//            }
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(0.2.dp)
+//                    .background(color = Color.White)
+//            ) {}//extra spacing
+//        }
         //Top app bar stops here
         Divider(color = Color(0xFFA0A0A5))
-        //New Text Button
+        //New Chat Button
         Column {
             Box(
                 modifier = Modifier
@@ -339,16 +358,18 @@ fun MainCompose(
             val scrollState = rememberLazyListState()
             val coroutineScope = rememberCoroutineScope()
 
-            Box(modifier = Modifier.weight(1f).pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = {autoScrollEnabled = false},
-                    onDoubleTap = {autoScrollEnabled = false },
-                    onLongPress = { autoScrollEnabled = false},
-                    onPress = { autoScrollEnabled = false},
+            Box(modifier = Modifier
+                .weight(1f)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = { autoScrollEnabled = false },
+                        onDoubleTap = { autoScrollEnabled = false },
+                        onLongPress = { autoScrollEnabled = false },
+                        onPress = { autoScrollEnabled = false },
 
 
-                )
-            }) {
+                        )
+                }) {
                 LazyColumn(state = scrollState) {  //chat section starts here
 
                     coroutineScope.launch {
@@ -509,27 +530,52 @@ fun MainCompose(
             //Prompt input field
             Box(modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF232627))
+                .background(Color(0xFF050B16))
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(start = 20.dp, top = 8.dp, bottom = 8.dp, end = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
 
-                ) {
-                    OutlinedTextField(
+                    ) {
+//                    OutlinedTextField(
+//                        value = viewModel.message,
+//                        onValueChange = { viewModel.updateMessage(it) },
+//                        label = { Text("Message") },
+//                        modifier = Modifier
+////                            .weight(1f)
+//                            .background(Color(0xFF141A26), shape = RoundedCornerShape(22.dp))
+//
+//                           ,
+//                        shape = RoundedCornerShape(size = 22.dp),
+//                        colors = OutlinedTextFieldDefaults.colors(
+//                            focusedTextColor = Color.White,
+//                            focusedBorderColor = Color.White,
+//                            focusedLabelColor = Color.White,
+//                            cursorColor = Color.White,
+//
+//                        ),
+
+                    TextField(
                         value = viewModel.message,
                         onValueChange = { viewModel.updateMessage(it) },
                         label = { Text("Message") },
-                        modifier = Modifier.weight(1f),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            focusedBorderColor = Color.White,
-                            focusedLabelColor = Color.White,
-                            cursorColor = Color.White
-                        ),
+                        modifier = Modifier
+                            .fillMaxWidth(1f),
+                        shape = RoundedCornerShape(size = 22.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = Color(0xFF626568),
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent, // Optional, makes the indicator disappear
+                            focusedLabelColor = Color(0xFF626568),
+                            cursorColor = Color(0xFF626568),
+                            unfocusedContainerColor = Color(0xFF171E2C),
+                            focusedContainerColor=Color(0xFF171E2C)
+                        )
+                    )
+
 //                        keyboardOptions = KeyboardOptions(
 //                            keyboardType = KeyboardType.Ascii,
 //                            imeAction = ImeAction.Done
@@ -542,7 +588,7 @@ fun MainCompose(
 //
 //                        ),
 
-                    )
+
                     if (!viewModel.getIsSending()) {
 
                         IconButton(onClick = {
@@ -551,7 +597,10 @@ fun MainCompose(
                             focusManager.clearFocus()
                         }) {
                             Icon(
-                                imageVector = Icons.Default.Send,
+//                                imageVector = Icons.Default.Send,
+                                modifier = Modifier
+                                    .size(32.dp),
+                                painter = painterResource(id = R.drawable.send_2_svgrepo_com),
                                 contentDescription = "Send",
                                 tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
                             )
@@ -607,5 +656,7 @@ fun MainCompose(
     }
 
 }
+}
+
 
 
