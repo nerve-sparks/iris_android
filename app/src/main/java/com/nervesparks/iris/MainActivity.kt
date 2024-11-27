@@ -18,9 +18,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,7 +32,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +46,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,11 +78,13 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.getSystemService
 import kotlinx.coroutines.launch
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 
 class MainActivity(
@@ -179,7 +189,8 @@ fun MainCompose(
     var autoScrollEnabled by remember { mutableStateOf(true) }
 //    var showModal by remember { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
-
+    val Prompts = listOf("What's the weather like today?", "Can you tell me a joke?" , "How do I make a cup of coffee?" , "What’s the capital of France?", "Help me plan my day.",
+            "Can you recommend a good book to read?" , "Tell me an interesting fact about space." , "What's your favorite movie?" , "Can you translate this sentence into Spanish?" , "Tell me about the latest news.")
     val allModelsExist = models.all { model -> model.destination.exists() }
 
     // Hide modal if all model destinations exist
@@ -353,8 +364,6 @@ Box(
             }
         }
         Column {
-
-
             val scrollState = rememberLazyListState()
             val coroutineScope = rememberCoroutineScope()
 
@@ -405,8 +414,6 @@ Box(
                                         )
                                 ) {
                                     Column {
-
-
                                         Row(
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             modifier = Modifier
@@ -426,7 +433,6 @@ Box(
                                                 contentDescription = if (role == "assistant" || role == "log") "Bot Icon" else "Human Icon",
                                                 modifier = Modifier.size(20.dp)
                                             )
-
                                             Image(
                                                 painter = painterResource(id = R.drawable.copy1),
                                                 contentDescription = "Copy Icon",
@@ -441,7 +447,7 @@ Box(
                                                             )
                                                         )
                                                     }
-                                            )
+                                                )
 
                                         }
                                         Text(
@@ -458,7 +464,6 @@ Box(
                                             modifier = Modifier.padding(start = 18.dp, end = 14.dp)
 
                                         )
-
                                     }
                                 }
 
@@ -485,8 +490,6 @@ Box(
                                                     end = 6.dp
                                                 )
                                         ) {
-
-
                                             Image(
                                                 painter = painterResource(id = R.drawable.copy1),
                                                 contentDescription = "Copy Icon user",
@@ -519,14 +522,48 @@ Box(
                                         )
                                     }
 
-
                                 }
 
                             }
                         }
                     }
-                } //chat section ends here
+                }
             }
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(4.dp), // Reduced space between cards
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                items(Prompts.size) { index ->
+                    Card(
+                        modifier = Modifier
+                            .height(60.dp)
+                            .padding(horizontal = 5.dp),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF050B16))
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(8.dp)
+                        ) {
+                            Text(
+                                text = Prompts[index],
+                                style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFA0A0A5)), // Black text color
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .width(160.dp)
+                                    .height(90.dp)
+                                    .padding(horizontal = 8.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            //chat section ends here
+
+
             //Prompt input field
             Box(modifier = Modifier
                 .fillMaxWidth()
