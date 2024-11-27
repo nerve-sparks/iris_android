@@ -148,7 +148,7 @@ class LLamaAndroid {
                 while (ncur.value <= nlen && !stopGeneration) {
                     _isSending.value = true
                     val str = completion_loop(state.context, state.batch, state.sampler, nlen, ncur)
-                    if (str == null) {
+                    if (str == "```" || str == "``") {
                         _isMarked.value = !_isMarked.value
                     }
                     if (str == null) {
