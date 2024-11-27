@@ -561,12 +561,14 @@ Box(
                     TextField(
                         value = viewModel.message,
                         onValueChange = { viewModel.updateMessage(it) },
-                        label = { Text("Message") },
+//                        label = { Text("Message") } ,
+                        placeholder = { Text("Message") },
                         modifier = Modifier
-                            .fillMaxWidth(1f),
-                        shape = RoundedCornerShape(size = 22.dp),
+                            .weight(1f),
+                        shape = RoundedCornerShape(size = 18.dp),
                         colors = TextFieldDefaults.colors(
-                            focusedTextColor = Color(0xFF626568),
+
+                            focusedTextColor = Color(0xFFADB2B8),
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent, // Optional, makes the indicator disappear
                             focusedLabelColor = Color(0xFF626568),
@@ -599,7 +601,8 @@ Box(
                             Icon(
 //                                imageVector = Icons.Default.Send,
                                 modifier = Modifier
-                                    .size(32.dp),
+                                    .size(32.dp)
+                                    .weight(1f),
                                 painter = painterResource(id = R.drawable.send_2_svgrepo_com),
                                 contentDescription = "Send",
                                 tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
@@ -608,6 +611,8 @@ Box(
                     } else if (viewModel.getIsSending()) {
                         IconButton(onClick = { viewModel.stop() }) {
                             Icon(
+                                modifier = Modifier
+                                    .weight(1f),
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Stop",
                                 tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
