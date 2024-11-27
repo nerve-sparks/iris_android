@@ -45,6 +45,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -387,10 +388,13 @@ Box(
                 if (viewModel.messages.size == 0) {
 
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize() // Take up the whole screen
+                            .wrapContentHeight(Alignment.CenterVertically),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
+                        // Header Text
                         item {
                             Text(
                                 text = "Hello, Ask me " + "Anything..",
@@ -409,6 +413,7 @@ Box(
                             )
                         }
 
+                        // Items for Prompts_Home
                         items(Prompts_Home.size) { index ->
                             Box(
                                 contentAlignment = Alignment.Center,
@@ -416,21 +421,49 @@ Box(
                                     .fillMaxWidth()
                                     .height(70.dp)
                                     .padding(8.dp)
-                                    .background(Color(0xFF050B16), shape = RoundedCornerShape(20.dp))
+                                    .background(
+                                        Color(0xFF050B16),
+                                        shape = RoundedCornerShape(20.dp)
+                                    )
                             ) {
-                                Text(
-                                    text = Prompts_Home.getOrNull(index) ?: "",
-                                    style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
-                                    textAlign = TextAlign.Center,
-                                    fontSize = 15.sp,
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(horizontal = 8.dp)
-                                )
-                            }
+                                ) {
+                                    // Circle Icon
+                                    Box(
+                                        modifier = Modifier
+                                            .size(24.dp) // Icon size
+                                            .background(Color.White, shape = CircleShape)
+                                            .padding(4.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Star,
+                                            contentDescription = null,
+                                            tint = Color.Black
+                                        )
+                                    }
 
+                                    Spacer(modifier = Modifier.width(12.dp))
+
+                                    // Text
+                                    Text(
+                                        text = Prompts_Home.getOrNull(index) ?: "",
+                                        style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
+                                        textAlign = TextAlign.Start, // Left align the text
+                                        fontSize = 15.sp,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = 8.dp)
+                                    )
+                                }
+                            }
                         }
                     }
+
                 }
                 else{
                  LazyColumn(state = scrollState) {  //chat section starts here
@@ -592,7 +625,7 @@ Box(
                     if(viewModel.messages.size <= 1){
                         Card(
                             modifier = Modifier
-                                .height(60.dp)
+                                .height(100.dp)
                                 .padding(horizontal = 5.dp),
                             shape = MaterialTheme.shapes.medium,
                             colors = CardDefaults.cardColors(containerColor = Color(0xFF050B16))
@@ -605,12 +638,14 @@ Box(
                             ) {
                                 Text(
                                     text = Prompts[index],
-                                    style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFA0A0A5)), // Black text color
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = Color(0xFFA0A0A5),
+                                        fontSize = 15.sp),
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier
-                                        .width(160.dp)
-                                        .height(90.dp)
-                                        .padding(horizontal = 8.dp)
+                                        .width(200.dp)
+                                        .height(150.dp)
+                                        .padding(horizontal = 10.dp)
                                 )
                             }
                         }
