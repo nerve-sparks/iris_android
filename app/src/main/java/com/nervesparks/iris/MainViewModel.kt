@@ -33,13 +33,15 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         private set
 
     var showModal by  mutableStateOf(true)
-
+    var showAlert by mutableStateOf(false)
     override fun onCleared() {
         super.onCleared()
 
         viewModelScope.launch {
             try {
+
                 llamaAndroid.unload()
+
             } catch (exc: IllegalStateException) {
                 addMessage("error", exc.message ?: "")
             }
@@ -113,8 +115,10 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 Log.e(tag, "load() failed", exc)
             }
             try {
+                showAlert = true
                 llamaAndroid.load(pathToModel)
-                addMessage("log", "Loaded $pathToModel")
+                showAlert = false
+
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "load() failed", exc)
                 addMessage("error", exc.message ?: "")
