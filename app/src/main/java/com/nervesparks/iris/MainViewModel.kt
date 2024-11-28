@@ -1,16 +1,16 @@
 package com.nervesparks.iris
 
+import android.llama.cpp.LLamaAndroid
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nervesparks.iris.Llm
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
-class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
+class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instance()): ViewModel() {
     companion object {
 //        @JvmStatic
 //        private val NanosPerSecond = 1_000_000_000.0
@@ -28,38 +28,100 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     private var first by mutableStateOf(
         true
     )
+
     var message by mutableStateOf("")
         private set
+
+    var showModal by  mutableStateOf(true)
 
     override fun onCleared() {
         super.onCleared()
 
         viewModelScope.launch {
             try {
-                llm.unload()
+                llamaAndroid.unload()
             } catch (exc: IllegalStateException) {
                 addMessage("error", exc.message ?: "")
             }
         }
     }
 
+    fun send() {
+        val userMessage = removeExtraWhiteSpaces(message)
+        message = ""
+
+        // Add to messages console.
+        if (userMessage != "" && userMessage != " ") {
+            if(first){
+                addMessage("system", "This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.")
+                first = false
+            }
+            addMessage("user", userMessage)
+            val text = parseTemplateJson(messages)+"assistant \n"
+            viewModelScope.launch {
+                llamaAndroid.send(text)
+                    .catch {
+                        Log.e(tag, "send() failed", it)
+                        addMessage("error", it.message ?: "")
+                    }
+                    .collect { response ->
+                        // Create a new assistant message with the response
+                        if (getIsMarked()) {
+                            addMessage("codeBlock", response)
+
+                        } else {
+                            addMessage("assistant", response)
+                        }
+                    }
+            }
+        }
+
+
+
+    }
+
+//    fun bench(pp: Int, tg: Int, pl: Int, nr: Int = 1) {
+//        viewModelScope.launch {
+//            try {
+//                val start = System.nanoTime()
+//                val warmupResult = llamaAndroid.bench(pp, tg, pl, nr)
+//                val end = System.nanoTime()
+//
+//                messages += warmupResult
+//
+//                val warmup = (end - start).toDouble() / NanosPerSecond
+//                messages += "Warm up time: $warmup seconds, please wait..."
+//
+//                if (warmup > 5.0) {
+//                    messages += "Warm up took too long, aborting benchmark"
+//                    return@launch
+//                }
+//
+//                messages += llamaAndroid.bench(512, 128, 1, 3)
+//            } catch (exc: IllegalStateException) {
+//                Log.e(tag, "bench() failed", exc)
+//                messages += exc.message!!
+//            }
+//        }
+//    }
+
     fun load(pathToModel: String) {
         viewModelScope.launch {
-            try {
-                llm.unload()
-            } catch (exc: IllegalStateException) {
+            try{
+                llamaAndroid.unload()
+            } catch (exc: IllegalStateException){
                 Log.e(tag, "load() failed", exc)
             }
             try {
-                llm.load(pathToModel)
+                llamaAndroid.load(pathToModel)
                 addMessage("log", "Loaded $pathToModel")
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "load() failed", exc)
                 addMessage("error", exc.message ?: "")
             }
+            showModal = false
         }
     }
-
     private fun addMessage(role: String, content: String) {
         val newMessage = mapOf("role" to role, "content" to content)
 
@@ -92,41 +154,9 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         }
         return chatStr
     }
-
-    fun send() {
-        val userMessage = removeExtraWhiteSpaces(message)
-        message = ""
-        if (userMessage != "" && userMessage != " ") {
-            if(first){
-                addMessage("system", "This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.")
-                first = false
-            }
-
-            addMessage("user", userMessage)
-
-
-            val text = parseTemplateJson(messages)+"assistant \n"
-
-
-            viewModelScope.launch {
-                llm.send(text)
-                    .catch {
-                        Log.e(tag, "send() failed", it)
-                        addMessage("error", it.message ?: "")
-                    }
-                    .collect { response ->
-                        // Create a new assistant message with the response
-                        if (getIsMarked()) {
-                            addMessage("codeBlock", response)
-
-                        } else {
-                            addMessage("assistant", response)
-                        }
-                    }
-            }
-        }
+    fun updateMessage(newMessage: String) {
+        message = newMessage
     }
-
 
     fun clear() {
         messages = listOf(
@@ -140,19 +170,14 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
     }
 
     fun getIsSending(): Boolean {
-        return llm.getIsSending()
+        return llamaAndroid.getIsSending()
     }
 
     private fun getIsMarked(): Boolean {
-        return llm.getIsMarked()
+        return llamaAndroid.getIsMarked()
     }
 
     fun stop() {
-        Llm.instance().stopTextGeneration()
+        llamaAndroid.stopTextGeneration()
     }
-
-    fun updateMessage(newMessage: String) {
-        message = newMessage
-    }
-
 }

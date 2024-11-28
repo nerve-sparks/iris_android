@@ -1,15 +1,14 @@
 package com.nervesparks.iris
 
-//import com.google.accompanist.systemuicontroller.rememberSystemUiController
-//import android.app.ActivityManager
+import android.app.ActivityManager
 import android.app.DownloadManager
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
-//import android.text.format.Formatter
-//import android.view.GestureDetector
+import android.text.format.Formatter
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -28,6 +27,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +40,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -62,22 +63,23 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.getSystemService
+import com.nervesparks.iris.R
 import kotlinx.coroutines.launch
+//import com.example.llama.ui.theme.LlamaAndroidTheme
 import java.io.File
 
 class MainActivity(
-    //activityManager: ActivityManager? = null,
+//    activityManager: ActivityManager? = null,
     downloadManager: DownloadManager? = null,
     clipboardManager: ClipboardManager? = null,
-) : ComponentActivity() {
-
+): ComponentActivity() {
 //    private val tag: String? = this::class.simpleName
+//
 //    private val activityManager by lazy { activityManager ?: getSystemService<ActivityManager>()!! }
     private val downloadManager by lazy { downloadManager ?: getSystemService<DownloadManager>()!! }
-    private val clipboardManager by lazy {
-        clipboardManager ?: getSystemService<ClipboardManager>()!!
-    }
+    private val clipboardManager by lazy { clipboardManager ?: getSystemService<ClipboardManager>()!! }
 
     private val viewModel: MainViewModel by viewModels()
 
@@ -92,7 +94,6 @@ class MainActivity(
         super.onCreate(savedInstanceState)
         window.statusBarColor = android.graphics.Color.parseColor("#FF232627")//for status bar color
 
-
         StrictMode.setVmPolicy(
             VmPolicy.Builder(StrictMode.getVmPolicy())
                 .detectLeakedClosableObjects()
@@ -103,18 +104,12 @@ class MainActivity(
 //        val total = Formatter.formatFileSize(this, availableMemory().totalMem)
         val transparentColor = Color.Transparent.toArgb()
         window.decorView.rootView.setBackgroundColor(transparentColor)
-
+//        viewModel.log("Current memory: $free / $total")
+//        viewModel.log("Downloads directory: ${getExternalFilesDir(null)}")
 
         val extFilesDir = getExternalFilesDir(null)
 
         val models = listOf(
-
-            //            Downloadable(
-//                "Phi-3-mini 4k Instruct(Q4 2.2 GiB)",
-//                Uri.parse("https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf?download=true"),
-//                File(extFilesDir, "Phi-3-mini-4k-instruct-q4.gguf")
-//            ),
-
             Downloadable(
                 "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
                 Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
@@ -127,28 +122,25 @@ class MainActivity(
             }
         }
 
-
         setContent {
 
-            // A surface container using the 'background' color from the theme
-
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = Color(0xFF141718),
-            ) {
-                MainCompose(
-                    viewModel,
-                    clipboardManager,
-                    downloadManager,
-                    models,
-                )
-            }
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = Color(0xFF141718),
+                ) {
+                    MainCompose(
+                        viewModel,
+                        clipboardManager,
+                        downloadManager,
+                        models,
+                    )
+                }
 
 
         }
     }
 }
-
 
 @Composable
 fun MainCompose(
@@ -157,25 +149,60 @@ fun MainCompose(
     dm: DownloadManager,
     models: List<Downloadable>
 ) {
-    //val kc = LocalSoftwareKeyboardController.current
-//    val systemUiController = rememberSystemUiController()
-//
-//    systemUiController.setSystemBarsColor(
-//        color = Color(0xFF232627)
-//    )
 
-    //variable to toggle auto-scrolling
+
     var autoScrollEnabled by remember { mutableStateOf(true) }
 
     val focusManager = LocalFocusManager.current
 
+    val allModelsExist = models.all { model -> model.destination.exists() }
 
-
+    if (allModelsExist) {
+        viewModel.showModal = false
+    }
     Column(modifier = Modifier.padding(bottom = 10.dp)) {
+
+        // Show modal if required
+        if (viewModel.showModal) {
+            // Modal dialog to show download options
+            Dialog(onDismissRequest = {}) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White,
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+
+                    ) {
+                        Text(text = "Download Required", fontWeight = FontWeight.Bold,color = Color.Red)
+                        Text(text = "Don't close or minimize the app!", fontWeight = FontWeight.Bold, color = Color.Red)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        models.forEach { model ->
+                            if (!model.destination.exists()) {
+                                Text(text = model.name, modifier = Modifier.padding(8.dp))
+                                Downloadable.Button(viewModel, dm, model)
+                            }
+                        }
+
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+//                        TextButton(onClick = { viewModel.showModal = false }) {
+//                            Text(text = "Close")
+//                        }
+
+                    }
+                }
+            }
+        }
+
 
         Column{
 
-          //Top app bar starts here.
+            //Top app bar starts here.
             Row(
 
                 modifier = Modifier
@@ -255,7 +282,7 @@ fun MainCompose(
                     onPress = { autoScrollEnabled = false},
 
 
-                )
+                    )
             }) {
                 LazyColumn(state = scrollState) {  //chat section starts here
 
@@ -376,7 +403,7 @@ fun MainCompose(
 
                                             Image(
                                                 painter = painterResource(id = R.drawable.copy1),
-                                                contentDescription = "Copy Icon",
+                                                contentDescription = "Copy Icon user",
                                                 modifier = Modifier
                                                     .size(22.dp)
                                                     .clickable {
@@ -500,13 +527,12 @@ fun MainCompose(
 
             }
 
-            Column {
-                for (model in models) {
-                    Downloadable.Button(viewModel, dm, model)
-                }
-            }
+//            Column {
+//                for (model in models) {
+//                    Downloadable.Button(viewModel, dm, model)
+//                }
+//            }
         }
     }
 
 }
-
