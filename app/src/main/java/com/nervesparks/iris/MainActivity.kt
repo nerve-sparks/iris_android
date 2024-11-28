@@ -91,6 +91,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.loader.content.Loader
@@ -217,8 +218,8 @@ fun MainCompose(
     var autoScrollEnabled by remember { mutableStateOf(true) }
 //    var showModal by remember { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
-    val Prompts = listOf("What's the weather like today?", "Can you tell me a joke?" , "How do I make a cup of coffee?" , "What’s the capital of France?", "Help me plan my day.",
-            "Can you recommend a good book to read?" , "Tell me an interesting fact about space." , "What's your favorite movie?" , "Can you translate this sentence into Spanish?" , "Tell me about the latest news.")
+    val Prompts = listOf("Today's match score ", "Tell me more about ..", "Can you tell me about your services?" , "I need help with an issue I’m facing. Can you assist me?" , "What’s the capital of France?", "I’d like to schedule an appointment for ",
+            "What are the top 5 things to do in Paris?" , "What are some good exercises to improve my posture?" , "Can you recommend some good books/movies based on ?" , "Can you translate this sentence into Spanish?" , "Tell me about the latest news.")
     val allModelsExist = models.all { model -> model.destination.exists() }
 
     val Prompts_Home = listOf("Explain quantum computing in simple terms", "Remember what user said earlier!!", "May occasionally generate incorrect")
@@ -283,8 +284,10 @@ Box(
             Dialog(onDismissRequest = {}) {
                 Surface(
                     shape = RoundedCornerShape(10.dp),
-                    color = Color.LightGray,
-                    modifier = Modifier.padding(10.dp)
+                    color = Color(0xFF01081a),
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .alpha(0.9f)
                 ) {
                     Column(
                         modifier = Modifier
@@ -303,14 +306,14 @@ Box(
                                         "Please wait...",
                                     textAlign = TextAlign.Center,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
+                                    color = Color.White,
                                 )
                         }
                         LinearProgressIndicator(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 8.dp),
-                            color = Color.Gray
+                                .padding(top = 10.dp),
+                            color = Color(0xFF17246a)
                         )
                     }
                 }
@@ -690,7 +693,7 @@ Box(
                     if(viewModel.messages.size <= 1){
                         Card(
                             modifier = Modifier
-                                .height(80.dp)
+                                .height(100.dp)
                                 .padding(horizontal = 8.dp),
                             shape = MaterialTheme.shapes.medium,
                             colors = CardDefaults.cardColors(containerColor = Color(0xFF01081a))
@@ -710,7 +713,7 @@ Box(
                                     modifier = Modifier
                                         .width(200.dp)
                                         .height(100.dp)
-                                        .padding(horizontal = 15.dp, vertical = 10.dp)
+                                        .padding(horizontal = 15.dp, vertical = 12.dp)
                                         .align(Alignment.Center)
                                 )
                             }
