@@ -28,8 +28,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -420,80 +423,99 @@ fun MainCompose(
                                 }
                                 if (role != "system") {
                                     if (role != "codeBlock") {
+
                                         Box(
                                             modifier = Modifier
-                                                .background(
-                                                    when (role) {
-                                                        "user" -> Color.Transparent
-                                                        "assistant" -> Color(0xFF232627)
-                                                        "log" -> Color(0xFF232627)
-                                                        else -> Color.Transparent
-                                                    }
-                                                )
-                                                .fillMaxWidth()
-                                                .padding(
-                                                    bottom = 4.dp
-                                                )
-                                        ) {
-                                            Column {
+//                                                .padding(
+//                                                    end = if (role == "user") 8.dp else 64.dp, // Margin for user
+//                                                    start = if (role == "assistant") 8.dp else 64.dp // Margin for assistant
+//                                                )
+//                                                .widthIn(min = 50.dp, max = 300.dp) // Dynamic bubble width
+//                                                .background(
+//                                                    color = if (role == "user") Color.LightGray else Color(0xFF232627), // Light gray for user, dark for assistant
+//                                                    shape = RoundedCornerShape(12.dp) // Rounded corners for bubble
+//                                                )
 
-
+                                        )
+                                        {
                                                 Row(
-                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
                                                     modifier = Modifier
                                                         .fillMaxWidth()
-                                                        .padding(
-                                                            top = 8.dp,
-                                                            bottom = 8.dp,
-                                                            start = 6.dp,
-                                                            end = 6.dp
-                                                        )
-                                                ) {
-                                                    Image(
-                                                        painter = painterResource(
-                                                            id = if (role == "assistant" || role == "log") R.drawable.logo
-                                                            else R.drawable.user_icon
-                                                        ),
-                                                        contentDescription = if (role == "assistant" || role == "log") "Bot Icon" else "Human Icon",
-                                                        modifier = Modifier.size(20.dp)
-                                                    )
+                                                        .padding(horizontal = 8.dp, vertical = 8.dp),
 
-                                                    Image(
-                                                        painter = painterResource(id = R.drawable.copy1),
-                                                        contentDescription = "Copy Icon",
-                                                        modifier = Modifier
-                                                            .size(22.dp)
-                                                            .clickable {
-                                                                // Copy text to clipboard
-                                                                clipboard.setPrimaryClip(
-                                                                    android.content.ClipData.newPlainText(
-                                                                        "Text",
-                                                                        content
-                                                                    )
+                                                ) {
+                                                    if(role == "assistant") {
+                                                        Image(
+                                                            painter = painterResource(
+                                                                id = R.drawable.logo
+                                                            ),
+                                                            contentDescription =  "Bot Icon",
+                                                            modifier = Modifier.size(20.dp)
+                                                        )
+                                                    }
+                                                    Box( modifier = Modifier
+                                                        .padding(horizontal = 8.dp)
+                                                        .background(
+                                                    color = if (role == "user") Color.LightGray else Color(0xFF232627),
+                                                    shape = RoundedCornerShape(12.dp),
+                                                )
+                                                       )
+                                                    {
+                                                        Row(
+                                                            modifier = Modifier
+                                                                .padding(5.dp)
+                                                        ) {
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .widthIn( max = 230.dp)
+                                                            ){
+                                                                Text(
+                                                                    text = if (trimmedMessage.startsWith("```")) {
+                                                                        trimmedMessage.substring(3)
+                                                                    } else {
+                                                                        trimmedMessage
+                                                                    },
+                                                                    style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
+                                                                    modifier = Modifier.padding(start = 18.dp)
                                                                 )
                                                             }
-                                                    )
+
+                                                            Image(
+                                                                painter = painterResource(id = R.drawable.copy1),
+                                                                contentDescription = "Copy Icon",
+                                                                modifier = Modifier
+                                                                    .size(22.dp)
+                                                                    .clickable {
+                                                                        // Copy text to clipboard
+                                                                        clipboard.setPrimaryClip(
+                                                                            android.content.ClipData.newPlainText(
+                                                                                "Text",
+                                                                                content
+                                                                            )
+                                                                        )
+                                                                    }
+                                                            )
+                                                        }
+
+
+                                                    }
+                                                    if(role == "user") {
+                                                        Image(
+                                                            painter = painterResource(
+                                                                id = R.drawable.user_icon
+                                                            ),
+                                                            contentDescription = "Human Icon",
+                                                            modifier = Modifier.size(20.dp)
+                                                        )
+                                                    }
+
+
 
                                                 }
-                                                Text(
-                                                    text = if (trimmedMessage.startsWith("```")) {
-                                                        trimmedMessage.substring(3)
-                                                    } else {
-                                                        trimmedMessage
-                                                    },
-                                                    style = MaterialTheme.typography.bodyLarge.copy(
-                                                        color = Color(
-                                                            0xFFA0A0A5
-                                                        )
-                                                    ),
-                                                    modifier = Modifier.padding(
-                                                        start = 18.dp,
-                                                        end = 14.dp
-                                                    )
 
-                                                )
 
-                                            }
+//                                            }
                                         }
 
                                     } else {
@@ -509,7 +531,7 @@ fun MainCompose(
                                         ) {
                                             Column {
                                                 Row(
-                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    horizontalArrangement = Arrangement.End,
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .padding(
