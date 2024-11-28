@@ -27,22 +27,31 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -62,7 +71,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -70,6 +83,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -99,9 +113,16 @@ class MainActivity(
 //        }
 //    }
 
+    val darkNavyBlue = Color(0xFF001F3D) // Dark navy blue color
+    val lightNavyBlue = Color(0xFF3A4C7C)
+
+    val gradientBrush = Brush.verticalGradient(
+        colors = listOf(darkNavyBlue, lightNavyBlue)
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.statusBarColor = android.graphics.Color.parseColor("#FF232627")//for status bar color
+        window.statusBarColor = android.graphics.Color.parseColor("#FF070915")//for status bar color
 
         StrictMode.setVmPolicy(
             VmPolicy.Builder(StrictMode.getVmPolicy())
@@ -136,8 +157,9 @@ class MainActivity(
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFF141718),
+                    color = MaterialTheme.colorScheme.background
                 ) {
+                    LinearGradient()
                     MainCompose(
                         viewModel,
                         clipboardManager,
@@ -149,6 +171,18 @@ class MainActivity(
 
         }
     }
+}
+@Composable
+fun LinearGradient() {
+    val darkNavyBlue = Color(0xFF050a14)
+    val lightNavyBlue = Color(0xFF051633)
+    val gradient = Brush.linearGradient(
+        colors = listOf(darkNavyBlue, lightNavyBlue),
+        start = Offset(0f, 300f),
+        end = Offset(0f, 1000f)
+
+    )
+    Box(modifier = Modifier.background(gradient))
 }
 
 @Composable
@@ -170,7 +204,11 @@ fun MainCompose(
 //    var showModal by remember { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
 
+    val Prompts = listOf("Today's match score ", "Tell me more about ..", "Can you tell me about your services?" , "I need help with an issue I’m facing. Can you assist me?" , "What’s the capital of France?", "I’d like to schedule an appointment for ",
+        "What are the top 5 things to do in Paris?" , "What are some good exercises to improve my posture?" , "Can you recommend some good books/movies based on ?" , "Can you translate this sentence into Spanish?" , "Tell me about the latest news.")
+
     val allModelsExist = models.all { model -> model.destination.exists() }
+    val Prompts_Home = listOf("Explain quantum computing in simple terms", "Remember what user said earlier!!", "May occasionally generate incorrect")
 
     // Hide modal if all model destinations exist
     if (allModelsExist) {
@@ -187,7 +225,7 @@ fun MainCompose(
 
             drawerState = drawerState,
             drawerContent = {
-                ModalDrawerSheet(drawerContainerColor=Color(0xFF01081a)) {
+                ModalDrawerSheet(drawerContainerColor=Color(0xFF070915)) {
                     /*Drawer content */
                     Column(
                         modifier = Modifier
@@ -228,7 +266,7 @@ fun MainCompose(
 
 
             // Screen content
-            Column(modifier = Modifier.padding(bottom = 5.dp)) {
+            Column() {
 
                 // Show modal if required
                 if (viewModel.showModal) {
@@ -275,7 +313,46 @@ fun MainCompose(
                     }
                 }
 
-
+                if (viewModel.showAlert) {
+                    // Modal dialog to show download options
+                    Dialog(onDismissRequest = {}) {
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = Color(0xFF01081a),
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .alpha(0.9f)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .wrapContentSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ){
+                                Box(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                )
+                                {
+                                    Text(text = "Loading Model \n" +
+                                            "Please wait...",
+                                        textAlign = TextAlign.Center,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                    )
+                                }
+                                LinearProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 10.dp),
+                                    color = Color(0xFF17246a)
+                                )
+                            }
+                        }
+                    }
+                }
 
                 Column {
 
@@ -283,7 +360,7 @@ fun MainCompose(
                     Row(
 
                         modifier = Modifier
-                            .background(Color(0xFF232627))
+                            .background(color = Color.Transparent)
                             .padding(start = 20.dp, end = 10.dp)
                             .height(60.dp)
                             .fillMaxWidth(),
@@ -383,15 +460,15 @@ fun MainCompose(
                             )
                         }
                     }
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(0.2.dp)
-                            .background(color = Color.White)
-                    ) {}//extra spacing
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(0.2.dp)
+//                            .background(color = Color.White)
+//                    ) {}//extra spacing
                 }
                 //Top app bar stops here
-                Divider(color = Color(0xFFA0A0A5))
+
 
 
                 Column {
@@ -412,28 +489,111 @@ fun MainCompose(
 
                                 )
                         }) {
-                        LazyColumn(state = scrollState) {  //chat section starts here
+                        if (viewModel.messages.size == 0) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize() // Take up the whole screen
+                                    .wrapContentHeight(Alignment.CenterVertically),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 2.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                // Header Text
+                                item {
+                                    Text(
+                                        text = "Hello, Ask me " + "Anything..",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = Color.White,
+                                            fontWeight = FontWeight.W500,
+                                            letterSpacing = 1.sp,
+                                            fontSize = 50.sp,
+                                            lineHeight = 60.sp
+                                        ),
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                            .wrapContentHeight()
+                                    )
+                                }
 
-                            coroutineScope.launch {
+                                // Items for Prompts_Home
+                                items(Prompts_Home.size) { index ->
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(70.dp)
+                                            .padding(8.dp)
+                                            .background(
+                                                Color(0xFF01081a),
+                                                shape = RoundedCornerShape(30.dp)
+                                            )
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 8.dp)
+                                        ) {
+                                            // Circle Icon
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(24.dp) // Icon size
+                                                    .background(Color.White, shape = CircleShape)
+                                                    .padding(4.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Star,
+                                                    contentDescription = null,
+                                                    tint = Color.Black
+                                                )
+                                            }
 
-                                if (autoScrollEnabled) {
-                                    scrollState.scrollToItem(viewModel.messages.size)
+                                            Spacer(modifier = Modifier.width(12.dp))
+
+                                            // Text
+                                            Text(
+                                                text = Prompts_Home.getOrNull(index) ?: "",
+                                                style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
+                                                textAlign = TextAlign.Start, // Left align the text
+                                                fontSize = 15.sp,
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .padding(horizontal = 8.dp)
+                                            )
+                                        }
+                                    }
+                                }
+
+                                item{
+
                                 }
                             }
+                        }
+                        else {
+                            LazyColumn(state = scrollState) {  //chat section starts here
 
-                            itemsIndexed(viewModel.messages) { _, messageMap ->
-                                val role = messageMap["role"] ?: ""
-                                val content = messageMap["content"] ?: ""
-                                val trimmedMessage = if (content.endsWith("\n")) {
-                                    content.substring(startIndex = 0, endIndex = content.length - 1)
-                                } else {
-                                    content
+                                coroutineScope.launch {
+
+                                    if (autoScrollEnabled) {
+                                        scrollState.scrollToItem(viewModel.messages.size)
+                                    }
                                 }
-                                if (role != "system") {
-                                    if (role != "codeBlock") {
 
-                                        Box(
-                                            modifier = Modifier
+                                itemsIndexed(viewModel.messages) { _, messageMap ->
+                                    val role = messageMap["role"] ?: ""
+                                    val content = messageMap["content"] ?: ""
+                                    val trimmedMessage = if (content.endsWith("\n")) {
+                                        content.substring(startIndex = 0, endIndex = content.length - 1)
+                                    } else {
+                                        content
+                                    }
+                                    if (role != "system") {
+                                        if (role != "codeBlock") {
+
+                                            Box(
+                                                modifier = Modifier
 //                                                .padding(
 //                                                    end = if (role == "user") 8.dp else 64.dp, // Margin for user
 //                                                    start = if (role == "assistant") 8.dp else 64.dp // Margin for assistant
@@ -444,54 +604,116 @@ fun MainCompose(
 //                                                    shape = RoundedCornerShape(12.dp) // Rounded corners for bubble
 //                                                )
 
-                                        )
-                                        {
-                                            Row(
-                                                horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                                            )
+                                            {
+                                                Row(
+                                                    horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(horizontal = 8.dp, vertical = 8.dp),
 
-                                                ) {
-                                                if(role == "assistant") {
-                                                    Image(
-                                                        painter = painterResource(
-                                                            id = R.drawable.logo
-                                                        ),
-                                                        contentDescription =  "Bot Icon",
-                                                        modifier = Modifier.size(20.dp)
-                                                    )
-                                                }
-                                                Box( modifier = Modifier
-                                                    .padding(horizontal = 8.dp)
-                                                    .background(
-                                                        color = if (role == "user") Color.LightGray else Color(0xFF232627),
-                                                        shape = RoundedCornerShape(12.dp),
-                                                    )
-                                                )
-                                                {
-                                                    Row(
-                                                        modifier = Modifier
-                                                            .padding(5.dp)
                                                     ) {
-                                                        Box(
+                                                    if(role == "assistant") {
+                                                        Image(
+                                                            painter = painterResource(
+                                                                id = R.drawable.logo
+                                                            ),
+                                                            contentDescription =  "Bot Icon",
+                                                            modifier = Modifier.size(20.dp)
+                                                        )
+                                                    }
+                                                    Box( modifier = Modifier
+                                                        .padding(horizontal = 8.dp)
+                                                        .background(
+                                                            color = if (role == "user") Color(0xFF171E2C) else Color.Transparent,
+                                                            shape = RoundedCornerShape(12.dp),
+                                                        )
+                                                    )
+                                                    {
+                                                        Row(
                                                             modifier = Modifier
-                                                                .widthIn( max = 230.dp)
-                                                        ){
-                                                            Text(
-                                                                text = if (trimmedMessage.startsWith("```")) {
-                                                                    trimmedMessage.substring(3)
-                                                                } else {
-                                                                    trimmedMessage
-                                                                },
-                                                                style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
-                                                                modifier = Modifier.padding(start = 18.dp)
+                                                                .padding(5.dp)
+                                                        ) {
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .widthIn( max = 300.dp)
+                                                            ){
+                                                                Text(
+                                                                    text = if (trimmedMessage.startsWith("```")) {
+                                                                        trimmedMessage.substring(3)
+                                                                    } else {
+                                                                        trimmedMessage
+                                                                    },
+                                                                    style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
+                                                                    modifier = Modifier.padding(start = 18.dp)
+                                                                )
+                                                            }
+
+                                                            Image(
+                                                                painter = painterResource(id = R.drawable.copy1),
+                                                                contentDescription = "Copy Icon",
+                                                                modifier = Modifier
+                                                                    .size(22.dp)
+                                                                    .clickable {
+                                                                        // Copy text to clipboard
+                                                                        clipboard.setPrimaryClip(
+                                                                            android.content.ClipData.newPlainText(
+                                                                                "Text",
+                                                                                content
+                                                                            )
+                                                                        )
+                                                                    }
                                                             )
                                                         }
 
+
+                                                    }
+                                                    if(role == "user") {
+                                                        Image(
+                                                            painter = painterResource(
+                                                                id = R.drawable.user_icon
+                                                            ),
+                                                            contentDescription = "Human Icon",
+                                                            modifier = Modifier.size(20.dp)
+                                                        )
+                                                    }
+
+
+
+                                                }
+
+
+//                                            }
+                                            }
+
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                                                    .background(
+                                                        Color.Black,
+                                                        shape = RoundedCornerShape(8.dp)
+                                                    )
+                                                    .fillMaxWidth()
+
+                                            ) {
+                                                Column {
+                                                    Row(
+                                                        horizontalArrangement = Arrangement.End,
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .padding(
+                                                                top = 8.dp,
+                                                                bottom = 8.dp,
+                                                                start = 6.dp,
+                                                                end = 6.dp
+                                                            )
+                                                    ) {
+
+
                                                         Image(
                                                             painter = painterResource(id = R.drawable.copy1),
-                                                            contentDescription = "Copy Icon",
+                                                            contentDescription = "Copy Icon user",
                                                             modifier = Modifier
                                                                 .size(22.dp)
                                                                 .clickable {
@@ -504,92 +726,69 @@ fun MainCompose(
                                                                     )
                                                                 }
                                                         )
+
                                                     }
-
-
-                                                }
-                                                if(role == "user") {
-                                                    Image(
-                                                        painter = painterResource(
-                                                            id = R.drawable.user_icon
+                                                    Text(
+                                                        text = if (trimmedMessage.startsWith("```")) {
+                                                            trimmedMessage.substring(3)
+                                                        } else {
+                                                            trimmedMessage
+                                                        },
+                                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                                            color = Color(
+                                                                0xFFA0A0A5
+                                                            )
                                                         ),
-                                                        contentDescription = "Human Icon",
-                                                        modifier = Modifier.size(20.dp)
+                                                        modifier = Modifier.padding(16.dp) // Add padding for content
                                                     )
                                                 }
 
 
-
                                             }
 
-
-//                                            }
                                         }
-
-                                    } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .padding(horizontal = 10.dp, vertical = 4.dp)
-                                                .background(
-                                                    Color.Black,
-                                                    shape = RoundedCornerShape(8.dp)
-                                                )
-                                                .fillMaxWidth()
-
-                                        ) {
-                                            Column {
-                                                Row(
-                                                    horizontalArrangement = Arrangement.End,
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(
-                                                            top = 8.dp,
-                                                            bottom = 8.dp,
-                                                            start = 6.dp,
-                                                            end = 6.dp
-                                                        )
-                                                ) {
-
-
-                                                    Image(
-                                                        painter = painterResource(id = R.drawable.copy1),
-                                                        contentDescription = "Copy Icon user",
-                                                        modifier = Modifier
-                                                            .size(22.dp)
-                                                            .clickable {
-                                                                // Copy text to clipboard
-                                                                clipboard.setPrimaryClip(
-                                                                    android.content.ClipData.newPlainText(
-                                                                        "Text",
-                                                                        content
-                                                                    )
-                                                                )
-                                                            }
-                                                    )
-
-                                                }
-                                                Text(
-                                                    text = if (trimmedMessage.startsWith("```")) {
-                                                        trimmedMessage.substring(3)
-                                                    } else {
-                                                        trimmedMessage
-                                                    },
-                                                    style = MaterialTheme.typography.bodyLarge.copy(
-                                                        color = Color(
-                                                            0xFFA0A0A5
-                                                        )
-                                                    ),
-                                                    modifier = Modifier.padding(16.dp) // Add padding for content
-                                                )
-                                            }
-
-
-                                        }
-
                                     }
                                 }
                             }
-                        } //chat section ends here
+                        }
+
+                         //chat section ends here
+                    }
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp), // Reduced space between cards
+                        contentPadding = PaddingValues(vertical = 8.dp)
+                    ) {
+                        items(Prompts.size) { index ->
+                            if(viewModel.messages.size <= 1){
+                                Card(
+                                    modifier = Modifier
+                                        .height(100.dp)
+                                        .padding(horizontal = 8.dp),
+                                    shape = MaterialTheme.shapes.medium,
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF01081a))
+                                ) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(8.dp)
+                                    ) {
+                                        Text(
+                                            text = Prompts[index],
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                color = Color(0xFFA0A0A5),
+                                                fontSize = 15.sp,),
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier
+                                                .width(200.dp)
+                                                .height(100.dp)
+                                                .padding(horizontal = 15.dp, vertical = 12.dp)
+                                                .align(Alignment.Center)
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                     //Prompt input field
                     Box(
