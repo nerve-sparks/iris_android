@@ -61,7 +61,7 @@ class LLamaAndroid {
         }
     }.asCoroutineDispatcher()
 
-    private val nlen: Int = 512
+    private val nlen: Int = 1024
 
     private external fun log_to_android()
     private external fun load_model(filename: String): Long
@@ -155,7 +155,7 @@ class LLamaAndroid {
                         _isSending.value = false
                         break
                     }
-                    if (str == "User" || str == "user" || str == "<|im_end|>" || str == "\n" +
+                    if (str == "User" || str == " User" || str== " user" || str == "user" || str == "<|im_end|>" || str == "\n" +
                         "                                                                                                    "
                     ) {
                         _isSending.value = false
