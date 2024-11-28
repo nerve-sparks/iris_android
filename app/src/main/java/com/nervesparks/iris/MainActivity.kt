@@ -91,6 +91,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.loader.content.Loader
 
 
@@ -116,7 +118,12 @@ class MainActivity(
 //        }
 //    }
 
+    val darkNavyBlue = Color(0xFF001F3D) // Dark navy blue color
+    val lightNavyBlue = Color(0xFF3A4C7C)
 
+    val gradientBrush = Brush.verticalGradient(
+        colors = listOf(darkNavyBlue, lightNavyBlue)
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -164,8 +171,9 @@ class MainActivity(
 
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = Color(0xFF141718),
+                color = MaterialTheme.colorScheme.background
             ) {
+                LinearGradient()
                 MainCompose(
                     viewModel,
                     clipboardManager,
@@ -178,7 +186,18 @@ class MainActivity(
         }
     }
 }
+@Composable
+fun LinearGradient() {
+    val darkNavyBlue = Color(0xFF050a14)
+    val lightNavyBlue = Color(0xFF051633)
+    val gradient = Brush.linearGradient(
+        colors = listOf(darkNavyBlue, lightNavyBlue),
+                start = Offset(0f, 0f),
+                end = Offset(0f, 1000f)
 
+    )
+    Box(modifier = Modifier.background(gradient))
+}
 
 @Composable
 fun MainCompose(
@@ -221,7 +240,7 @@ Box(
 //            .size(50.dp),
 //        contentScale = ContentScale.Fit
 //    )
-    Column(modifier = Modifier.padding(bottom = 5.dp)) {
+    Column(modifier = Modifier.padding()) {
 
         // Show modal if required
         if (viewModel.showModal) {
@@ -437,7 +456,7 @@ Box(
                         modifier = Modifier
                             .fillMaxSize() // Take up the whole screen
                             .wrapContentHeight(Alignment.CenterVertically),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 2.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         // Header Text
@@ -445,8 +464,8 @@ Box(
                             Text(
                                 text = "Hello, Ask me " + "Anything..",
                                 style = MaterialTheme.typography.bodySmall.copy(
-                                    color = Color(0xFFA0A0A5),
-                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.W500,
                                     letterSpacing = 1.sp,
                                     fontSize = 50.sp,
                                     lineHeight = 60.sp
@@ -468,8 +487,8 @@ Box(
                                     .height(70.dp)
                                     .padding(8.dp)
                                     .background(
-                                        Color(0xFF050B16),
-                                        shape = RoundedCornerShape(20.dp)
+                                        Color(0xFF01081a),
+                                        shape = RoundedCornerShape(30.dp)
                                     )
                             ) {
                                 Row(
@@ -536,7 +555,7 @@ Box(
                                          .background(
                                              when (role) {
                                                  "user" -> Color.Transparent
-                                                 "assistant" -> Color(0xFF232627)
+                                                 "assistant" -> Color(0xFF1c1c1e)
                                                  "log" -> Color(0xFF232627)
                                                  else -> Color.Transparent
                                              }
@@ -674,7 +693,7 @@ Box(
                                 .height(80.dp)
                                 .padding(horizontal = 8.dp),
                             shape = MaterialTheme.shapes.medium,
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFF050B16))
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF01081a))
                         ) {
                             Box(
                                 contentAlignment = Alignment.Center,
@@ -706,7 +725,7 @@ Box(
             //Prompt input field
             Box(modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF050B16))
+                .background(color = Color(0xFF090d17))
             ) {
                 Row(
                     modifier = Modifier
@@ -740,8 +759,8 @@ Box(
 //                        label = { Text("Message") } ,
                         placeholder = { Text("Message") },
                         modifier = Modifier
-                            .weight(1f),
-                        shape = RoundedCornerShape(size = 18.dp),
+                            .weight(2f),
+                        shape = RoundedCornerShape(size = 20.dp),
                         colors = TextFieldDefaults.colors(
 
                             focusedTextColor = Color(0xFFADB2B8),
@@ -749,8 +768,8 @@ Box(
                             unfocusedIndicatorColor = Color.Transparent, // Optional, makes the indicator disappear
                             focusedLabelColor = Color(0xFF626568),
                             cursorColor = Color(0xFF626568),
-                            unfocusedContainerColor = Color(0xFF171E2C),
-                            focusedContainerColor=Color(0xFF171E2C)
+                            unfocusedContainerColor = Color(0xFF13203b),
+                            focusedContainerColor=Color(0xFF13203b)
                         )
                     )
 
