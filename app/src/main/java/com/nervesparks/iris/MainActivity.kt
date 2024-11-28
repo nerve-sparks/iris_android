@@ -5,7 +5,6 @@ package com.nervesparks.iris
 import android.app.DownloadManager
 import android.content.ClipboardManager
 import android.net.Uri
-import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
 import android.text.style.BackgroundColorSpan
@@ -88,6 +87,12 @@ import androidx.core.content.getSystemService
 import kotlinx.coroutines.launch
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.runtime.LaunchedEffect
+import androidx.loader.content.Loader
+
 
 class MainActivity(
     //activityManager: ActivityManager? = null,
@@ -110,6 +115,8 @@ class MainActivity(
 //            activityManager.getMemoryInfo(memoryInfo)
 //        }
 //    }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -206,14 +213,14 @@ Box(
     modifier = Modifier
         .fillMaxSize(),
 ){
-    Image(
-        painter = painterResource(id = R.drawable.logo),
-        contentDescription = "Centered Background Logo",
-        modifier = Modifier
-            .align(Alignment.Center)
-            .size(50.dp),
-        contentScale = ContentScale.Fit
-    )
+//    Image(
+//        painter = painterResource(id = R.drawable.logo),
+//        contentDescription = "Centered Background Logo",
+//        modifier = Modifier
+//            .align(Alignment.Center)
+//            .size(50.dp),
+//        contentScale = ContentScale.Fit
+//    )
     Column(modifier = Modifier.padding(bottom = 5.dp)) {
 
         // Show modal if required
@@ -252,6 +259,45 @@ Box(
                 }
             }
         }
+        if (viewModel.showAlert) {
+            // Modal dialog to show download options
+            Dialog(onDismissRequest = {}) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color.LightGray,
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .wrapContentSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ){
+                        Box(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            )
+                            {
+                                Text(text = "Loading Model \n" +
+                                        "Please wait...",
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black,
+                                )
+                        }
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+        }
+
 
 
 //        Column{
@@ -319,7 +365,7 @@ Box(
 //            ) {}//extra spacing
 //        }
         //Top app bar stops here
-        Divider(color = Color(0xFFA0A0A5))
+//        Divider(color = Color(0xFFA0A0A5))
 
 
         //New Chat Button
@@ -625,8 +671,8 @@ Box(
                     if(viewModel.messages.size <= 1){
                         Card(
                             modifier = Modifier
-                                .height(100.dp)
-                                .padding(horizontal = 5.dp),
+                                .height(80.dp)
+                                .padding(horizontal = 8.dp),
                             shape = MaterialTheme.shapes.medium,
                             colors = CardDefaults.cardColors(containerColor = Color(0xFF050B16))
                         ) {
@@ -640,12 +686,13 @@ Box(
                                     text = Prompts[index],
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         color = Color(0xFFA0A0A5),
-                                        fontSize = 15.sp),
+                                        fontSize = 15.sp,),
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier
                                         .width(200.dp)
-                                        .height(150.dp)
-                                        .padding(horizontal = 10.dp)
+                                        .height(100.dp)
+                                        .padding(horizontal = 15.dp, vertical = 10.dp)
+                                        .align(Alignment.Center)
                                 )
                             }
                         }

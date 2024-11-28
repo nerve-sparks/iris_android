@@ -31,6 +31,7 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
         private set
 
     var showModal by  mutableStateOf(true)
+    var showAlert by mutableStateOf(false)
 
     override fun onCleared() {
         super.onCleared()
@@ -52,7 +53,9 @@ class MainViewModel(private val llm: Llm = Llm.instance()) : ViewModel() {
                 Log.e(tag, "load() failed", exc)
             }
             try {
+                showAlert = true
                 llm.load(pathToModel)
+                showAlert = false
 //                addMessage("log", "Loaded $pathToModel")
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "load() failed", exc)
