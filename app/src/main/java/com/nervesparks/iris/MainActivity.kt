@@ -67,6 +67,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
@@ -205,19 +206,48 @@ fun MainCompose(
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         ModalNavigationDrawer(
+
             drawerState = drawerState,
             drawerContent = {
-                ModalDrawerSheet { /* Drawer content */ }
+                ModalDrawerSheet(drawerContainerColor=Color(0xFF01081a)) {
+                    /*Drawer content */
+                    Column(
+                        modifier = Modifier
+                            .padding(20.dp)
+                    ) {
+                        // top logo ,name of app
+                        Column(
+
+
+                        ){
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.logo),
+                                    contentDescription = "Centered Background Logo",
+                                    modifier = Modifier
+                                        .size(50.dp),
+                                    contentScale = ContentScale.Fit
+                                )
+                                Spacer(Modifier.padding(20.dp))
+                                Text(
+                                    text = "Iris",
+                                    fontWeight = FontWeight(500),
+                                    color = Color.White,
+//                            modifier = Modifier.weight(),
+                                    fontSize = 24.sp
+                                )
+                            }
+                        }
+
+                    }
+
+                }
             },
         ) {
-        Image(
-            painter = painterResource(id = R.drawable.logo),
-            contentDescription = "Centered Background Logo",
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(50.dp),
-            contentScale = ContentScale.Fit
-        )
+
 
         // Screen content
         Column(modifier = Modifier.padding(bottom = 5.dp)) {
