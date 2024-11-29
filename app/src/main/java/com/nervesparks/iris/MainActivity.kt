@@ -119,8 +119,13 @@ class MainActivity(
 //        }
 //    }
 
-    val darkNavyBlue = Color(0xFF001F3D) // Dark navy blue color
-    val lightNavyBlue = Color(0xFF3A4C7C)
+
+
+//        val free = Formatter.formatFileSize(this, availableMemory().availMem)
+//        val total = Formatter.formatFileSize(this, availableMemory().totalMem)
+        val transparentColor = Color.Transparent.toArgb()
+        val darkNavyBlue = Color(0xFF001F3D) // Dark navy blue color
+        val lightNavyBlue = Color(0xFF3A4C7C)
 
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(darkNavyBlue, lightNavyBlue)
@@ -136,10 +141,6 @@ class MainActivity(
                 .detectLeakedClosableObjects()
                 .build()
         )
-
-//        val free = Formatter.formatFileSize(this, availableMemory().availMem)
-//        val total = Formatter.formatFileSize(this, availableMemory().totalMem)
-        val transparentColor = Color.Transparent.toArgb()
         window.decorView.rootView.setBackgroundColor(transparentColor)
 
 
@@ -193,7 +194,7 @@ fun LinearGradient() {
     val lightNavyBlue = Color(0xFF051633)
     val gradient = Brush.linearGradient(
         colors = listOf(darkNavyBlue, lightNavyBlue),
-                start = Offset(0f, 0f),
+                start = Offset(4f, 0f),
                 end = Offset(0f, 1000f)
 
     )
@@ -533,7 +534,7 @@ Box(
                     }
 
                 }
-                else{
+                else {
                  LazyColumn(state = scrollState) {  //chat section starts here
 
                      coroutineScope.launch {
