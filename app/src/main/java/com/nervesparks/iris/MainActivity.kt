@@ -71,7 +71,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -172,6 +174,7 @@ class MainActivity(
         }
     }
 }
+
 @Composable
 fun LinearGradient() {
     val darkNavyBlue = Color(0xFF050a14)
@@ -215,9 +218,12 @@ fun MainCompose(
         viewModel.showModal = false
     }
 
+
     Box(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = if(!viewModel.showModal || viewModel.showAlert ){Modifier
+            .fillMaxSize()} else {Modifier
+            .fillMaxSize().blur(10.dp, BlurredEdgeTreatment.Rectangle)},
+
     ) {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
@@ -233,8 +239,6 @@ fun MainCompose(
                     ) {
                         // top logo ,name of app
                         Column(
-
-
                         ){
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -265,7 +269,7 @@ fun MainCompose(
         ) {
 
 
-            // Screen content
+           // Screen content
             Column() {
 
                 // Show modal if required
@@ -274,35 +278,40 @@ fun MainCompose(
                     Dialog(onDismissRequest = {}) {
                         Surface(
                             shape = RoundedCornerShape(10.dp),
-                            color = Color.LightGray,
-                            modifier = Modifier.padding(10.dp)
+                            color = Color.Black,
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .height(230.dp)
                         ) {
                             Column(
-                                modifier = Modifier.padding(16.dp),
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .height(140.dp)
+                                    ,
                                 horizontalAlignment = Alignment.CenterHorizontally
 
                             ) {
                                 Text(
                                     text = "Download Required",
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFDC3911)
+                                    color = Color.White
                                 )
                                 Text(
                                     text = "Don't close or minimize the app!",
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFDC3911)
+                                    color = Color.White
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(35.dp))
 
                                 models.forEach { model ->
                                     if (!model.destination.exists()) {
-                                        Text(text = model.name, modifier = Modifier.padding(5.dp))
+//                                        Text(text = model.name, modifier = Modifier.padding(9.dp))
                                         Downloadable.Button(viewModel, dm, model)
                                     }
                                 }
 
 
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(20.dp))
 
 //                        TextButton(onClick = { viewModel.showModal = false }) {
 //                            Text(text = "Close")
@@ -489,7 +498,9 @@ fun MainCompose(
 
                                 )
                         }) {
-                        if (viewModel.messages.size == 0) {
+//                        .blur(5.dp, BlurredEdgeTreatment.Rectangle)
+
+                        if (viewModel.messages.size == 0 && viewModel.showModal==false && viewModel.showAlert ==false) {
                             LazyColumn(
                                 modifier = Modifier
                                     .fillMaxSize() // Take up the whole screen
@@ -711,21 +722,21 @@ fun MainCompose(
                                                     ) {
 
 
-                                                        Image(
-                                                            painter = painterResource(id = R.drawable.copy1),
-                                                            contentDescription = "Copy Icon user",
-                                                            modifier = Modifier
-                                                                .size(22.dp)
-                                                                .clickable {
-                                                                    // Copy text to clipboard
-                                                                    clipboard.setPrimaryClip(
-                                                                        android.content.ClipData.newPlainText(
-                                                                            "Text",
-                                                                            content
+                                                            Image(
+                                                                painter = painterResource(id = R.drawable.copy1),
+                                                                contentDescription = "Copy Icon user",
+                                                                modifier = Modifier
+                                                                    .size(22.dp)
+                                                                    .clickable {
+                                                                        // Copy text to clipboard
+                                                                        clipboard.setPrimaryClip(
+                                                                            android.content.ClipData.newPlainText(
+                                                                                "Text",
+                                                                                content
+                                                                            )
                                                                         )
-                                                                    )
-                                                                }
-                                                        )
+                                                                    }
+                                                            )
 
                                                     }
                                                     Text(

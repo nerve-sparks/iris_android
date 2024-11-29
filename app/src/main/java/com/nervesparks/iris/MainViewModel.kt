@@ -170,7 +170,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     }
 
     fun log(message: String) {
-        addMessage("log", message)
+//        addMessage("log", message)
     }
 
     fun getIsSending(): Boolean {
