@@ -1,5 +1,6 @@
 package com.nervesparks.iris
 
+import android.app.Activity
 import android.app.ActivityManager
 import android.app.DownloadManager
 import android.content.ClipData
@@ -79,6 +80,7 @@ import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -92,6 +94,15 @@ import com.nervesparks.iris.R
 import kotlinx.coroutines.launch
 //import com.example.llama.ui.theme.LlamaAndroidTheme
 import java.io.File
+import android.content.Context
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+
 
 class MainActivity(
 //    activityManager: ActivityManager? = null,
@@ -137,6 +148,7 @@ class MainActivity(
 //        viewModel.log("Current memory: $free / $total")
 //        viewModel.log("Downloads directory: ${getExternalFilesDir(null)}")
 
+
         val extFilesDir = getExternalFilesDir(null)
 
         val models = listOf(
@@ -170,6 +182,17 @@ class MainActivity(
 
 
         }
+    }
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val focusedView = currentFocus
+            if (focusedView != null) {
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(focusedView.windowToken, 0)
+                focusedView.clearFocus()
+            }
+        }
+        return super.dispatchTouchEvent(event)
     }
 }
 @Composable
@@ -210,6 +233,9 @@ fun MainCompose(
     val allModelsExist = models.all { model -> model.destination.exists() }
     val Prompts_Home = listOf("Explain quantum computing in simple terms", "Remember what user said earlier!!", "May occasionally generate incorrect")
 
+    val focusRequester = remember { FocusRequester() }
+
+
     // Hide modal if all model destinations exist
     if (allModelsExist) {
         viewModel.showModal = false
@@ -217,7 +243,12 @@ fun MainCompose(
 
     Box(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            },
     ) {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
@@ -229,13 +260,11 @@ fun MainCompose(
                     /*Drawer content */
                     Column(
                         modifier = Modifier
-                            .padding(20.dp)
+                            .padding(20.dp),
+
                     ) {
                         // top logo ,name of app
-                        Column(
-
-
-                        ){
+                        Column{
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
 
@@ -244,10 +273,10 @@ fun MainCompose(
                                     painter = painterResource(id = R.drawable.logo),
                                     contentDescription = "Centered Background Logo",
                                     modifier = Modifier
-                                        .size(50.dp),
+                                        .size(30.dp),
                                     contentScale = ContentScale.Fit
                                 )
-                                Spacer(Modifier.padding(20.dp))
+                                Spacer(Modifier.padding(5.dp))
                                 Text(
                                     text = "Iris",
                                     fontWeight = FontWeight(500),
@@ -258,6 +287,13 @@ fun MainCompose(
                             }
                         }
 
+                        Column {
+                            Text(
+                                text= "powered by llama.cpp",
+                                color = Color.LightGray,
+                                fontSize = 15.sp
+                            )
+                        }
                     }
 
                 }
@@ -354,7 +390,9 @@ fun MainCompose(
                     }
                 }
 
-                Column {
+                Column (
+
+                ){
 
                     //Top app bar starts here.
                     Row(
@@ -636,7 +674,7 @@ fun MainCompose(
                                                         ) {
                                                             Box(
                                                                 modifier = Modifier
-                                                                    .widthIn( max = 300.dp)
+                                                                    .widthIn( max = 270.dp)
                                                             ){
                                                                 Text(
                                                                     text = if (trimmedMessage.startsWith("```")) {
@@ -767,11 +805,18 @@ fun MainCompose(
                                     shape = MaterialTheme.shapes.medium,
                                     colors = CardDefaults.cardColors(containerColor = Color(0xFF01081a))
                                 ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
+                                    Button( onClick = {
+                                        viewModel.updateMessage(Prompts[index])
+
+                                        focusRequester.requestFocus()
+                                    },
+//                                        contentAlignment = Alignment.Center,
                                         modifier = Modifier
                                             .fillMaxSize()
-                                            .padding(8.dp)
+                                            .padding(8.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                        contentPadding = PaddingValues(vertical = 0.dp, horizontal = 0.dp)
+
                                     ) {
                                         Text(
                                             text = Prompts[index],
@@ -783,7 +828,7 @@ fun MainCompose(
                                                 .width(200.dp)
                                                 .height(100.dp)
                                                 .padding(horizontal = 15.dp, vertical = 12.dp)
-                                                .align(Alignment.Center)
+//                                                .align(Alignment.Center)
                                         )
                                     }
                                 }
@@ -823,12 +868,14 @@ fun MainCompose(
 //                        ),
 
                             TextField(
-                                value = viewModel.message,
-                                onValueChange = { viewModel.updateMessage(it) },
+                                value = TextFieldValue(text = viewModel.message, selection = TextRange(viewModel.message.length)),
+                                onValueChange = { viewModel.updateMessage(it.text) },
+
 //                        label = { Text("Message") } ,
                                 placeholder = { Text("Message") },
                                 modifier = Modifier
-                                    .weight(1f),
+                                    .weight(1f)
+                                    .focusRequester(focusRequester),
                                 shape = RoundedCornerShape(size = 18.dp),
                                 colors = TextFieldDefaults.colors(
 
