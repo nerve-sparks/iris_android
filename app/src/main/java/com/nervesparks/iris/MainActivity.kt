@@ -188,6 +188,7 @@ fun LinearGradient() {
     Box(modifier = Modifier.background(gradient))
 }
 
+
 @Composable
 fun MainCompose(
     viewModel: MainViewModel,
@@ -806,6 +807,7 @@ fun MainCompose(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color(0xFF050B16))
+
                     ) {
                         Row(
                             modifier = Modifier
@@ -832,6 +834,7 @@ fun MainCompose(
 //                            cursorColor = Color.White,
 //
 //                        ),
+
 
                             TextField(
                                 value = viewModel.message,
