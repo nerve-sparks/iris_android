@@ -715,6 +715,7 @@ fun MainCompose(
 
                                             Box(
                                                 modifier = Modifier
+
 //                                                .padding(
 //                                                    end = if (role == "user") 8.dp else 64.dp, // Margin for user
 //                                                    start = if (role == "assistant") 8.dp else 64.dp // Margin for assistant
@@ -753,6 +754,7 @@ fun MainCompose(
                                                         )
                                                     )
                                                     {
+                                                        val context = LocalContext.current
                                                         Row(
                                                             modifier = Modifier
                                                                 .padding(5.dp)
@@ -761,6 +763,16 @@ fun MainCompose(
                                                             Box(
                                                                 modifier = Modifier
                                                                     .widthIn( max = 300.dp)
+                                                                    .padding(3.dp)
+                                                                    .pointerInput(Unit) {
+                                                                        detectTapGestures(
+                                                                            onLongPress = {
+                                                                                clipboard.setText(
+                                                                                    AnnotatedString(
+                                                                                        trimmedMessage) )
+                                                                                Toast.makeText(context, "text copied!!", Toast.LENGTH_LONG).show()
+                                                                            })
+                                                                    }
                                                             ){
                                                                 Text(
                                                                     text = if (trimmedMessage.startsWith("```")) {
@@ -821,21 +833,21 @@ fun MainCompose(
                                                     ) {
 
 
-                                                        Image(
-                                                            painter = painterResource(id = R.drawable.copy1),
-                                                            contentDescription = "Copy Icon user",
-                                                            modifier = Modifier
-                                                                .size(22.dp)
-                                                                .clickable {
-                                                                    // Copy text to clipboard
-                                                                    clipboard.setPrimaryClip(
-                                                                        android.content.ClipData.newPlainText(
-                                                                            "Text",
-                                                                            content
-                                                                        )
-                                                                    )
-                                                                }
-                                                        )
+//                                                        Image(
+//                                                            painter = painterResource(id = R.drawable.copy1),
+//                                                            contentDescription = "Copy Icon user",
+//                                                            modifier = Modifier
+//                                                                .size(22.dp)
+//                                                                .clickable {
+//                                                                    // Copy text to clipboard
+//                                                                    clipboard.setPrimaryClip(
+//                                                                        android.content.ClipData.newPlainText(
+//                                                                            "Text",
+//                                                                            content
+//                                                                        )
+//                                                                    )
+//                                                                }
+//                                                        )
 
                                                     }
                                                     Text(
