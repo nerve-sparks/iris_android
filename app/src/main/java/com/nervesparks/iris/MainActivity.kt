@@ -21,13 +21,16 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,6 +58,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -233,6 +237,7 @@ fun LinearGradient() {
 
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainCompose(
     viewModel: MainViewModel,
@@ -258,7 +263,8 @@ fun MainCompose(
     val allModelsExist = models.all { model -> model.destination.exists() }
     val Prompts_Home = listOf("Explain quantum computing in simple terms", "Remember what user said earlier!!", "May occasionally generate incorrect")
 
-
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed = interactionSource.collectIsPressedAsState()
     val focusRequester = FocusRequester()
     var isFocused by remember { mutableStateOf(false) }
     // Hide modal if all model destinations exist
@@ -728,6 +734,7 @@ fun MainCompose(
 
                                             )
                                             {
+                                                val context = LocalContext.current
                                                 Row(
                                                     horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
                                                     modifier = Modifier
@@ -735,6 +742,8 @@ fun MainCompose(
                                                         .padding(horizontal = 8.dp, vertical = 8.dp),
 
                                                     ) {
+                                                    val interactionSource = remember { MutableInteractionSource() }
+
                                                     if(role == "assistant") {
                                                         Image(
                                                             painter = painterResource(
@@ -752,27 +761,31 @@ fun MainCompose(
                                                             ) else Color.Transparent,
                                                             shape = RoundedCornerShape(12.dp),
                                                         )
+                                                        .combinedClickable(
+                                                            interactionSource = interactionSource,
+                                                            indication = ripple(color = Color.Gray),
+                                                            onLongClick = {
+                                                                clipboard.setText(
+                                                                    AnnotatedString(trimmedMessage)
+                                                                )
+                                                                Toast.makeText(context, "text copied!!", Toast.LENGTH_LONG).show()
+                                                            },
+                                                            onClick = {}
+                                                        )
                                                     )
                                                     {
-                                                        val context = LocalContext.current
+
                                                         Row(
                                                             modifier = Modifier
                                                                 .padding(5.dp)
                                                         ) {
 
+
                                                             Box(
                                                                 modifier = Modifier
-                                                                    .widthIn( max = 300.dp)
+                                                                    .widthIn(max = 300.dp)
                                                                     .padding(3.dp)
-                                                                    .pointerInput(Unit) {
-                                                                        detectTapGestures(
-                                                                            onLongPress = {
-                                                                                clipboard.setText(
-                                                                                    AnnotatedString(
-                                                                                        trimmedMessage) )
-                                                                                Toast.makeText(context, "text copied!!", Toast.LENGTH_LONG).show()
-                                                                            })
-                                                                    }
+
                                                             ){
                                                                 Text(
                                                                     text = if (trimmedMessage.startsWith("```")) {
