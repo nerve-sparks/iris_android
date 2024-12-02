@@ -897,7 +897,7 @@ fun MainCompose(
                                         modifier = Modifier
                                             .fillMaxSize()
                                             .padding(8.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF01081a)),
                                         contentPadding = PaddingValues(vertical = 0.dp, horizontal = 0.dp)
 
                                     ) {
