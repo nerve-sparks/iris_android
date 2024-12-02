@@ -4,18 +4,27 @@ import android.app.ActivityManager
 import android.app.DownloadManager
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
 import android.text.format.Formatter
+import android.transition.Transition
+import android.widget.Toast
+
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +43,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.*
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -63,6 +73,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,11 +89,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradient
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -118,9 +133,12 @@ class MainActivity(
     val darkNavyBlue = Color(0xFF001F3D) // Dark navy blue color
     val lightNavyBlue = Color(0xFF3A4C7C)
 
+
+
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(darkNavyBlue, lightNavyBlue)
     )
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -189,6 +207,8 @@ fun LinearGradient() {
 }
 
 
+
+
 @Composable
 fun MainCompose(
     viewModel: MainViewModel,
@@ -202,6 +222,7 @@ fun MainCompose(
 //    systemUiController.setSystemBarsColor(
 //        color = Color(0xFF232627)
 //    )
+
 
     //variable to toggle auto-scrolling
     var autoScrollEnabled by remember { mutableStateOf(true) }
@@ -617,7 +638,9 @@ fun MainCompose(
 //                                                )
 
                                             )
-                                            {
+
+                                            val context = LocalContext.current
+
                                                 Row(
                                                     horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
                                                     modifier = Modifier
@@ -646,9 +669,22 @@ fun MainCompose(
                                                             modifier = Modifier
                                                                 .padding(5.dp)
                                                         ) {
+
                                                             Box(
                                                                 modifier = Modifier
                                                                     .widthIn( max = 300.dp)
+                                                                    .padding(5.dp)
+                                                                    .wrapContentHeight()
+                                                                    .pointerInput(Unit) {
+                                                                        detectTapGestures(
+                                                                            onLongPress = {
+                                                                                clipboard.setText(
+                                                                                    AnnotatedString(
+                                                                                        trimmedMessage) )
+
+                                                                                Toast.makeText(context, "text copied!!", Toast.LENGTH_LONG).show()
+                                                                            })
+                                                                    },
                                                             ){
                                                                 Text(
                                                                     text = if (trimmedMessage.startsWith("```")) {
@@ -657,25 +693,11 @@ fun MainCompose(
                                                                         trimmedMessage
                                                                     },
                                                                     style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
-                                                                    modifier = Modifier.padding(start = 18.dp)
+                                                                    modifier = Modifier
+                                                                        .padding(start = 18.dp)
+
                                                                 )
                                                             }
-
-                                                            Image(
-                                                                painter = painterResource(id = R.drawable.copy1),
-                                                                contentDescription = "Copy Icon",
-                                                                modifier = Modifier
-                                                                    .size(22.dp)
-                                                                    .clickable {
-                                                                        // Copy text to clipboard
-                                                                        clipboard.setPrimaryClip(
-                                                                            android.content.ClipData.newPlainText(
-                                                                                "Text",
-                                                                                content
-                                                                            )
-                                                                        )
-                                                                    }
-                                                            )
                                                         }
 
 
@@ -696,7 +718,7 @@ fun MainCompose(
 
 
 //                                            }
-                                            }
+
 
                                         } else {
                                             Box(
@@ -723,21 +745,21 @@ fun MainCompose(
                                                     ) {
 
 
-                                                            Image(
-                                                                painter = painterResource(id = R.drawable.copy1),
-                                                                contentDescription = "Copy Icon user",
-                                                                modifier = Modifier
-                                                                    .size(22.dp)
-                                                                    .clickable {
-                                                                        // Copy text to clipboard
-                                                                        clipboard.setPrimaryClip(
-                                                                            android.content.ClipData.newPlainText(
-                                                                                "Text",
-                                                                                content
-                                                                            )
-                                                                        )
-                                                                    }
-                                                            )
+//                                                            Image(
+//                                                                painter = painterResource(id = R.drawable.copy1),
+//                                                                contentDescription = "Copy Icon user",
+//                                                                modifier = Modifier
+//                                                                    .size(22.dp)
+//                                                                    .clickable {
+//                                                                        // Copy text to clipboard
+//                                                                        clipboard.setPrimaryClip(
+//                                                                            android.content.ClipData.newPlainText(
+//                                                                                "Text",
+//                                                                                content
+//                                                                            )
+//                                                                        )
+//                                                                    }
+//                                                            )
 
                                                     }
                                                     Text(
