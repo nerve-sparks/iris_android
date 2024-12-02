@@ -1,15 +1,17 @@
 package com.nervesparks.iris
 
+//import com.example.llama.ui.theme.LlamaAndroidTheme
 import android.app.Activity
-import android.app.ActivityManager
 import android.app.DownloadManager
-import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
-import android.text.format.Formatter
+import android.util.Log
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -23,6 +25,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,31 +37,24 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -73,35 +69,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.getSystemService
-import com.nervesparks.iris.R
 import kotlinx.coroutines.launch
-//import com.example.llama.ui.theme.LlamaAndroidTheme
 import java.io.File
-import android.content.Context
-import android.view.MotionEvent
-import android.view.inputmethod.InputMethodManager
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
+import java.security.AccessController.getContext
+import kotlin.math.log
 
 
 class MainActivity(
@@ -114,7 +105,7 @@ class MainActivity(
 //    private val activityManager by lazy { activityManager ?: getSystemService<ActivityManager>()!! }
     private val downloadManager by lazy { downloadManager ?: getSystemService<DownloadManager>()!! }
     private val clipboardManager by lazy { clipboardManager ?: getSystemService<ClipboardManager>()!! }
-
+    private val isTextFieldFocused = mutableStateOf(false)
     private val viewModel: MainViewModel by viewModels()
 
     // Get a MemoryInfo object for the device's current memory status.
@@ -183,17 +174,22 @@ class MainActivity(
 
         }
     }
-    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            val focusedView = currentFocus
-            if (focusedView != null) {
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(focusedView.windowToken, 0)
-                focusedView.clearFocus()
-            }
-        }
-        return super.dispatchTouchEvent(event)
-    }
+
+//    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+//        if (event.action == MotionEvent.ACTION_DOWN) {
+//
+//                val focusedView = currentFocus
+//
+//            if (focusedView != null && focusedView !is TextField) {
+//                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+//                imm.hideSoftInputFromWindow(focusedView.windowToken, 0)
+//                focusedView.clearFocus()
+//            }
+//        }
+//        return super.dispatchTouchEvent(event)
+//    }
+
+
 }
 @Composable
 fun LinearGradient() {
@@ -213,7 +209,7 @@ fun MainCompose(
     viewModel: MainViewModel,
     clipboard: ClipboardManager,
     dm: DownloadManager,
-    models: List<Downloadable>
+    models: List<Downloadable>,
 ) {
     //val kc = LocalSoftwareKeyboardController.current
 //    val systemUiController = rememberSystemUiController()
@@ -221,7 +217,6 @@ fun MainCompose(
 //    systemUiController.setSystemBarsColor(
 //        color = Color(0xFF232627)
 //    )
-
     //variable to toggle auto-scrolling
     var autoScrollEnabled by remember { mutableStateOf(true) }
 //    var showModal by remember { mutableStateOf(true) }
@@ -233,9 +228,9 @@ fun MainCompose(
     val allModelsExist = models.all { model -> model.destination.exists() }
     val Prompts_Home = listOf("Explain quantum computing in simple terms", "Remember what user said earlier!!", "May occasionally generate incorrect")
 
-    val focusRequester = remember { FocusRequester() }
 
-
+    val focusRequester = FocusRequester()
+    var isFocused by remember { mutableStateOf(false) }
     // Hide modal if all model destinations exist
     if (allModelsExist) {
         viewModel.showModal = false
@@ -246,9 +241,35 @@ fun MainCompose(
             .fillMaxSize()
             .pointerInput(Unit) {
                 detectTapGestures(onTap = {
-                    focusManager.clearFocus()
+                    println("TAP in parent Box ontap")
+
+                    if (isFocused) {
+                        focusManager.clearFocus()
+                        isFocused = false
+                    }
+                }, onDoubleTap = {
+                    println("TAP in parent Box dd tap")
+
+                    if (isFocused) {
+                        focusManager.clearFocus()
+                        isFocused = false
+                    }
+                },onPress={
+                    println("TAP in parent Box onpress")
+
+                    if (isFocused) {
+                        focusManager.clearFocus()
+                        isFocused = false
+                    }
+                }, onLongPress = {
+                    println("TAP in parent Box onlongpress")
+
+                    if (isFocused) {
+                        focusManager.clearFocus()
+                        isFocused = false
+                    }
                 })
-            },
+            }
     ) {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
@@ -256,11 +277,21 @@ fun MainCompose(
 
             drawerState = drawerState,
             drawerContent = {
-                ModalDrawerSheet(drawerContainerColor=Color(0xFF070915)) {
+                ModalDrawerSheet(
+                    modifier = Modifier
+                        .width(300.dp)    // or your desired width
+                        .fillMaxHeight(),
+                    drawerContainerColor=Color(0xFF070915),
+
+                ) {
                     /*Drawer content */
                     Column(
                         modifier = Modifier
-                            .padding(20.dp),
+                            .padding(20.dp)
+                            .fillMaxHeight()
+                        ,
+
+                        verticalArrangement = Arrangement.SpaceBetween
 
                     ) {
                         // top logo ,name of app
@@ -287,11 +318,21 @@ fun MainCompose(
                             }
                         }
 
-                        Column {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.End
+                        ) {
                             Text(
-                                text= "powered by llama.cpp",
-                                color = Color.LightGray,
-                                fontSize = 15.sp
+//                                modifier = Modifier.padding(end = 20.dp),
+                                text= "powered by",
+                                color = Color(0xFF636466),
+                                fontSize = 10.sp
+                            )
+                            Text(
+
+                                text= " llama.cpp",
+                                color = Color(0xFF78797a),
+                                fontSize = 12.sp
                             )
                         }
                     }
@@ -302,7 +343,9 @@ fun MainCompose(
 
 
             // Screen content
-            Column() {
+            Column(
+
+            ) {
 
                 // Show modal if required
                 if (viewModel.showModal) {
@@ -372,8 +415,9 @@ fun MainCompose(
                                     contentAlignment = Alignment.Center
                                 )
                                 {
-                                    Text(text = "Loading Model \n" +
-                                            "Please wait...",
+                                    Text(
+                                        text = "Loading Model \n" +
+                                                "Please wait...",
                                         textAlign = TextAlign.Center,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White,
@@ -663,7 +707,9 @@ fun MainCompose(
                                                     Box( modifier = Modifier
                                                         .padding(horizontal = 8.dp)
                                                         .background(
-                                                            color = if (role == "user") Color(0xFF171E2C) else Color.Transparent,
+                                                            color = if (role == "user") Color(
+                                                                0xFF171E2C
+                                                            ) else Color.Transparent,
                                                             shape = RoundedCornerShape(12.dp),
                                                         )
                                                     )
@@ -807,7 +853,6 @@ fun MainCompose(
                                 ) {
                                     Button( onClick = {
                                         viewModel.updateMessage(Prompts[index])
-
                                         focusRequester.requestFocus()
                                     },
 //                                        contentAlignment = Alignment.Center,
@@ -822,7 +867,8 @@ fun MainCompose(
                                             text = Prompts[index],
                                             style = MaterialTheme.typography.bodySmall.copy(
                                                 color = Color(0xFFA0A0A5),
-                                                fontSize = 15.sp,),
+                                                fontSize = 15.sp,
+                                            ),
                                             textAlign = TextAlign.Center,
                                             modifier = Modifier
                                                 .width(200.dp)
@@ -875,11 +921,16 @@ fun MainCompose(
                                 placeholder = { Text("Message") },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .focusRequester(focusRequester),
+                                    .focusRequester(focusRequester)
+                                    .onFocusChanged { focusState ->
+                                        isFocused = focusState.isFocused
+                                    },
+
                                 shape = RoundedCornerShape(size = 18.dp),
                                 colors = TextFieldDefaults.colors(
 
                                     focusedTextColor = Color(0xFFBECBD1),
+                                    unfocusedTextColor = Color(0xFFBECBD1),
                                     focusedIndicatorColor = Color.Transparent,
                                     unfocusedIndicatorColor = Color.Transparent, // Optional, makes the indicator disappear
                                     focusedLabelColor = Color(0xFF626568),
