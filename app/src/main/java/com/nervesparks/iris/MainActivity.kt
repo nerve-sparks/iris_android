@@ -109,8 +109,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -288,6 +291,8 @@ fun MainCompose(
     val isPressed = interactionSource.collectIsPressedAsState()
     val focusRequester = FocusRequester()
     var isFocused by remember { mutableStateOf(false) }
+    var isTappedInsideTextField by remember { mutableStateOf(false) }
+    var textFieldBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
     // Hide modal if all model destinations exist
     if (allModelsExist) {
         viewModel.showModal = false
@@ -300,36 +305,58 @@ fun MainCompose(
     Box(
         modifier = if(!viewModel.showModal || viewModel.showAlert) {
             Modifier.fillMaxSize()
+//                .pointerInput(Unit) {
+//                    detectTapGestures(onTap = { offset ->
+//                        println("TAP in parent Box ontap")
+//                        println("Finger lifted at: (${offset.x}, ${offset.y})")
+//                        if (isFocused) {
+//                            focusManager.clearFocus()
+//                            isFocused = false
+//                        }
+//                    }, onDoubleTap = {
+//                        println("TAP in parent Box dd tap")
+//
+//                        if (isFocused) {
+//                            focusManager.clearFocus()
+//                            isFocused = false
+//                        }
+//                    },onPress={
+//                        println("TAP in parent Box onpress")
+//
+//                        if (isFocused) {
+//                            focusManager.clearFocus()
+//                            isFocused = false
+//                        }
+//                    }, onLongPress = {
+//                        println("TAP in parent Box onlongpress")
+//
+//                        if (isFocused) {
+//                            focusManager.clearFocus()
+//                            isFocused = false
+//                        }
+//                    })
+//                }
                 .pointerInput(Unit) {
-                    detectTapGestures(onTap = {
-                        println("TAP in parent Box ontap")
-
-                        if (isFocused) {
-                            focusManager.clearFocus()
-                            isFocused = false
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            if (event.type == PointerEventType.Press) {
+                                val position = event.changes.first().position
+                                if (textFieldBounds?.contains(position) == true) {
+                                    isTappedInsideTextField = true
+                                    println("Tapped inside TextField")
+                                    // Perform your task here
+                                } else {
+                                    isTappedInsideTextField = false
+                                    if(!isTappedInsideTextField && isFocused){
+                                        focusManager.clearFocus()
+                                        isFocused = false
+                                    }
+                                    println("Tapped outside TextField")
+                                }
+                            }
                         }
-                    }, onDoubleTap = {
-                        println("TAP in parent Box dd tap")
-
-                        if (isFocused) {
-                            focusManager.clearFocus()
-                            isFocused = false
-                        }
-                    },onPress={
-                        println("TAP in parent Box onpress")
-
-                        if (isFocused) {
-                            focusManager.clearFocus()
-                            isFocused = false
-                        }
-                    }, onLongPress = {
-                        println("TAP in parent Box onlongpress")
-
-                        if (isFocused) {
-                            focusManager.clearFocus()
-                            isFocused = false
-                        }
-                    })
+                    }
                 }
         } else{
                 Modifier
@@ -1109,6 +1136,8 @@ fun MainCompose(
                         }
                     }
                     //Prompt input field
+
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1175,6 +1204,9 @@ fun MainCompose(
                                 placeholder = { Text("Message") },
                                 modifier = Modifier
                                     .weight(1f)
+                                    .onGloballyPositioned { coordinates ->
+                                        textFieldBounds = coordinates.boundsInRoot()
+                                    }
                                     .focusRequester(focusRequester)
                                     .onFocusChanged { focusState ->
                                         isFocused = focusState.isFocused
@@ -1285,6 +1317,7 @@ fun MainCompose(
 
 
 // [END android_compose_layout_material_modal_drawer]
+
 
 
 
