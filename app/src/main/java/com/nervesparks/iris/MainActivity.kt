@@ -1056,7 +1056,6 @@ fun MainCompose(
                                                                         },
                                                                         style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
                                                                         modifier = Modifier
-                                                                            .padding(start = 18.dp)
                                                                             .padding(start = 1.dp, end = 1.dp)
                                                                     )
 
@@ -1236,7 +1235,7 @@ fun MainCompose(
                                 Icon(
 //                                imageVector = Icons.Default.Send,
                                     modifier = Modifier
-                                        .size(32.dp)
+                                        .size(24.dp)
                                         .weight(1f),
                                     painter = painterResource(id = R.drawable.mic_svgrepo_com),
                                     contentDescription = "Send",
@@ -1300,7 +1299,7 @@ fun MainCompose(
                                     Icon(
 //                                imageVector = Icons.Default.Send,
                                         modifier = Modifier
-                                            .size(32.dp)
+                                            .size(28.dp)
                                             .weight(1f),
                                         painter = painterResource(id = R.drawable.send_2_svgrepo_com),
                                         contentDescription = "Send",
