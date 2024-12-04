@@ -934,18 +934,20 @@ fun MainCompose(
                                                         Box(
                                                             modifier = Modifier
                                                                 .fillMaxSize()
-                                                                .padding(16.dp)
+                                                                .padding(20.dp)
                                                                 .background(color = Color(0xFF01081a))
 
                                                         ){
                                                             Column (
                                                                 modifier = Modifier
                                                                     .fillMaxWidth()
+                                                                    .fillMaxWidth()
                                                                     .padding(vertical = 5.dp)
 
                                                             ){
                                                                 //copy text
                                                                 TextButton(
+                                                                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
                                                                     modifier = Modifier
                                                                         .fillMaxWidth()
                                                                         .padding(vertical = 8.dp),
@@ -962,6 +964,7 @@ fun MainCompose(
                                                                 //copy select text
 
                                                                 TextButton(
+                                                                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
                                                                     modifier = Modifier
                                                                         .fillMaxWidth()
                                                                         .padding(vertical = 8.dp),
@@ -978,7 +981,7 @@ fun MainCompose(
                                                                             modifier = Modifier
                                                                                 .fillMaxWidth()
                                                                                 .background( color = Color.Black)
-                                                                                .padding(8.dp)
+                                                                                .padding(25.dp)
 
                                                                         ){
                                                                             Text(
