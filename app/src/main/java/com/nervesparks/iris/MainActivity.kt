@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.DownloadManager
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
@@ -41,6 +42,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -275,7 +277,39 @@ fun MainCompose(
 
     Box(
         modifier = if(!viewModel.showModal || viewModel.showAlert) {
-            Modifier.fillMaxSize()} else{
+            Modifier.fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        println("TAP in parent Box ontap")
+
+                        if (isFocused) {
+                            focusManager.clearFocus()
+                            isFocused = false
+                        }
+                    }, onDoubleTap = {
+                        println("TAP in parent Box dd tap")
+
+                        if (isFocused) {
+                            focusManager.clearFocus()
+                            isFocused = false
+                        }
+                    },onPress={
+                        println("TAP in parent Box onpress")
+
+                        if (isFocused) {
+                            focusManager.clearFocus()
+                            isFocused = false
+                        }
+                    }, onLongPress = {
+                        println("TAP in parent Box onlongpress")
+
+                        if (isFocused) {
+                            focusManager.clearFocus()
+                            isFocused = false
+                        }
+                    })
+                }
+        } else{
                 Modifier
                 .pointerInput(Unit) {
                 detectTapGestures(onTap = {
@@ -325,14 +359,13 @@ fun MainCompose(
                     drawerContainerColor=Color(0xFF070915),
 
                 ) {
-                    /*Drawer content */
+                    /*Drawer content wrapper */
                     Column(
                         modifier = Modifier
                             .padding(20.dp)
                             .fillMaxHeight()
                         ,
 
-                        verticalArrangement = Arrangement.SpaceBetween
 
                     ) {
                         // top logo ,name of app
@@ -346,7 +379,7 @@ fun MainCompose(
                                     painter = painterResource(id = R.drawable.logo),
                                     contentDescription = "Centered Background Logo",
                                     modifier = Modifier
-                                        .size(30.dp),
+                                        .size(35.dp),
                                     contentScale = ContentScale.Fit
                                 )
                                 Spacer(Modifier.padding(5.dp))
@@ -355,11 +388,105 @@ fun MainCompose(
                                     fontWeight = FontWeight(500),
                                     color = Color.White,
 //                            modifier = Modifier.weight(),
-                                    fontSize = 24.sp
+                                    fontSize = 30.sp
+                                )
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .padding(start = 45.dp)
+                            ){
+                                Text(
+                                    text = "NerveSparks",
+                                    color = Color(0xFF636466),
+                                    fontSize = 16.sp
                                 )
                             }
                         }
+                        //button links
 
+                        Spacer(Modifier.heightIn(600.dp))
+                        Column(
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .fillMaxWidth(),
+
+                            verticalArrangement = Arrangement.spacedBy(16.dp) // Add spacing between boxes
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp) // Set a button-like height
+                                    .padding(horizontal = 16.dp)
+                                    .background(
+                                        color = Color(0xFFb8b8b8),
+                                        shape = RoundedCornerShape(20.dp)
+                                    )
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Text(
+                                        text = "Star us",
+                                        color = Color(0xFF78797a),
+                                        fontSize = 16.sp
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    val context = LocalContext.current
+                                    Image(
+                                        modifier = Modifier
+                                            .clickable {
+                                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                    data = Uri.parse("https://github.com/nerve-sparks/iris_android")
+                                                }
+                                                context.startActivity(intent)
+                                            }
+                                            .size(30.dp),
+                                        painter = painterResource(id = R.drawable.github_svgrepo_com),
+                                        contentDescription = "Github icon"
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp) // Set a button-like height
+                                    .padding(horizontal = 16.dp)
+                                    .background(
+                                        color = Color(0xFFb8b8b8),
+                                        shape = RoundedCornerShape(20.dp)
+                                    )
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Text(
+                                        text = "NerveSparks",
+                                        color = Color(0xFF78797a),
+                                        fontSize = 16.sp
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    val context = LocalContext.current
+                                    Image(
+                                        modifier = Modifier
+                                            .clickable {
+                                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                    data = Uri.parse("https://nervesparks.com/")
+                                                }
+                                                context.startActivity(intent)
+                                            }
+                                            .size(30.dp),
+                                        painter = painterResource(id = R.drawable.external_link_svgrepo_com),
+                                        contentDescription = "external link icon"
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(Modifier.heightIn(50.dp))
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.End
@@ -368,13 +495,20 @@ fun MainCompose(
 //                                modifier = Modifier.padding(end = 20.dp),
                                 text= "powered by",
                                 color = Color(0xFF636466),
-                                fontSize = 10.sp
+                                fontSize = 14.sp
                             )
+                            val context= LocalContext.current
                             Text(
-
+                                modifier = Modifier
+                                    .clickable {
+                                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                                            data= Uri.parse("https://github.com/ggerganov/llama.cpp")
+                                        }
+                                        context.startActivity(intent)
+                                    },
                                 text= " llama.cpp",
                                 color = Color(0xFF78797a),
-                                fontSize = 12.sp
+                                fontSize = 16.sp
                             )
                         }
                     }
@@ -795,7 +929,7 @@ fun MainCompose(
                                                                     },
                                                                     style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
                                                                     modifier = Modifier
-                                                                        .padding(start = 18.dp)
+                                                                        .padding(start = 1.dp, end = 1.dp)
 
                                                                 )
                                                             }
