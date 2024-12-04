@@ -968,11 +968,33 @@ fun MainCompose(
                                                                     modifier = Modifier
                                                                         .fillMaxWidth()
                                                                         .padding(vertical = 8.dp),
+
                                                                     onClick = {
                                                                        viewModel.toggler = !viewModel.toggler
                                                                     }
                                                                 ) {
                                                                     Text(text = "Select Text To Copy", color = Color(0xFFA0A0A5))
+                                                                }
+
+                                                                TextButton(
+                                                                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
+                                                                    modifier = Modifier
+                                                                        .fillMaxWidth()
+                                                                        .padding(vertical = 8.dp),
+                                                                    enabled = !viewModel.getIsSending(),
+                                                                    onClick = {
+                                                                        if (viewModel.stateForTextToSpeech) {
+                                                                            viewModel.textForTextToSpeech = trimmedMessage
+                                                                            viewModel.textToSpeech(context)
+                                                                        } else {
+                                                                            viewModel.stopTextToSpeech()
+                                                                        }
+                                                                    }
+                                                                ) {
+                                                                    Text(
+                                                                        text = if (viewModel.stateForTextToSpeech) "Text To Speech" else "Stop",
+                                                                        color = Color(0xFFA0A0A5)
+                                                                    )
                                                                 }
                                                                 SelectionContainer {
                                                                     if(viewModel.toggler) {
@@ -1155,22 +1177,15 @@ fun MainCompose(
                                 Card(
                                     modifier = Modifier
                                         .height(100.dp)
+                                        .clickable {
+                                            viewModel.updateMessage(Prompts[index])
+                                            focusRequester.requestFocus()
+                                        }
                                         .padding(horizontal = 8.dp),
                                     shape = MaterialTheme.shapes.medium,
                                     colors = CardDefaults.cardColors(containerColor = Color(0xFF01081a))
                                 ) {
-                                    Button( onClick = {
-                                        viewModel.updateMessage(Prompts[index])
-                                        focusRequester.requestFocus()
-                                    },
-//                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(8.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF01081a)),
-                                        contentPadding = PaddingValues(vertical = 0.dp, horizontal = 0.dp)
 
-                                    ) {
                                         Text(
                                             text = Prompts[index],
                                             style = MaterialTheme.typography.bodySmall.copy(
@@ -1184,7 +1199,7 @@ fun MainCompose(
                                                 .padding(horizontal = 15.dp, vertical = 12.dp)
 //                                                .align(Alignment.Center)
                                         )
-                                    }
+
                                 }
                             }
                         }

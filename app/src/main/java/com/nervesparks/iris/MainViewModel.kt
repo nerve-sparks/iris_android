@@ -1,7 +1,10 @@
 package com.nervesparks.iris
 
+import android.content.Context
 import android.llama.cpp.LLamaAndroid
+import android.speech.tts.TextToSpeech
 import android.util.Log
+import androidx.compose.material.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instance()): ViewModel() {
     companion object {
@@ -31,6 +35,51 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
     var message by mutableStateOf("")
         private set
+
+
+    private var textToSpeech:TextToSpeech? = null
+
+    var textForTextToSpeech = ""
+    var stateForTextToSpeech by mutableStateOf(true)
+        private set
+
+
+    fun textToSpeech(context: Context) {
+        if (!getIsSending()) {
+            // If TTS is already initialized, stop it first
+            textToSpeech?.stop()
+
+            textToSpeech = TextToSpeech(context) { status ->
+                if (status == TextToSpeech.SUCCESS) {
+                    textToSpeech?.let { txtToSpeech ->
+                        txtToSpeech.language = Locale.US
+                        txtToSpeech.setSpeechRate(1.0f)
+                        txtToSpeech.speak(
+                            textForTextToSpeech,
+                            TextToSpeech.QUEUE_FLUSH, // Use QUEUE_FLUSH to replace existing speech
+                            null,
+                            null
+                        )
+
+                        // Update state to indicate speech is playing
+                        stateForTextToSpeech = false
+                    }
+                }
+            }
+        }
+    }
+
+    fun stopTextToSpeech() {
+        textToSpeech?.apply {
+            stop()  // Stops current speech
+            shutdown()  // Releases the resources
+        }
+        textToSpeech = null
+
+        // Reset state to allow restarting
+        stateForTextToSpeech = true
+    }
+
 
     var toggler by mutableStateOf(false)
     var showModal by  mutableStateOf(true)
