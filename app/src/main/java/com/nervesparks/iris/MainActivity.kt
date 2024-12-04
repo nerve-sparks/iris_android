@@ -64,10 +64,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Surface
@@ -75,12 +77,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -237,7 +241,7 @@ fun LinearGradient() {
 
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MainCompose(
     viewModel: MainViewModel,
@@ -734,7 +738,41 @@ fun MainCompose(
 
                                             )
                                             {
+
                                                 val context = LocalContext.current
+                                                val interactionSource = remember { MutableInteractionSource() }
+
+                                                val sheetState = rememberModalBottomSheetState()
+                                                var isSheetOpen by rememberSaveable {
+                                                    mutableStateOf(false)
+                                                }
+                                                if(isSheetOpen){
+                                                    ModalBottomSheet(
+                                                        sheetState = sheetState,
+                                                        containerColor = Color.Black,
+                                                        onDismissRequest = {
+                                                            isSheetOpen = false
+                                                        })
+                                                    {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .background(color = Color.Cyan)
+                                                        ){
+                                                            Button(onClick = {
+                                                                clipboard.setText(
+                                                                    AnnotatedString(trimmedMessage)
+                                                                )
+                                                                Toast.makeText(context, "text copied!!", Toast.LENGTH_SHORT).show()
+                                                            }) {
+                                                                    Text( text = "Copy Text")
+                                                            }
+                                                        }
+//                                                        Image(
+//                                                            painter = painterResource(id = R.drawable.human_icon),
+//                                                            contentDescription = ""
+//                                                        )
+                                                    }
+                                                }
                                                 Row(
                                                     horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
                                                     modifier = Modifier
@@ -742,8 +780,6 @@ fun MainCompose(
                                                         .padding(horizontal = 8.dp, vertical = 8.dp),
 
                                                     ) {
-                                                    val interactionSource = remember { MutableInteractionSource() }
-
                                                     if(role == "assistant") {
                                                         Image(
                                                             painter = painterResource(
@@ -765,22 +801,20 @@ fun MainCompose(
                                                             interactionSource = interactionSource,
                                                             indication = ripple(color = Color.Gray),
                                                             onLongClick = {
-                                                                clipboard.setText(
-                                                                    AnnotatedString(trimmedMessage)
-                                                                )
-                                                                Toast.makeText(context, "text copied!!", Toast.LENGTH_SHORT).show()
+                                                                isSheetOpen = true
+//                                                                clipboard.setText(
+//                                                                    AnnotatedString(trimmedMessage)
+//                                                                )
+//                                                                Toast.makeText(context, "text copied!!", Toast.LENGTH_SHORT).show()
                                                             },
                                                             onClick = {}
                                                         )
                                                     )
                                                     {
-
                                                         Row(
                                                             modifier = Modifier
                                                                 .padding(5.dp)
                                                         ) {
-
-
                                                             Box(
                                                                 modifier = Modifier
                                                                     .widthIn(max = 300.dp)
@@ -796,12 +830,9 @@ fun MainCompose(
                                                                     style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
                                                                     modifier = Modifier
                                                                         .padding(start = 18.dp)
-
                                                                 )
                                                             }
                                                         }
-
-
                                                     }
                                                     if(role == "user") {
                                                         Image(
@@ -812,13 +843,7 @@ fun MainCompose(
                                                             modifier = Modifier.size(20.dp)
                                                         )
                                                     }
-
-
-
                                                 }
-
-
-//                                            }
                                             }
 
                                         } else {
@@ -1027,8 +1052,9 @@ fun MainCompose(
                                 IconButton(onClick = { viewModel.stop() }) {
                                     Icon(
                                         modifier = Modifier
+                                            .size(30.dp)
                                             .weight(1f),
-                                        imageVector = Icons.Default.Close,
+                                        painter = painterResource(id = R.drawable.square_svgrepo_com),
                                         contentDescription = "Stop",
                                         tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
                                     )
