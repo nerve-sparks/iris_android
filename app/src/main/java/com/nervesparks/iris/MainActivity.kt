@@ -438,7 +438,7 @@ fun MainCompose(
                                     horizontalArrangement = Arrangement.Center,
                                     modifier = Modifier.fillMaxSize().clickable {
                                         val intent = Intent(Intent.ACTION_VIEW).apply {
-                                            data = Uri.parse("https://nervesparks.com")
+                                            data = Uri.parse("https://github.com/nerve-sparks/iris_android")
                                         }
                                         context.startActivity(intent)
                                     }
@@ -449,15 +449,9 @@ fun MainCompose(
                                         fontSize = 14.sp
                                     )
                                     Spacer(Modifier.width(8.dp))
-                                    val context = LocalContext.current
+
                                     Image(
                                         modifier = Modifier
-                                            .clickable {
-                                                val intent = Intent(Intent.ACTION_VIEW).apply {
-                                                    data = Uri.parse("https://github.com/nerve-sparks/iris_android")
-                                                }
-                                                context.startActivity(intent)
-                                            }
                                             .size(24.dp),
                                         painter = painterResource(id = R.drawable.github_svgrepo_com),
                                         contentDescription = "Github icon"
