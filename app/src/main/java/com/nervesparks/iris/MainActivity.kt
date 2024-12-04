@@ -100,8 +100,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradient
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -269,6 +272,8 @@ fun MainCompose(
     val isPressed = interactionSource.collectIsPressedAsState()
     val focusRequester = FocusRequester()
     var isFocused by remember { mutableStateOf(false) }
+    var isTappedInsideTextField by remember { mutableStateOf(false) }
+    var textFieldBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
     // Hide modal if all model destinations exist
     if (allModelsExist) {
         viewModel.showModal = false
@@ -278,36 +283,58 @@ fun MainCompose(
     Box(
         modifier = if(!viewModel.showModal || viewModel.showAlert) {
             Modifier.fillMaxSize()
+//                .pointerInput(Unit) {
+//                    detectTapGestures(onTap = { offset ->
+//                        println("TAP in parent Box ontap")
+//                        println("Finger lifted at: (${offset.x}, ${offset.y})")
+//                        if (isFocused) {
+//                            focusManager.clearFocus()
+//                            isFocused = false
+//                        }
+//                    }, onDoubleTap = {
+//                        println("TAP in parent Box dd tap")
+//
+//                        if (isFocused) {
+//                            focusManager.clearFocus()
+//                            isFocused = false
+//                        }
+//                    },onPress={
+//                        println("TAP in parent Box onpress")
+//
+//                        if (isFocused) {
+//                            focusManager.clearFocus()
+//                            isFocused = false
+//                        }
+//                    }, onLongPress = {
+//                        println("TAP in parent Box onlongpress")
+//
+//                        if (isFocused) {
+//                            focusManager.clearFocus()
+//                            isFocused = false
+//                        }
+//                    })
+//                }
                 .pointerInput(Unit) {
-                    detectTapGestures(onTap = {
-                        println("TAP in parent Box ontap")
-
-                        if (isFocused) {
-                            focusManager.clearFocus()
-                            isFocused = false
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            if (event.type == PointerEventType.Press) {
+                                val position = event.changes.first().position
+                                if (textFieldBounds?.contains(position) == true) {
+                                    isTappedInsideTextField = true
+                                    println("Tapped inside TextField")
+                                    // Perform your task here
+                                } else {
+                                    isTappedInsideTextField = false
+                                    if(!isTappedInsideTextField && isFocused){
+                                        focusManager.clearFocus()
+                                        isFocused = false
+                                    }
+                                    println("Tapped outside TextField")
+                                }
+                            }
                         }
-                    }, onDoubleTap = {
-                        println("TAP in parent Box dd tap")
-
-                        if (isFocused) {
-                            focusManager.clearFocus()
-                            isFocused = false
-                        }
-                    },onPress={
-                        println("TAP in parent Box onpress")
-
-                        if (isFocused) {
-                            focusManager.clearFocus()
-                            isFocused = false
-                        }
-                    }, onLongPress = {
-                        println("TAP in parent Box onlongpress")
-
-                        if (isFocused) {
-                            focusManager.clearFocus()
-                            isFocused = false
-                        }
-                    })
+                    }
                 }
         } else{
                 Modifier
@@ -404,7 +431,7 @@ fun MainCompose(
                         }
                         //button links
 
-                        Spacer(Modifier.heightIn(600.dp))
+                        Spacer(Modifier.heightIn(630    .dp))
                         Column(
                             modifier = Modifier
                                 .padding(horizontal = 8.dp)
@@ -418,14 +445,21 @@ fun MainCompose(
                                     .height(48.dp) // Set a button-like height
                                     .padding(horizontal = 16.dp)
                                     .background(
-                                        color = Color(0xFFb8b8b8),
+                                        color = Color(0xFF575656),
                                         shape = RoundedCornerShape(20.dp)
                                     )
                             ) {
+                                val context = LocalContext.current
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center,
                                     modifier = Modifier.fillMaxSize()
+                                        .clickable {
+                                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                data = Uri.parse("https://github.com/nerve-sparks/iris_android")
+                                            }
+                                            context.startActivity(intent)
+                                        }
                                 ) {
                                     Text(
                                         text = "Star us",
@@ -433,16 +467,10 @@ fun MainCompose(
                                         fontSize = 16.sp
                                     )
                                     Spacer(Modifier.width(8.dp))
-                                    val context = LocalContext.current
+
                                     Image(
                                         modifier = Modifier
-                                            .clickable {
-                                                val intent = Intent(Intent.ACTION_VIEW).apply {
-                                                    data = Uri.parse("https://github.com/nerve-sparks/iris_android")
-                                                }
-                                                context.startActivity(intent)
-                                            }
-                                            .size(30.dp),
+                                            .size(20.dp),
                                         painter = painterResource(id = R.drawable.github_svgrepo_com),
                                         contentDescription = "Github icon"
                                     )
@@ -455,14 +483,21 @@ fun MainCompose(
                                     .height(48.dp) // Set a button-like height
                                     .padding(horizontal = 16.dp)
                                     .background(
-                                        color = Color(0xFFb8b8b8),
+                                        color = Color(0xFF575656),
                                         shape = RoundedCornerShape(20.dp)
                                     )
                             ) {
+                                val context = LocalContext.current
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center,
                                     modifier = Modifier.fillMaxSize()
+                                        .clickable {
+                                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                data = Uri.parse("https://nervesparks.com/")
+                                            }
+                                            context.startActivity(intent)
+                                        }
                                 ) {
                                     Text(
                                         text = "NerveSparks",
@@ -470,23 +505,18 @@ fun MainCompose(
                                         fontSize = 16.sp
                                     )
                                     Spacer(Modifier.width(8.dp))
-                                    val context = LocalContext.current
+
                                     Image(
                                         modifier = Modifier
-                                            .clickable {
-                                                val intent = Intent(Intent.ACTION_VIEW).apply {
-                                                    data = Uri.parse("https://nervesparks.com/")
-                                                }
-                                                context.startActivity(intent)
-                                            }
-                                            .size(30.dp),
-                                        painter = painterResource(id = R.drawable.external_link_svgrepo_com),
+
+                                            .size(20.dp),
+                                        painter = painterResource(id = R.drawable.link_svgrepo_com),
                                         contentDescription = "external link icon"
                                     )
                                 }
                             }
                         }
-                        Spacer(Modifier.heightIn(50.dp))
+                        Spacer(Modifier.heightIn(20.dp))
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.End
@@ -1067,6 +1097,8 @@ fun MainCompose(
                         }
                     }
                     //Prompt input field
+
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1108,6 +1140,9 @@ fun MainCompose(
                                 placeholder = { Text("Message") },
                                 modifier = Modifier
                                     .weight(1f)
+                                    .onGloballyPositioned { coordinates ->
+                                        textFieldBounds = coordinates.boundsInRoot()
+                                    }
                                     .focusRequester(focusRequester)
                                     .onFocusChanged { focusState ->
                                         isFocused = focusState.isFocused
