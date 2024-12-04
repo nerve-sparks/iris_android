@@ -810,7 +810,7 @@ fun MainCompose(
                                         text = "Hello, Ask me " + "Anything..",
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             color = Color.White,
-                                            fontWeight = FontWeight.W500,
+                                            fontWeight = FontWeight.W600,
                                             letterSpacing = 1.sp,
                                             fontSize = 50.sp,
                                             lineHeight = 60.sp
