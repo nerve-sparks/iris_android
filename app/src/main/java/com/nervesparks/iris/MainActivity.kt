@@ -62,6 +62,8 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.rounded.AddCircle
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -778,7 +780,7 @@ fun MainCompose(
                                             color = Color.White,
                                             fontWeight = FontWeight.W500,
                                             letterSpacing = 1.sp,
-                                            fontSize = 50.sp,
+                                            fontSize = 55.sp,
                                             lineHeight = 60.sp
                                         ),
                                         textAlign = TextAlign.Center,
@@ -811,13 +813,13 @@ fun MainCompose(
                                             // Circle Icon
                                             Box(
                                                 modifier = Modifier
-                                                    .size(24.dp) // Icon size
+                                                    .size(20.dp) // Icon size
                                                     .background(Color.White, shape = CircleShape)
-                                                    .padding(4.dp),
+                                                    .padding(0.5.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Default.Star,
+                                                    imageVector = Icons.Rounded.Info,
                                                     contentDescription = null,
                                                     tint = Color.Black
                                                 )
@@ -1252,8 +1254,9 @@ fun MainCompose(
                                 IconButton(onClick = { viewModel.stop() }) {
                                     Icon(
                                         modifier = Modifier
-                                            .weight(1f),
-                                        imageVector = Icons.Default.Close,
+                                            .weight(1f)
+                                            .size(25.dp),
+                                        painter = painterResource(id = R.drawable.square_svgrepo_com),
                                         contentDescription = "Stop",
                                         tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
                                     )
