@@ -536,7 +536,7 @@ fun MainCompose(
                                 horizontalArrangement = Arrangement.End,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column  { Text(
+                                 Text(
                                     text = "powered by",
                                     color = Color(0xFF636466),
                                     fontSize = 14.sp
@@ -553,7 +553,7 @@ fun MainCompose(
                                         text = " llama.cpp",
                                         color = Color(0xFF78797a),
                                         fontSize = 16.sp
-                                    ) }
+                                    )
 
                             }
                         }
@@ -1242,7 +1242,7 @@ fun MainCompose(
                                 val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                                     putExtra(
                                         RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM,
                                     )
                                     putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now")
                                 }
