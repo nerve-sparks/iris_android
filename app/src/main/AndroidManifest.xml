@@ -12,16 +12,18 @@
         android:label="@string/app_name"
         android:roundIcon="@drawable/logo"
         android:supportsRtl="true"
-        android:windowSplashScreenBackground="#00FF00"
-        android:theme="@style/Theme.LlamaAndroid">
-
+        android:theme="@style/Theme.LlamaAndroid"
+        android:windowSplashScreenBackground="#00FF00">
+        <activity
+            android:name=".Copy_screen"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:windowBackground="#00FF00"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.LlamaAndroid"
-            android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="portrait">
+            android:windowBackground="#00FF00"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

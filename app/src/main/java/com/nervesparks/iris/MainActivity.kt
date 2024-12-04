@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
+import android.text.Editable
 import android.util.Log
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
@@ -57,6 +58,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
@@ -124,6 +126,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.getSystemService
 import kotlinx.coroutines.launch
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 import java.security.AccessController.getContext
 import kotlin.math.log
@@ -199,6 +202,7 @@ class MainActivity(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+
                     LinearGradient()
                     MainCompose(
                         viewModel,
@@ -241,6 +245,7 @@ fun LinearGradient() {
     )
     Box(modifier = Modifier.background(gradient))
 }
+
 
 
 
@@ -877,7 +882,6 @@ fun MainCompose(
 
                                                 val context = LocalContext.current
                                                 val interactionSource = remember { MutableInteractionSource() }
-
                                                 val sheetState = rememberModalBottomSheetState()
                                                 var isSheetOpen by rememberSaveable {
                                                     mutableStateOf(false)
@@ -888,24 +892,70 @@ fun MainCompose(
                                                         containerColor = Color(0xFF01081a),
                                                         onDismissRequest = {
                                                             isSheetOpen = false
+                                                            viewModel.toggler = false
                                                         })
                                                     {
                                                         //Bottom Sheet
                                                         Box(
                                                             modifier = Modifier
-                                                                .background(color = Color(0xFF01081a)),
-                                                            contentAlignment = Alignment.Center
+                                                                .fillMaxSize()
+                                                                .padding(16.dp)
+                                                                .background(color = Color(0xFF01081a))
 
                                                         ){
-                                                            TextButton(onClick = {
-                                                                clipboard.setText(
-                                                                    AnnotatedString(trimmedMessage)
-                                                                )
-                                                                Toast.makeText(context, "text copied!!", Toast.LENGTH_SHORT).show()}
+                                                            Column (
+                                                                modifier = Modifier
+                                                                    .fillMaxWidth()
+                                                                    .padding(vertical = 5.dp)
 
-                                                            ) {
+                                                            ){
+                                                                //copy text
+                                                                TextButton(
+                                                                    modifier = Modifier
+                                                                        .fillMaxWidth()
+                                                                        .padding(vertical = 8.dp),
+                                                                    onClick = {
+                                                                    clipboard.setText(
+                                                                        AnnotatedString(trimmedMessage)
+                                                                    )
+                                                                    Toast.makeText(context, "text copied!!", Toast.LENGTH_SHORT).show()
+                                                                }
+                                                                ) {
                                                                     Text( text = "Copy Text", color = Color(0xFFA0A0A5))
+                                                                }
+
+                                                                //copy select text
+
+                                                                TextButton(
+                                                                    modifier = Modifier
+                                                                        .fillMaxWidth()
+                                                                        .padding(vertical = 8.dp),
+                                                                    onClick = {
+                                                                       viewModel.toggler = true
+                                                                    }
+                                                                ) {
+                                                                    Text(text = "Select Text To Copy", color = Color(0xFFA0A0A5))
+                                                                }
+                                                                SelectionContainer {
+                                                                    if(viewModel.toggler) {
+                                                                        Box(
+                                                                            contentAlignment = Alignment.Center,
+                                                                            modifier = Modifier
+                                                                                .fillMaxWidth()
+                                                                                .background( color = Color.Black)
+                                                                                .padding(8.dp)
+
+                                                                        ){
+                                                                            Text(
+                                                                                text = AnnotatedString(
+                                                                                    trimmedMessage
+                                                                                ), color = Color.White
+                                                                            )
+                                                                        }
+                                                                    }
+                                                                }
                                                             }
+
                                                         }
 //                                                        Image(
 //                                                            painter = painterResource(id = R.drawable.human_icon),
@@ -920,7 +970,8 @@ fun MainCompose(
                                                         .padding(horizontal = 8.dp, vertical = 8.dp),
 
                                                     ) {
-                                                    if(role == "assistant") {
+                                                    if(role == "assistant")
+                                                    {
                                                         Image(
                                                             painter = painterResource(
                                                                 id = R.drawable.logo
@@ -951,30 +1002,32 @@ fun MainCompose(
                                                         )
                                                     )
                                                     {
-                                                        Row(
-                                                            modifier = Modifier
-                                                                .padding(5.dp)
-                                                        ) {
-                                                            Box(
+                                                            Row(
                                                                 modifier = Modifier
-                                                                    .widthIn(max = 300.dp)
-                                                                    .padding(3.dp)
-
-                                                            ){
-                                                                Text(
-                                                                    text = if (trimmedMessage.startsWith("```")) {
-                                                                        trimmedMessage.substring(3)
-                                                                    } else {
-                                                                        trimmedMessage
-                                                                    },
-                                                                    style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
+                                                                    .padding(5.dp)
+                                                            ) {
+                                                                Box(
                                                                     modifier = Modifier
-                                                                        .padding(start = 18.dp)
-                                                                        .padding(start = 1.dp, end = 1.dp)
+                                                                        .widthIn(max = 300.dp)
+                                                                        .padding(3.dp)
 
-                                                                )
+                                                                ){
+                                                                    //selection text
+                                                                    Text(
+                                                                        text = if (trimmedMessage.startsWith("```")) {
+                                                                            trimmedMessage.substring(3)
+                                                                        } else {
+                                                                            trimmedMessage
+                                                                        },
+                                                                        style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
+                                                                        modifier = Modifier
+                                                                            .padding(start = 18.dp)
+                                                                            .padding(start = 1.dp, end = 1.dp)
+                                                                    )
+
+                                                                }
                                                             }
-                                                        }
+
                                                     }
                                                     if(role == "user") {
                                                         Image(
@@ -999,18 +1052,19 @@ fun MainCompose(
                                                     .fillMaxWidth()
 
                                             ) {
-                                                Column {
-                                                    Row(
-                                                        horizontalArrangement = Arrangement.End,
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .padding(
-                                                                top = 8.dp,
-                                                                bottom = 8.dp,
-                                                                start = 6.dp,
-                                                                end = 6.dp
-                                                            )
-                                                    ) {
+                                                Column{
+                                                    SelectionContainer {
+                                                            Row(
+                                                                horizontalArrangement = Arrangement.End,
+                                                                modifier = Modifier
+                                                                    .fillMaxWidth()
+                                                                    .padding(
+                                                                        top = 8.dp,
+                                                                        bottom = 8.dp,
+                                                                        start = 6.dp,
+                                                                        end = 6.dp
+                                                                    )
+                                                            ) {
 
 
 //                                                        Image(
@@ -1029,20 +1083,22 @@ fun MainCompose(
 //                                                                }
 //                                                        )
 
-                                                    }
-                                                    Text(
-                                                        text = if (trimmedMessage.startsWith("```")) {
-                                                            trimmedMessage.substring(3)
-                                                        } else {
-                                                            trimmedMessage
-                                                        },
-                                                        style = MaterialTheme.typography.bodyLarge.copy(
-                                                            color = Color(
-                                                                0xFFA0A0A5
+                                                            }
+                                                            Text(
+                                                                text = if (trimmedMessage.startsWith("```")) {
+                                                                    trimmedMessage.substring(3)
+                                                                } else {
+                                                                    trimmedMessage
+                                                                },
+                                                                style = MaterialTheme.typography.bodyLarge.copy(
+                                                                    color = Color(
+                                                                        0xFFA0A0A5
+                                                                    )
+                                                                ),
+                                                                modifier = Modifier.padding(16.dp) // Add padding for content
                                                             )
-                                                        ),
-                                                        modifier = Modifier.padding(16.dp) // Add padding for content
-                                                    )
+
+                                                    }
                                                 }
 
 
@@ -1244,6 +1300,8 @@ fun MainCompose(
         }
     }
 }
+
+
 
 
 // [END android_compose_layout_material_modal_drawer]

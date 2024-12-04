@@ -32,6 +32,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     var message by mutableStateOf("")
         private set
 
+    var toggler by mutableStateOf(false)
     var showModal by  mutableStateOf(true)
     var showAlert by mutableStateOf(false)
     override fun onCleared() {
