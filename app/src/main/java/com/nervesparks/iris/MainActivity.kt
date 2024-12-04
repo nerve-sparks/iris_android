@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
+import android.speech.RecognizerIntent
 import android.util.Log
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
@@ -18,7 +19,9 @@ import android.transition.Transition
 import android.widget.Toast
 
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.updateTransition
@@ -270,7 +273,15 @@ fun MainCompose(
 
     val allModelsExist = models.all { model -> model.destination.exists() }
     val Prompts_Home = listOf("Explain quantum computing in simple terms", "Remember what user said earlier!!", "May occasionally generate incorrect")
+    var recognizedText by remember {mutableStateOf("")}
+    val speechRecognizerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+        result ->
+        val data = result.data
+        val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+        recognizedText = results?.get(0)?:""
+        viewModel.updateMessage(recognizedText)
 
+    }
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed = interactionSource.collectIsPressedAsState()
     val focusRequester = FocusRequester()
@@ -368,24 +379,18 @@ fun MainCompose(
                     /*Drawer content wrapper */
                     Column(
                         modifier = Modifier
-                            .padding(20.dp)
-                            .fillMaxHeight()
-                        ,
-
-
+                            .padding(5.dp)
+                            .fillMaxHeight(),
                     ) {
-                        // top logo ,name of app
-                        Column(
-                        ){
+                        // Top section with logo and name
+                        Column {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-
-                                ) {
+                            ) {
                                 Image(
                                     painter = painterResource(id = R.drawable.logo),
                                     contentDescription = "Centered Background Logo",
-                                    modifier = Modifier
-                                        .size(35.dp),
+                                    modifier = Modifier.size(35.dp),
                                     contentScale = ContentScale.Fit
                                 )
                                 Spacer(Modifier.padding(5.dp))
@@ -393,14 +398,12 @@ fun MainCompose(
                                     text = "Iris",
                                     fontWeight = FontWeight(500),
                                     color = Color.White,
-//                            modifier = Modifier.weight(),
                                     fontSize = 30.sp
                                 )
                             }
                             Row(
-                                modifier = Modifier
-                                    .padding(start = 45.dp)
-                            ){
+                                modifier = Modifier.padding(start = 45.dp)
+                            ) {
                                 Text(
                                     text = "NerveSparks",
                                     color = Color(0xFF636466),
@@ -408,35 +411,42 @@ fun MainCompose(
                                 )
                             }
                         }
-                        //button links
 
-                        Spacer(Modifier.heightIn(600.dp))
+                        // This will push the buttons to the bottom
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        // Bottom section with link buttons
                         Column(
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .fillMaxWidth(),
-
-                            verticalArrangement = Arrangement.spacedBy(16.dp) // Add spacing between boxes
+                            verticalArrangement = Arrangement.Bottom,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
+                            // Star us button
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(48.dp) // Set a button-like height
+                                    .height(48.dp)
                                     .padding(horizontal = 16.dp)
                                     .background(
-                                        color = Color(0xFFb8b8b8),
-                                        shape = RoundedCornerShape(20.dp)
-                                    )
+                                        color = Color(0xFF22314A),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ),
                             ) {
+                                val context = LocalContext.current
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier.fillMaxSize().clickable {
+                                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                                            data = Uri.parse("https://nervesparks.com")
+                                        }
+                                        context.startActivity(intent)
+                                    }
                                 ) {
                                     Text(
                                         text = "Star us",
                                         color = Color(0xFF78797a),
-                                        fontSize = 16.sp
+                                        fontSize = 14.sp
                                     )
                                     Spacer(Modifier.width(8.dp))
                                     val context = LocalContext.current
@@ -448,74 +458,74 @@ fun MainCompose(
                                                 }
                                                 context.startActivity(intent)
                                             }
-                                            .size(30.dp),
+                                            .size(24.dp),
                                         painter = painterResource(id = R.drawable.github_svgrepo_com),
                                         contentDescription = "Github icon"
                                     )
                                 }
                             }
-
+                            Spacer(modifier = Modifier.height(5.dp))
+                            // NerveSparks button
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(48.dp) // Set a button-like height
+                                    .height(48.dp)
                                     .padding(horizontal = 16.dp)
                                     .background(
-                                        color = Color(0xFFb8b8b8),
-                                        shape = RoundedCornerShape(20.dp)
+                                        color = Color(0xFF22314A),
+                                        shape = RoundedCornerShape(8.dp)
                                     )
                             ) {
+                                val context = LocalContext.current
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier.fillMaxSize().clickable {
+                                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                                            data = Uri.parse("https://nervesparks.com")
+                                        }
+                                        context.startActivity(intent)
+                                    }
                                 ) {
                                     Text(
-                                        text = "NerveSparks",
+                                        text = "NerveSparks.com",
                                         color = Color(0xFF78797a),
-                                        fontSize = 16.sp
+                                        fontSize = 14.sp
                                     )
                                     Spacer(Modifier.width(8.dp))
+
+
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(5.dp))
+                            // Powered by section - Right-aligned
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(end = 16.dp),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column  { Text(
+                                    text = "powered by",
+                                    color = Color(0xFF636466),
+                                    fontSize = 14.sp
+                                )
                                     val context = LocalContext.current
-                                    Image(
+                                    Text(
                                         modifier = Modifier
                                             .clickable {
                                                 val intent = Intent(Intent.ACTION_VIEW).apply {
-                                                    data = Uri.parse("https://nervesparks.com/")
+                                                    data = Uri.parse("https://github.com/ggerganov/llama.cpp")
                                                 }
                                                 context.startActivity(intent)
-                                            }
-                                            .size(30.dp),
-                                        painter = painterResource(id = R.drawable.external_link_svgrepo_com),
-                                        contentDescription = "external link icon"
-                                    )
-                                }
+                                            },
+                                        text = " llama.cpp",
+                                        color = Color(0xFF78797a),
+                                        fontSize = 16.sp
+                                    ) }
+
                             }
-                        }
-                        Spacer(Modifier.heightIn(50.dp))
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.End
-                        ) {
-                            Text(
-//                                modifier = Modifier.padding(end = 20.dp),
-                                text= "powered by",
-                                color = Color(0xFF636466),
-                                fontSize = 14.sp
-                            )
-                            val context= LocalContext.current
-                            Text(
-                                modifier = Modifier
-                                    .clickable {
-                                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                                            data= Uri.parse("https://github.com/ggerganov/llama.cpp")
-                                        }
-                                        context.startActivity(intent)
-                                    },
-                                text= " llama.cpp",
-                                color = Color(0xFF78797a),
-                                fontSize = 16.sp
-                            )
                         }
                     }
 
@@ -930,7 +940,7 @@ fun MainCompose(
                                                         )
                                                     }
                                                     Box( modifier = Modifier
-                                                        .padding(horizontal = 8.dp)
+                                                        .padding(horizontal = 2.dp)
                                                         .background(
                                                             color = if (role == "user") Color(
                                                                 0xFF171E2C
@@ -969,7 +979,7 @@ fun MainCompose(
                                                                     },
                                                                     style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
                                                                     modifier = Modifier
-                                                                        .padding(start = 18.dp)
+                                                                        .padding(start = 5.dp)
                                                                         .padding(start = 1.dp, end = 1.dp)
 
                                                                 )
@@ -1109,7 +1119,7 @@ fun MainCompose(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 20.dp, top = 8.dp, bottom = 8.dp, end = 10.dp),
+                                .padding(start = 5.dp, top = 8.dp, bottom = 8.dp, end = 5.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
 
@@ -1131,6 +1141,31 @@ fun MainCompose(
 //                            cursorColor = Color.White,
 //
 //                        ),
+
+                            IconButton(onClick = {
+                                autoScrollEnabled = true
+                                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                    putExtra(
+                                        RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                                    )
+                                    putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now")
+                                }
+                                speechRecognizerLauncher.launch(intent)
+                                focusManager.clearFocus()
+
+                            }) {
+                                Icon(
+//                                imageVector = Icons.Default.Send,
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .weight(1f),
+                                    painter = painterResource(id = R.drawable.mic_svgrepo_com),
+                                    contentDescription = "Send",
+                                    tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
+                                )
+                            }
+
 
 
                             TextField(
@@ -1179,7 +1214,8 @@ fun MainCompose(
                                     autoScrollEnabled = true
                                     viewModel.send()
                                     focusManager.clearFocus()
-                                }) {
+                                }
+                                ) {
                                     Icon(
 //                                imageVector = Icons.Default.Send,
                                         modifier = Modifier
@@ -1194,8 +1230,9 @@ fun MainCompose(
                                 IconButton(onClick = { viewModel.stop() }) {
                                     Icon(
                                         modifier = Modifier
-                                            .weight(1f),
-                                        imageVector = Icons.Default.Close,
+                                            .weight(1f)
+                                            .size(32.dp),
+                                        painter = painterResource(id = R.drawable.square_svgrepo_com),
                                         contentDescription = "Stop",
                                         tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
                                     )
