@@ -72,8 +72,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -749,22 +751,26 @@ fun MainCompose(
                                                 if(isSheetOpen){
                                                     ModalBottomSheet(
                                                         sheetState = sheetState,
-                                                        containerColor = Color.Black,
+                                                        containerColor = Color(0xFF01081a),
                                                         onDismissRequest = {
                                                             isSheetOpen = false
                                                         })
                                                     {
+                                                        //Bottom Sheet
                                                         Box(
                                                             modifier = Modifier
-                                                                .background(color = Color.Cyan)
+                                                                .background(color = Color(0xFF01081a)),
+                                                            contentAlignment = Alignment.Center
+
                                                         ){
-                                                            Button(onClick = {
+                                                            TextButton(onClick = {
                                                                 clipboard.setText(
                                                                     AnnotatedString(trimmedMessage)
                                                                 )
-                                                                Toast.makeText(context, "text copied!!", Toast.LENGTH_SHORT).show()
-                                                            }) {
-                                                                    Text( text = "Copy Text")
+                                                                Toast.makeText(context, "text copied!!", Toast.LENGTH_SHORT).show()}
+
+                                                            ) {
+                                                                    Text( text = "Copy Text", color = Color(0xFFA0A0A5))
                                                             }
                                                         }
 //                                                        Image(
