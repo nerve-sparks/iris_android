@@ -128,7 +128,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.content.getSystemService
 import kotlinx.coroutines.launch
 import java.io.File
+import android.speech.tts.TextToSpeech
 import java.security.AccessController.getContext
+import java.util.Locale
 import kotlin.math.log
 
 
@@ -290,6 +292,9 @@ fun MainCompose(
     if (allModelsExist) {
         viewModel.showModal = false
     }
+    var isSpeaking by remember { mutableStateOf(false) }
+
+
 
 
     Box(
@@ -1274,11 +1279,12 @@ fun MainCompose(
             }
         }
     }
+
+
 }
 
 
 // [END android_compose_layout_material_modal_drawer]
-
 
 
 
