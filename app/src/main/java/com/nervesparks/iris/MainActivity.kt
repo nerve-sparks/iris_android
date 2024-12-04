@@ -64,6 +64,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -899,18 +900,18 @@ fun MainCompose(
                                                         Box(
                                                             modifier = Modifier
                                                                 .fillMaxSize()
-                                                                .padding(16.dp)
+                                                                .padding(20.dp)
                                                                 .background(color = Color(0xFF01081a))
-
                                                         ){
                                                             Column (
                                                                 modifier = Modifier
                                                                     .fillMaxWidth()
-                                                                    .padding(vertical = 5.dp)
+                                                                    .padding(10.dp)
 
                                                             ){
                                                                 //copy text
                                                                 TextButton(
+                                                                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
                                                                     modifier = Modifier
                                                                         .fillMaxWidth()
                                                                         .padding(vertical = 8.dp),
@@ -927,6 +928,7 @@ fun MainCompose(
                                                                 //copy select text
 
                                                                 TextButton(
+                                                                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
                                                                     modifier = Modifier
                                                                         .fillMaxWidth()
                                                                         .padding(vertical = 8.dp),
@@ -943,7 +945,7 @@ fun MainCompose(
                                                                             modifier = Modifier
                                                                                 .fillMaxWidth()
                                                                                 .background( color = Color.Black)
-                                                                                .padding(8.dp)
+                                                                                .padding(25.dp)
 
                                                                         ){
                                                                             Text(
@@ -1053,52 +1055,52 @@ fun MainCompose(
 
                                             ) {
                                                 Column{
-                                                    SelectionContainer {
-                                                            Row(
-                                                                horizontalArrangement = Arrangement.End,
-                                                                modifier = Modifier
-                                                                    .fillMaxWidth()
-                                                                    .padding(
-                                                                        top = 8.dp,
-                                                                        bottom = 8.dp,
-                                                                        start = 6.dp,
-                                                                        end = 6.dp
-                                                                    )
-                                                            ) {
-
-
-//                                                        Image(
-//                                                            painter = painterResource(id = R.drawable.copy1),
-//                                                            contentDescription = "Copy Icon user",
-//                                                            modifier = Modifier
-//                                                                .size(22.dp)
-//                                                                .clickable {
-//                                                                    // Copy text to clipboard
-//                                                                    clipboard.setPrimaryClip(
-//                                                                        android.content.ClipData.newPlainText(
-//                                                                            "Text",
-//                                                                            content
-//                                                                        )
+//                                                    SelectionContainer {
+//                                                            Row(
+//                                                                horizontalArrangement = Arrangement.End,
+//                                                                modifier = Modifier
+//                                                                    .fillMaxWidth()
+//                                                                    .padding(
+//                                                                        top = 8.dp,
+//                                                                        bottom = 8.dp,
+//                                                                        start = 6.dp,
+//                                                                        end = 6.dp
 //                                                                    )
-//                                                                }
-//                                                        )
-
-                                                            }
-                                                            Text(
-                                                                text = if (trimmedMessage.startsWith("```")) {
-                                                                    trimmedMessage.substring(3)
-                                                                } else {
-                                                                    trimmedMessage
-                                                                },
-                                                                style = MaterialTheme.typography.bodyLarge.copy(
-                                                                    color = Color(
-                                                                        0xFFA0A0A5
-                                                                    )
-                                                                ),
-                                                                modifier = Modifier.padding(16.dp) // Add padding for content
-                                                            )
-
-                                                    }
+//                                                            ) {
+//
+//
+////                                                        Image(
+////                                                            painter = painterResource(id = R.drawable.copy1),
+////                                                            contentDescription = "Copy Icon user",
+////                                                            modifier = Modifier
+////                                                                .size(22.dp)
+////                                                                .clickable {
+////                                                                    // Copy text to clipboard
+////                                                                    clipboard.setPrimaryClip(
+////                                                                        android.content.ClipData.newPlainText(
+////                                                                            "Text",
+////                                                                            content
+////                                                                        )
+////                                                                    )
+////                                                                }
+////                                                        )
+//
+//                                                            }
+//                                                            Text(
+//                                                                text = if (trimmedMessage.startsWith("```")) {
+//                                                                    trimmedMessage.substring(3)
+//                                                                } else {
+//                                                                    trimmedMessage
+//                                                                },
+//                                                                style = MaterialTheme.typography.bodyLarge.copy(
+//                                                                    color = Color(
+//                                                                        0xFFA0A0A5
+//                                                                    )
+//                                                                ),
+//                                                                modifier = Modifier.padding(16.dp) // Add padding for content
+//                                                            )
+//
+//                                                    }
                                                 }
 
 
