@@ -135,6 +135,7 @@ import kotlinx.coroutines.launch
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 import android.speech.tts.TextToSpeech
+import androidx.compose.ui.geometry.Rect
 import java.security.AccessController.getContext
 import java.util.Locale
 import kotlin.math.log
@@ -297,6 +298,8 @@ fun MainCompose(
     var isFocused by remember { mutableStateOf(false) }
     var isTappedInsideTextField by remember { mutableStateOf(false) }
     var textFieldBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
+    val cardBoundsMap = remember { mutableStateMapOf<Int, Rect?>() }
+
     // Hide modal if all model destinations exist
     if (allModelsExist) {
         viewModel.showModal = false
@@ -309,92 +312,36 @@ fun MainCompose(
     Box(
         modifier = if(!viewModel.showModal || viewModel.showAlert) {
             Modifier.fillMaxSize()
-//                .pointerInput(Unit) {
-//                    detectTapGestures(onTap = { offset ->
-//                        println("TAP in parent Box ontap")
-//                        println("Finger lifted at: (${offset.x}, ${offset.y})")
-//                        if (isFocused) {
-//                            focusManager.clearFocus()
-//                            isFocused = false
-//                        }
-//                    }, onDoubleTap = {
-//                        println("TAP in parent Box dd tap")
-//
-//                        if (isFocused) {
-//                            focusManager.clearFocus()
-//                            isFocused = false
-//                        }
-//                    },onPress={
-//                        println("TAP in parent Box onpress")
-//
-//                        if (isFocused) {
-//                            focusManager.clearFocus()
-//                            isFocused = false
-//                        }
-//                    }, onLongPress = {
-//                        println("TAP in parent Box onlongpress")
-//
-//                        if (isFocused) {
-//                            focusManager.clearFocus()
-//                            isFocused = false
-//                        }
-//                    })
-//                }
+
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
                             val event = awaitPointerEvent()
                             if (event.type == PointerEventType.Press) {
                                 val position = event.changes.first().position
+                                val tappedCardIndex = cardBoundsMap.entries.find { it.value?.contains(position) == true }?.key
+
                                 if (textFieldBounds?.contains(position) == true) {
                                     isTappedInsideTextField = true
                                     println("Tapped inside TextField")
-                                    // Perform your task here
                                 } else {
                                     isTappedInsideTextField = false
-                                    if(!isTappedInsideTextField && isFocused){
-                                        focusManager.clearFocus()
-                                        isFocused = false
+                                    autoScrollEnabled = false
+
+                                    if (tappedCardIndex == null) {
+                                        if (isFocused) {
+                                            focusManager.clearFocus()
+                                            isFocused = false
+                                        }
                                     }
-                                    println("Tapped outside TextField")
+                                    println("Tapped outside TextField and card")
                                 }
                             }
                         }
                     }
                 }
         } else{
-                Modifier
-                .pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    println("TAP in parent Box ontap")
-
-                    if (isFocused) {
-                        focusManager.clearFocus()
-                        isFocused = false
-                    }
-                }, onDoubleTap = {
-                    println("TAP in parent Box dd tap")
-
-                    if (isFocused) {
-                        focusManager.clearFocus()
-                        isFocused = false
-                    }
-                },onPress={
-                    println("TAP in parent Box onpress")
-
-                    if (isFocused) {
-                        focusManager.clearFocus()
-                        isFocused = false
-                    }
-                }, onLongPress = {
-                    println("TAP in parent Box onlongpress")
-
-                    if (isFocused) {
-                        focusManager.clearFocus()
-                        isFocused = false
-                    }
-                })
-            }
+            Modifier.fillMaxSize()
         }
 
 
@@ -472,12 +419,15 @@ fun MainCompose(
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxSize().clickable {
-                                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                                            data = Uri.parse("https://github.com/nerve-sparks/iris_android")
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable {
+                                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                data =
+                                                    Uri.parse("https://github.com/nerve-sparks/iris_android")
+                                            }
+                                            context.startActivity(intent)
                                         }
-                                        context.startActivity(intent)
-                                    }
                                 ) {
                                     Text(
                                         text = "Star us",
@@ -510,12 +460,14 @@ fun MainCompose(
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxSize().clickable {
-                                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                                            data = Uri.parse("https://nervesparks.com")
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable {
+                                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                data = Uri.parse("https://nervesparks.com")
+                                            }
+                                            context.startActivity(intent)
                                         }
-                                        context.startActivity(intent)
-                                    }
                                 ) {
                                     Text(
                                         text = "NerveSparks.com",
@@ -1004,7 +956,9 @@ fun MainCompose(
                                                                                     contentAlignment = Alignment.Center,
                                                                                     modifier = Modifier
                                                                                         .fillMaxWidth()
-                                                                                        .background( color = Color.Black)
+                                                                                        .background(
+                                                                                            color = Color.Black
+                                                                                        )
                                                                                         .padding(25.dp)
 
                                                                                 ){
@@ -1174,16 +1128,24 @@ fun MainCompose(
                     }
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(4.dp), // Reduced space between cards
-                        contentPadding = PaddingValues(vertical = 8.dp)
+                        contentPadding = PaddingValues(vertical = 8.dp),
+
+
                     ) {
                         items(Prompts.size) { index ->
                             if(viewModel.messages.size <= 1){
                                 Card(
                                     modifier = Modifier
                                         .height(100.dp)
+                                        .onGloballyPositioned { coordinates ->
+                                            cardBoundsMap[index] = coordinates.boundsInRoot()
+                                        }
                                         .clickable {
                                             viewModel.updateMessage(Prompts[index])
-                                            focusRequester.requestFocus()
+                                            println("Focus Changed: isFocused in card = $isFocused")
+                                            if (!isFocused) {
+                                                focusRequester.requestFocus() // Ensure focus is requested
+                                            }
                                         }
                                         .padding(horizontal = 8.dp),
                                     shape = MaterialTheme.shapes.medium,
@@ -1281,6 +1243,7 @@ fun MainCompose(
                                     .focusRequester(focusRequester)
                                     .onFocusChanged { focusState ->
                                         isFocused = focusState.isFocused
+                                        println("Focus Changed: isFocused in textfiled  = $isFocused")
                                     },
 
                                 shape = RoundedCornerShape(size = 18.dp),
