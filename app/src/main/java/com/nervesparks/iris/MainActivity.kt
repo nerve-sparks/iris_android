@@ -817,7 +817,7 @@ fun MainCompose(
                                         text = "Hello, Ask me " + "Anything..",
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             color = Color.White,
-                                            fontWeight = FontWeight.W600,
+                                            fontWeight = FontWeight.W300,
                                             letterSpacing = 1.sp,
                                             fontSize = 50.sp,
                                             lineHeight = 60.sp
@@ -837,11 +837,11 @@ fun MainCompose(
                                         contentAlignment = Alignment.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(70.dp)
+                                            .height(60.dp)
                                             .padding(8.dp)
                                             .background(
-                                                Color(0xFF01081a),
-                                                shape = RoundedCornerShape(30.dp)
+                                                Color(0xFF010825),
+                                                shape = RoundedCornerShape(20.dp)
                                             )
                                     ) {
                                         Row(
@@ -853,13 +853,12 @@ fun MainCompose(
                                             // Circle Icon
                                             Box(
                                                 modifier = Modifier
-                                                    .size(24.dp) // Icon size
+                                                    .size(20.dp) // Icon size
                                                     .background(Color.White, shape = CircleShape)
                                                     .padding(4.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
-//                                                    imageVector = Icons.Defau,
                                                     painter = painterResource(id = R.drawable.info_svgrepo_com),
                                                     contentDescription = null,
                                                     tint = Color.Black
@@ -873,7 +872,7 @@ fun MainCompose(
                                                 text = Prompts_Home.getOrNull(index) ?: "",
                                                 style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
                                                 textAlign = TextAlign.Start, // Left align the text
-                                                fontSize = 15.sp,
+                                                fontSize = 12.sp,
                                                 modifier = Modifier
                                                     .weight(1f)
                                                     .padding(horizontal = 8.dp)
@@ -1196,7 +1195,7 @@ fun MainCompose(
                                         }
                                         .padding(horizontal = 8.dp),
                                     shape = MaterialTheme.shapes.medium,
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF01081a))
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF030815))
                                 ) {
 
                                         Text(
