@@ -135,6 +135,8 @@ import kotlinx.coroutines.launch
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 import android.speech.tts.TextToSpeech
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.geometry.Rect
 import java.security.AccessController.getContext
 import java.util.Locale
@@ -312,7 +314,6 @@ fun MainCompose(
     Box(
         modifier = if(!viewModel.showModal || viewModel.showAlert) {
             Modifier.fillMaxSize()
-
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
@@ -354,7 +355,7 @@ fun MainCompose(
             drawerContent = {
                 ModalDrawerSheet(
                     modifier = Modifier
-                        .width(300.dp)    // or your desired width
+                        .width(300.dp)
                         .fillMaxHeight(),
                     drawerContainerColor=Color(0xFF070915),
 
@@ -485,7 +486,7 @@ fun MainCompose(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(end = 16.dp),
-                                horizontalArrangement = Arrangement.End,
+                                horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                  Text(
@@ -763,11 +764,12 @@ fun MainCompose(
                                         text = "Hello, Ask me " + "Anything..",
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             color = Color.White,
-                                            fontWeight = FontWeight.W500,
+                                            fontWeight = FontWeight.W300,
                                             letterSpacing = 1.sp,
                                             fontSize = 50.sp,
                                             lineHeight = 60.sp
                                         ),
+                                        fontFamily = FontFamily.SansSerif,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -782,11 +784,11 @@ fun MainCompose(
                                         contentAlignment = Alignment.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(70.dp)
+                                            .height(60.dp)
                                             .padding(8.dp)
                                             .background(
-                                                Color(0xFF01081a),
-                                                shape = RoundedCornerShape(30.dp)
+                                                Color(0xFF010825),
+                                                shape = RoundedCornerShape(20.dp)
                                             )
                                     ) {
                                         Row(
@@ -798,13 +800,13 @@ fun MainCompose(
                                             // Circle Icon
                                             Box(
                                                 modifier = Modifier
-                                                    .size(24.dp) // Icon size
+                                                    .size(20.dp) // Icon size
                                                     .background(Color.White, shape = CircleShape)
                                                     .padding(4.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Default.Star,
+                                                    painter = painterResource(id = R.drawable.info_svgrepo_com),
                                                     contentDescription = null,
                                                     tint = Color.Black
                                                 )
@@ -817,7 +819,7 @@ fun MainCompose(
                                                 text = Prompts_Home.getOrNull(index) ?: "",
                                                 style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
                                                 textAlign = TextAlign.Start, // Left align the text
-                                                fontSize = 15.sp,
+                                                fontSize = 12.sp,
                                                 modifier = Modifier
                                                     .weight(1f)
                                                     .padding(horizontal = 8.dp)
@@ -1150,7 +1152,7 @@ fun MainCompose(
                                         }
                                         .padding(horizontal = 8.dp),
                                     shape = MaterialTheme.shapes.medium,
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF01081a))
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF030815))
                                 ) {
 
                                         Text(
@@ -1222,8 +1224,8 @@ fun MainCompose(
                                     modifier = Modifier
                                         .size(24.dp)
                                         .weight(1f),
-                                    painter = painterResource(id = R.drawable.mic_svgrepo_com),
-                                    contentDescription = "Send",
+                                    painter = painterResource(id = R.drawable.mic_on_svgrepo_com),
+                                    contentDescription = "Mic",
                                     tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
                                 )
                             }
