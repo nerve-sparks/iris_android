@@ -996,21 +996,25 @@ fun MainCompose(
                                                                         color = Color(0xFFA0A0A5)
                                                                     )
                                                                 }
-                                                                SelectionContainer {
-                                                                    if(viewModel.toggler) {
-                                                                        Box(
-                                                                            contentAlignment = Alignment.Center,
-                                                                            modifier = Modifier
-                                                                                .fillMaxWidth()
-                                                                                .background( color = Color.Black)
-                                                                                .padding(25.dp)
+                                                                LazyColumn(state = scrollState) {
+                                                                    item {
+                                                                        SelectionContainer {
+                                                                            if(viewModel.toggler) {
+                                                                                Box(
+                                                                                    contentAlignment = Alignment.Center,
+                                                                                    modifier = Modifier
+                                                                                        .fillMaxWidth()
+                                                                                        .background( color = Color.Black)
+                                                                                        .padding(25.dp)
 
-                                                                        ){
-                                                                            Text(
-                                                                                text = AnnotatedString(
-                                                                                    trimmedMessage
-                                                                                ), color = Color.White
-                                                                            )
+                                                                                ){
+                                                                                    Text(
+                                                                                        text = AnnotatedString(
+                                                                                            trimmedMessage
+                                                                                        ), color = Color.White
+                                                                                    )
+                                                                                }
+                                                                            }
                                                                         }
                                                                     }
                                                                 }
