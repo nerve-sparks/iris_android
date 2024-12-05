@@ -135,6 +135,9 @@ import kotlinx.coroutines.launch
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 import android.speech.tts.TextToSpeech
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.googlefonts.GoogleFont
 import java.security.AccessController.getContext
 import java.util.Locale
 import kotlin.math.log
@@ -291,6 +294,7 @@ fun MainCompose(
         viewModel.updateMessage(recognizedText)
 
     }
+    val fontname = GoogleFont("Jost")
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed = interactionSource.collectIsPressedAsState()
     val focusRequester = FocusRequester()
@@ -308,7 +312,9 @@ fun MainCompose(
 
     Box(
         modifier = if(!viewModel.showModal || viewModel.showAlert) {
-            Modifier.fillMaxSize()
+            Modifier
+                .fillMaxSize()
+
 //                .pointerInput(Unit) {
 //                    detectTapGestures(onTap = { offset ->
 //                        println("TAP in parent Box ontap")
@@ -407,7 +413,7 @@ fun MainCompose(
             drawerContent = {
                 ModalDrawerSheet(
                     modifier = Modifier
-                        .width(300.dp)    // or your desired width
+                        .width(300.dp)
                         .fillMaxHeight(),
                     drawerContainerColor=Color(0xFF070915),
 
@@ -533,7 +539,7 @@ fun MainCompose(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(end = 16.dp),
-                                horizontalArrangement = Arrangement.End,
+                                horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                  Text(
@@ -815,6 +821,7 @@ fun MainCompose(
                                             fontSize = 50.sp,
                                             lineHeight = 60.sp
                                         ),
+                                        fontFamily = FontFamily.SansSerif,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -1259,8 +1266,8 @@ fun MainCompose(
                                     modifier = Modifier
                                         .size(24.dp)
                                         .weight(1f),
-                                    painter = painterResource(id = R.drawable.mic_svgrepo_com),
-                                    contentDescription = "Send",
+                                    painter = painterResource(id = R.drawable.mic_on_svgrepo_com),
+                                    contentDescription = "Mic",
                                     tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
                                 )
                             }
