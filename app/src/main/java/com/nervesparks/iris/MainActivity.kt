@@ -536,7 +536,7 @@ fun MainCompose(
                                 horizontalArrangement = Arrangement.End,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column  { Text(
+                                 Text(
                                     text = "powered by",
                                     color = Color(0xFF636466),
                                     fontSize = 14.sp
@@ -553,7 +553,7 @@ fun MainCompose(
                                         text = " llama.cpp",
                                         color = Color(0xFF78797a),
                                         fontSize = 16.sp
-                                    ) }
+                                    )
 
                             }
                         }
@@ -996,21 +996,25 @@ fun MainCompose(
                                                                         color = Color(0xFFA0A0A5)
                                                                     )
                                                                 }
-                                                                SelectionContainer {
-                                                                    if(viewModel.toggler) {
-                                                                        Box(
-                                                                            contentAlignment = Alignment.Center,
-                                                                            modifier = Modifier
-                                                                                .fillMaxWidth()
-                                                                                .background( color = Color.Black)
-                                                                                .padding(25.dp)
+                                                                LazyColumn(state = scrollState) {
+                                                                    item {
+                                                                        SelectionContainer {
+                                                                            if(viewModel.toggler) {
+                                                                                Box(
+                                                                                    contentAlignment = Alignment.Center,
+                                                                                    modifier = Modifier
+                                                                                        .fillMaxWidth()
+                                                                                        .background( color = Color.Black)
+                                                                                        .padding(25.dp)
 
-                                                                        ){
-                                                                            Text(
-                                                                                text = AnnotatedString(
-                                                                                    trimmedMessage
-                                                                                ), color = Color.White
-                                                                            )
+                                                                                ){
+                                                                                    Text(
+                                                                                        text = AnnotatedString(
+                                                                                            trimmedMessage
+                                                                                        ), color = Color.White
+                                                                                    )
+                                                                                }
+                                                                            }
                                                                         }
                                                                     }
                                                                 }
@@ -1242,7 +1246,7 @@ fun MainCompose(
                                 val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                                     putExtra(
                                         RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM,
                                     )
                                     putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now")
                                 }

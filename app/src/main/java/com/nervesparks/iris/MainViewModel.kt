@@ -3,6 +3,7 @@ package com.nervesparks.iris
 import android.content.Context
 import android.llama.cpp.LLamaAndroid
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import androidx.compose.material.Text
 import androidx.compose.runtime.getValue
@@ -10,9 +11,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import java.util.Locale
+import java.util.UUID
 
 class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instance()): ViewModel() {
     companion object {
@@ -44,6 +48,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         private set
 
 
+
     fun textToSpeech(context: Context) {
         if (!getIsSending()) {
             // If TTS is already initialized, stop it first
@@ -54,15 +59,38 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                     textToSpeech?.let { txtToSpeech ->
                         txtToSpeech.language = Locale.US
                         txtToSpeech.setSpeechRate(1.0f)
+
+                        // Add a unique utterance ID for tracking
+                        val utteranceId = UUID.randomUUID().toString()
+
+                        txtToSpeech.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                            override fun onDone(utteranceId: String?) {
+                                // Reset state when speech is complete
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    stateForTextToSpeech = true
+                                }
+                            }
+
+                            override fun onError(utteranceId: String?) {
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    stateForTextToSpeech = true
+                                }
+                            }
+
+                            override fun onStart(utteranceId: String?) {
+                                // Update state to indicate speech is playing
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    stateForTextToSpeech = false
+                                }
+                            }
+                        })
+
                         txtToSpeech.speak(
                             textForTextToSpeech,
-                            TextToSpeech.QUEUE_FLUSH, // Use QUEUE_FLUSH to replace existing speech
+                            TextToSpeech.QUEUE_FLUSH,
                             null,
-                            null
+                            utteranceId
                         )
-
-                        // Update state to indicate speech is playing
-                        stateForTextToSpeech = false
                     }
                 }
             }
@@ -81,10 +109,12 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     }
 
 
+
     var toggler by mutableStateOf(false)
     var showModal by  mutableStateOf(true)
     var showAlert by mutableStateOf(false)
     override fun onCleared() {
+        textToSpeech?.shutdown()
         super.onCleared()
 
         viewModelScope.launch {
