@@ -1299,7 +1299,7 @@ fun MainCompose(
                                     Icon(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .size(32.dp),
+                                            .size(25.dp),
                                         painter = painterResource(id = R.drawable.square_svgrepo_com),
                                         contentDescription = "Stop",
                                         tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
