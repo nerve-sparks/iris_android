@@ -697,8 +697,9 @@ fun MainCompose(
 
                         Button(
                             onClick = {
-                                viewModel.stop()
                                 viewModel.clear()
+                                viewModel.stop()
+
                             },
                             modifier = Modifier
                                 .height(26.dp)
