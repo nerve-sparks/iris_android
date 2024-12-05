@@ -858,7 +858,8 @@ fun MainCompose(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Default.Star,
+//                                                    imageVector = Icons.Defau,
+                                                    painter = painterResource(id = R.drawable.info_svgrepo_com),
                                                     contentDescription = null,
                                                     tint = Color.Black
                                                 )
