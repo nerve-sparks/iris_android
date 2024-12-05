@@ -310,101 +310,7 @@ fun MainCompose(
 
 
 
-    Box(
-        modifier = if(!viewModel.showModal || viewModel.showAlert) {
-            Modifier
-                .fillMaxSize()
-
-//                .pointerInput(Unit) {
-//                    detectTapGestures(onTap = { offset ->
-//                        println("TAP in parent Box ontap")
-//                        println("Finger lifted at: (${offset.x}, ${offset.y})")
-//                        if (isFocused) {
-//                            focusManager.clearFocus()
-//                            isFocused = false
-//                        }
-//                    }, onDoubleTap = {
-//                        println("TAP in parent Box dd tap")
-//
-//                        if (isFocused) {
-//                            focusManager.clearFocus()
-//                            isFocused = false
-//                        }
-//                    },onPress={
-//                        println("TAP in parent Box onpress")
-//
-//                        if (isFocused) {
-//                            focusManager.clearFocus()
-//                            isFocused = false
-//                        }
-//                    }, onLongPress = {
-//                        println("TAP in parent Box onlongpress")
-//
-//                        if (isFocused) {
-//                            focusManager.clearFocus()
-//                            isFocused = false
-//                        }
-//                    })
-//                }
-                .pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            if (event.type == PointerEventType.Press) {
-                                val position = event.changes.first().position
-                                if (textFieldBounds?.contains(position) == true) {
-                                    isTappedInsideTextField = true
-                                    println("Tapped inside TextField")
-                                    // Perform your task here
-                                } else {
-                                    isTappedInsideTextField = false
-                                    if(!isTappedInsideTextField && isFocused){
-                                        focusManager.clearFocus()
-                                        isFocused = false
-                                    }
-                                    println("Tapped outside TextField")
-                                }
-                            }
-                        }
-                    }
-                }
-        } else{
-                Modifier
-                .pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    println("TAP in parent Box ontap")
-
-                    if (isFocused) {
-                        focusManager.clearFocus()
-                        isFocused = false
-                    }
-                }, onDoubleTap = {
-                    println("TAP in parent Box dd tap")
-
-                    if (isFocused) {
-                        focusManager.clearFocus()
-                        isFocused = false
-                    }
-                },onPress={
-                    println("TAP in parent Box onpress")
-
-                    if (isFocused) {
-                        focusManager.clearFocus()
-                        isFocused = false
-                    }
-                }, onLongPress = {
-                    println("TAP in parent Box onlongpress")
-
-                    if (isFocused) {
-                        focusManager.clearFocus()
-                        isFocused = false
-                    }
-                })
-            }
-        }
-
-
-    ) {
+    Box() {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         ModalNavigationDrawer(
@@ -614,9 +520,7 @@ fun MainCompose(
 
                                 Spacer(modifier = Modifier.height(20.dp))
 
-//                        TextButton(onClick = { viewModel.showModal = false }) {
-//                            Text(text = "Close")
-//                        }
+
 
                             }
                         }
@@ -679,15 +583,7 @@ fun MainCompose(
 
                         verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
                     ) {
-//                Image(
-//                    painter = painterResource(id = R.drawable.logo),
-//                    contentDescription = "Logo",
-//                    modifier = Modifier
-//                        .padding(2.dp)
-//                        .size(40.dp)
-//                )
-//
-//
+
 //                  icon of drawer
                         Button(
                             onClick = {
@@ -724,29 +620,7 @@ fun MainCompose(
 
 
                         //New Text Button
-//                Button(
-//                    onClick = {
-//                        viewModel.stop()
-//                        viewModel.clear()
-//                    },
-//                    modifier = Modifier
-//                        .background(Color.Transparent),
-//                    colors = ButtonDefaults.buttonColors(Color.Transparent)
-//                ) {
-//                    Text(
-//                        "New ",
-//                        color = Color.White,
-//                        style = TextStyle(fontWeight = FontWeight.W400),
-//                        fontSize = 18.sp
-//                    )
-//
-//                    Icon(
-//                        imageVector = Icons.Default.Add,
-//                        contentDescription = "newChat",
-//                        tint = Color.White // Optional: set the color of the icon
-//                    )
-//
-//                }
+
                         //New Chat Button
 
                         Button(
@@ -772,12 +646,7 @@ fun MainCompose(
                             )
                         }
                     }
-//                    Box(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .height(0.2.dp)
-//                            .background(color = Color.White)
-//                    ) {}//extra spacing
+//
                 }
                 //Top app bar stops here
 
@@ -789,14 +658,16 @@ fun MainCompose(
                     val scrollState = rememberLazyListState()
                     val coroutineScope = rememberCoroutineScope()
 
+                    var focuseVal = LocalFocusManager.current
                     Box(modifier = Modifier
                         .weight(1f)
                         .pointerInput(Unit) {
                             detectTapGestures(
-                                onTap = { autoScrollEnabled = false },
-                                onDoubleTap = { autoScrollEnabled = false },
-                                onLongPress = { autoScrollEnabled = false },
-                                onPress = { autoScrollEnabled = false },
+                                onTap = { autoScrollEnabled = false ;  focuseVal.clearFocus()},
+                                onDoubleTap = { autoScrollEnabled = false;  focuseVal.clearFocus() },
+                                onLongPress = { autoScrollEnabled = false; focuseVal.clearFocus() },
+                                onPress = { autoScrollEnabled = false; focuseVal.clearFocus() },
+
 
 
                                 )
@@ -910,15 +781,7 @@ fun MainCompose(
                                             Box(
                                                 modifier = Modifier
 
-//                                                .padding(
-//                                                    end = if (role == "user") 8.dp else 64.dp, // Margin for user
-//                                                    start = if (role == "assistant") 8.dp else 64.dp // Margin for assistant
-//                                                )
-//                                                .widthIn(min = 50.dp, max = 300.dp) // Dynamic bubble width
-//                                                .background(
-//                                                    color = if (role == "user") Color.LightGray else Color(0xFF232627), // Light gray for user, dark for assistant
-//                                                    shape = RoundedCornerShape(12.dp) // Rounded corners for bubble
-//                                                )
+//
 
                                             )
                                             {
@@ -946,6 +809,7 @@ fun MainCompose(
                                                                 .background(color = Color(0xFF01081a))
 
                                                         ){
+                                                            var sheetScrollState = rememberLazyListState()
                                                             Column (
                                                                 modifier = Modifier
                                                                     .fillMaxWidth()
@@ -1004,7 +868,7 @@ fun MainCompose(
                                                                         color = Color(0xFFA0A0A5)
                                                                     )
                                                                 }
-                                                                LazyColumn(state = scrollState) {
+                                                                LazyColumn(state = sheetScrollState) {
                                                                     item {
                                                                         SelectionContainer {
                                                                             if(viewModel.toggler) {
@@ -1029,10 +893,7 @@ fun MainCompose(
                                                             }
 
                                                         }
-//                                                        Image(
-//                                                            painter = painterResource(id = R.drawable.human_icon),
-//                                                            contentDescription = ""
-//                                                        )
+//
                                                     }
                                                 }
                                                 Row(
@@ -1065,10 +926,7 @@ fun MainCompose(
                                                             indication = ripple(color = Color.Gray),
                                                             onLongClick = {
                                                                 isSheetOpen = true
-//                                                                clipboard.setText(
-//                                                                    AnnotatedString(trimmedMessage)
-//                                                                )
-//                                                                Toast.makeText(context, "text copied!!", Toast.LENGTH_SHORT).show()
+//
                                                             },
                                                             onClick = {}
                                                         )
@@ -1137,21 +995,7 @@ fun MainCompose(
                                                     ) {
 
 
-//                                                        Image(
-//                                                            painter = painterResource(id = R.drawable.copy1),
-//                                                            contentDescription = "Copy Icon user",
-//                                                            modifier = Modifier
-//                                                                .size(22.dp)
-//                                                                .clickable {
-//                                                                    // Copy text to clipboard
-//                                                                    clipboard.setPrimaryClip(
-//                                                                        android.content.ClipData.newPlainText(
-//                                                                            "Text",
-//                                                                            content
-//                                                                        )
-//                                                                    )
-//                                                                }
-//                                                        )
+//
 
                                                     }
                                                     Text(
@@ -1231,23 +1075,7 @@ fun MainCompose(
                             verticalAlignment = Alignment.CenterVertically,
 
                             ) {
-//                    OutlinedTextField(
-//                        value = viewModel.message,
-//                        onValueChange = { viewModel.updateMessage(it) },
-//                        label = { Text("Message") },
-//                        modifier = Modifier
-////                            .weight(1f)
-//                            .background(Color(0xFF141A26), shape = RoundedCornerShape(22.dp))
-//
-//                           ,
-//                        shape = RoundedCornerShape(size = 22.dp),
-//                        colors = OutlinedTextFieldDefaults.colors(
-//                            focusedTextColor = Color.White,
-//                            focusedBorderColor = Color.White,
-//                            focusedLabelColor = Color.White,
-//                            cursorColor = Color.White,
-//
-//                        ),
+
 
                             IconButton(onClick = {
                                 autoScrollEnabled = true
@@ -1279,7 +1107,7 @@ fun MainCompose(
                                 value = TextFieldValue(text = viewModel.message, selection = TextRange(viewModel.message.length)),
                                 onValueChange = { viewModel.updateMessage(it.text) },
 
-//                        label = { Text("Message") } ,
+
                                 placeholder = { Text("Message") },
                                 modifier = Modifier
                                     .weight(1f)
@@ -1305,17 +1133,6 @@ fun MainCompose(
                                 )
                             )
 
-//                        keyboardOptions = KeyboardOptions(
-//                            keyboardType = KeyboardType.Ascii,
-//                            imeAction = ImeAction.Done
-//                        ),
-//                        keyboardActions = KeyboardActions(
-//                            onDone = {
-//                                //kc?.show()
-//                                //kc?.hide()
-//                            },
-//
-//                        ),
 
 
                             if (!viewModel.getIsSending()) {
@@ -1352,40 +1169,7 @@ fun MainCompose(
                         }
                     }
 
-//            Row(
-//                horizontalArrangement = Arrangement.SpaceEvenly,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(top = 1.dp)  // Adding top margin
-//            ) {
-////                        Button(
-////                            onClick = { viewModel.clear() },
-////                            modifier = Modifier
-////                                .background(Color(0xFF232627))
-////                        ) {
-////                            Text(
-////                                "Clear",
-////                                color = Color.White
-////                            )
-////                        }
-////                        Button(
-////                            onClick = { viewModel.stop() },
-////                            modifier = Modifier
-////                                .background(Color(0xFF232627))
-////                        ) {
-////                            Text(
-////                                "Stop",
-////                                color = Color.White
-////                            )
-////                        }
-//
-//            }
 
-//            Column {
-//                for (model in models) {
-//                    Downloadable.Button(viewModel, dm, model)
-//                }
-//            }
                 }
             }
         }
