@@ -25,18 +25,18 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     }
 
     private val tag: String? = this::class.simpleName
-
+// messages variable stores your complete current chat in a array
     var messages by mutableStateOf(
         listOf<Map<String, String>>(
 
         )
     )
         private set
-
-    private var first by mutableStateOf(
+//checks for user's first message
+    private var firstMessage by mutableStateOf(
         true
     )
-
+// temp variable to store user's new message
     var message by mutableStateOf("")
         private set
 
@@ -111,7 +111,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
 
 
-    var toggler by mutableStateOf(false)
+    var bottomSheetToggler by mutableStateOf(false)
     var showModal by  mutableStateOf(true)
     var showAlert by mutableStateOf(false)
     override fun onCleared() {
@@ -128,16 +128,16 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             }
         }
     }
-
+// sends message String to Backend after combining messages
     fun send() {
         val userMessage = removeExtraWhiteSpaces(message)
         message = ""
 
         // Add to messages console.
         if (userMessage != "" && userMessage != " ") {
-            if(first){
+            if(firstMessage){
                 addMessage("system", "This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.")
-                first = false
+                firstMessage = false
             }
             addMessage("user", userMessage)
             val text = parseTemplateJson(messages)+"assistant \n"
@@ -162,7 +162,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
 
     }
-
+// function to evaluate the performance
 //    fun bench(pp: Int, tg: Int, pl: Int, nr: Int = 1) {
 //        viewModelScope.launch {
 //            try {
@@ -187,7 +187,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 //            }
 //        }
 //    }
-
+// Bootstraps the application by loading the required  model on launch
     fun load(pathToModel: String) {
         viewModelScope.launch {
             try{
@@ -207,6 +207,8 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             showModal = false
         }
     }
+
+    // Appending new message in list of messages
     private fun addMessage(role: String, content: String) {
         val newMessage = mapOf("role" to role, "content" to content)
 
@@ -226,7 +228,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         // Replace multiple white spaces with a single space
         return input.replace("\\s+".toRegex(), " ")
     }
-
+// Parsing messages in required format before sending to backend
     private fun parseTemplateJson(chatData: List<Map<String, String>> ):String{
         var chatStr = ""
         for (data in chatData){
@@ -239,15 +241,16 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         }
         return chatStr
     }
+
     fun updateMessage(newMessage: String) {
         message = newMessage
     }
-
+//clearing the complete chat and setting user's firstMessage to true
     fun clear() {
         messages = listOf(
 
         )
-        first = true
+        firstMessage = true
     }
 
     fun log(message: String) {
@@ -261,7 +264,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     private fun getIsMarked(): Boolean {
         return llamaAndroid.getIsMarked()
     }
-
+// stopping model
     fun stop() {
         llamaAndroid.stopTextGeneration()
     }

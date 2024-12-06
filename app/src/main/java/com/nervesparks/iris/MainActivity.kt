@@ -798,7 +798,7 @@ fun MainCompose(
                                                         containerColor = Color(0xFF01081a),
                                                         onDismissRequest = {
                                                             isSheetOpen = false
-                                                            viewModel.toggler = false
+                                                            viewModel.bottomSheetToggler = false
                                                         })
                                                     {
                                                         //Bottom Sheet
@@ -842,7 +842,7 @@ fun MainCompose(
                                                                         .padding(vertical = 8.dp),
 
                                                                     onClick = {
-                                                                       viewModel.toggler = !viewModel.toggler
+                                                                       viewModel.bottomSheetToggler = !viewModel.bottomSheetToggler
                                                                     }
                                                                 ) {
                                                                     Text(text = "Select Text To Copy", color = Color(0xFFA0A0A5))
@@ -871,7 +871,7 @@ fun MainCompose(
                                                                 LazyColumn(state = sheetScrollState) {
                                                                     item {
                                                                         SelectionContainer {
-                                                                            if(viewModel.toggler) {
+                                                                            if(viewModel.bottomSheetToggler) {
                                                                                 Box(
                                                                                     contentAlignment = Alignment.Center,
                                                                                     modifier = Modifier
