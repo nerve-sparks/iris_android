@@ -135,9 +135,20 @@ import kotlinx.coroutines.launch
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 import android.speech.tts.TextToSpeech
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.googlefonts.GoogleFont
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.toSize
 import java.security.AccessController.getContext
 import java.util.Locale
 import kotlin.math.log
@@ -314,7 +325,6 @@ fun MainCompose(
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         ModalNavigationDrawer(
-
             drawerState = drawerState,
             drawerContent = {
                 ModalDrawerSheet(
@@ -359,6 +369,51 @@ fun MainCompose(
                                 )
                             }
                         }
+                        //models dropdown
+                        Column(Modifier.padding(20.dp)) {
+                            var mExpanded by remember { mutableStateOf(false) }
+                            var mSelectedText by remember { mutableStateOf("") }
+                            var mTextFieldSize by remember { mutableStateOf(Size.Zero)}
+                            val icon = if (mExpanded)
+                                Icons.Filled.KeyboardArrowUp
+                            else
+                                Icons.Filled.KeyboardArrowDown
+                            val Models = listOf("llama", "Gemini", "Open AI")
+                            OutlinedTextField(
+                                value = mSelectedText,
+                                onValueChange = { mSelectedText = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .onGloballyPositioned { coordinates ->
+                                        mTextFieldSize = coordinates.size.toSize()
+                                    },
+                                label = {Text("Select Model", color = Color.White)},
+                                trailingIcon = {
+                                    Icon(icon,"contentDescription",
+                                        Modifier.clickable { mExpanded = !mExpanded })
+                                },
+                                textStyle = TextStyle(color = Color.White),
+                                readOnly = true
+                            )
+                        DropdownMenu(
+                            modifier = Modifier
+                                .background(Color(0xFF01081a))
+                                .width(with(LocalDensity.current){mTextFieldSize.width.toDp()}),
+                            expanded = mExpanded,
+                            onDismissRequest = {
+                                mExpanded = false
+                            }
+                        ) {
+                            Models.forEach { label ->
+                                DropdownMenuItem(onClick = {
+                                    mSelectedText = label
+                                    mExpanded = false
+                                }) {
+                                    Text(text = label, color = Color.White)
+                                }
+                            }
+                        }
+                    }
 
                         // This will push the buttons to the bottom
                         Spacer(modifier = Modifier.weight(1f))
@@ -484,19 +539,18 @@ fun MainCompose(
                     // Modal dialog to show download options
                     Dialog(onDismissRequest = {}) {
                         Surface(
-                            shape = RoundedCornerShape(10.dp),
+                            shape = RoundedCornerShape(20.dp),
                             color = Color.Black,
                             modifier = Modifier
                                 .padding(10.dp)
-                                .height(230.dp)
+                                .height(200.dp)
                         ) {
+
                             Column(
                                 modifier = Modifier
-                                    .padding(16.dp)
-                                    .height(140.dp)
-                                    ,
+                                    .padding(50.dp)
+                                    .fillMaxSize(),
                                 horizontalAlignment = Alignment.CenterHorizontally
-
                             ) {
                                 Text(
                                     text = "Download Required",
@@ -509,19 +563,64 @@ fun MainCompose(
                                     color = Color.White
                                 )
                                 Spacer(modifier = Modifier.height(35.dp))
-
                                 models.forEach { model ->
                                     if (!model.destination.exists()) {
-//                                        Text(text = model.name, modifier = Modifier.padding(9.dp))
                                         Downloadable.Button(viewModel, dm, model)
                                     }
                                 }
+                                Spacer(modifier = Modifier.height(25.dp))
 
-
-                                Spacer(modifier = Modifier.height(20.dp))
-
-
-
+                                //Model management in downloading screen
+//                                Column(
+//                                    Modifier
+//                                        .padding(20.dp),
+//                                    horizontalAlignment = Alignment.CenterHorizontally,
+//                                    verticalArrangement = Arrangement.Center
+//                                )
+//                                {
+//                                    var mExpanded by remember { mutableStateOf(false) }
+//                                    var mSelectedText by remember { mutableStateOf("") }
+//                                    var mTextFieldSize by remember { mutableStateOf(Size.Zero)}
+//                                    val icon = if (mExpanded)
+//                                        Icons.Filled.KeyboardArrowUp
+//                                    else
+//                                        Icons.Filled.KeyboardArrowDown
+//                                    val Models = listOf("llama", "Gemini", "Open AI")
+//                                    OutlinedTextField(
+//                                        value = mSelectedText,
+//                                        onValueChange = { mSelectedText = it },
+//                                        modifier = Modifier
+//                                            .fillMaxWidth()
+//                                            .onGloballyPositioned { coordinates ->
+//                                                mTextFieldSize = coordinates.size.toSize()
+//                                            },
+//                                        label = {Text("Select Model", color = Color.White)},
+//                                        trailingIcon = {
+//                                            Icon(icon,"contentDescription",
+//                                                Modifier.clickable { mExpanded = !mExpanded })
+//                                        },
+//                                        textStyle = TextStyle(color = Color.White),
+//                                        readOnly = true
+//                                    )
+//                                    DropdownMenu(
+//                                        modifier = Modifier
+//                                            .background(Color(0xFF01081a))
+//                                            .width(with(LocalDensity.current){mTextFieldSize.width.toDp()}),
+//                                        expanded = mExpanded,
+//                                        onDismissRequest = {
+//                                            mExpanded = false
+//                                        }
+//                                    ) {
+//                                        Models.forEach { label ->
+//                                            DropdownMenuItem(onClick = {
+//                                                mSelectedText = label
+//                                                mExpanded = false
+//                                            }) {
+//                                                Text(text = label, color = Color.White)
+//                                            }
+//                                        }
+//                                    }
+//                                }
                             }
                         }
                     }
@@ -1025,8 +1124,9 @@ fun MainCompose(
                          //chat section ends here
                     }
                     LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp), // Reduced space between cards
-                        contentPadding = PaddingValues(vertical = 8.dp)
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center, // Reduced space between cards
+                        contentPadding = PaddingValues(8.dp)
                     ) {
                         items(Prompts.size) { index ->
                             if(viewModel.messages.size <= 1){
@@ -1038,6 +1138,7 @@ fun MainCompose(
                                             focusRequester.requestFocus()
                                         }
                                         .padding(horizontal = 8.dp),
+
                                     shape = MaterialTheme.shapes.medium,
                                     colors = CardDefaults.cardColors(containerColor = Color(0xFF030815))
                                 ) {
@@ -1095,7 +1196,7 @@ fun MainCompose(
                                     modifier = Modifier
                                         .size(24.dp)
                                         .weight(1f),
-                                    painter = painterResource(id = R.drawable.mic_on_svgrepo_com),
+                                    painter = painterResource(id = R.drawable.mic_svgrepo_com),
                                     contentDescription = "Mic",
                                     tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
                                 )
