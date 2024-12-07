@@ -177,7 +177,6 @@ class LLamaAndroid {
                         _isMarked.value = !_isMarked.value
                     }
                     if (str == null) {
-                        Log.i(tag, "180")
                         _isSending.value = false
                         break
                     }
@@ -185,7 +184,6 @@ class LLamaAndroid {
                         "                                                                                                    "
                     ) {
 
-                        Log.i(tag, "188")
                         _isSending.value = false
                         break
 

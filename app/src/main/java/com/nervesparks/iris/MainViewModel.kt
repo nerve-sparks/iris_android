@@ -140,7 +140,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             }
 
             addMessage("user", userMessage)
-            val text = parseTemplateJson(messages as? List<Map<String, String>> ?: emptyList()) + "assistant \n"
+
 
             viewModelScope.launch {
                 Log.i("This is the template", llamaAndroid.getTemplate(messages))
