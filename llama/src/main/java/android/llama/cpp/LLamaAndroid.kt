@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
+import java.util.Objects
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
@@ -93,6 +94,11 @@ class LLamaAndroid {
         nLen: Int
     ): Int
 
+    private external fun oaicompat_completion_param_parse(
+        allmessages: Array<Map<String, String>>,
+        model: Long
+    ): String
+
     private external fun completion_loop(
         context: Long,
         batch: Long,
@@ -140,6 +146,25 @@ class LLamaAndroid {
         }
     }
 
+
+    suspend fun getTemplate(messages: List<Map<String, String>>): String {
+        var data = ""
+        withContext(runLoop) {
+            when (val state = threadLocalState.get()) {
+                is State.Loaded -> {
+                    val arrayMessages = messages.toTypedArray() // Convert list to array for JNI compatibility
+                    data = oaicompat_completion_param_parse(
+                        allmessages = arrayMessages,
+                        model = state.model
+                    )
+                }
+                else -> {}
+            }
+        }
+
+        return data
+    }
+
     suspend fun send(message: String): Flow<String> = flow {
         stopGeneration = false
         when (val state = threadLocalState.get()) {
@@ -152,12 +177,15 @@ class LLamaAndroid {
                         _isMarked.value = !_isMarked.value
                     }
                     if (str == null) {
+                        Log.i(tag, "180")
                         _isSending.value = false
                         break
                     }
                     if (str == "User" || str == " User" || str== " user" || str == "user" || str == "<|im_end|>" || str == "\n" +
                         "                                                                                                    "
                     ) {
+
+                        Log.i(tag, "188")
                         _isSending.value = false
                         break
 

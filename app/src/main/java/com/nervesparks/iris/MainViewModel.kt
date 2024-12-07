@@ -27,10 +27,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     private val tag: String? = this::class.simpleName
 
     var messages by mutableStateOf(
-        listOf<Map<String, String>>(
 
+            listOf<Map<String, String>>(),
         )
-    )
         private set
 
     private var first by mutableStateOf(
@@ -139,10 +138,13 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 addMessage("system", "This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.")
                 first = false
             }
+
             addMessage("user", userMessage)
-            val text = parseTemplateJson(messages)+"assistant \n"
+            val text = parseTemplateJson(messages as? List<Map<String, String>> ?: emptyList()) + "assistant \n"
+
             viewModelScope.launch {
-                llamaAndroid.send(text)
+                Log.i("This is the template", llamaAndroid.getTemplate(messages))
+                llamaAndroid.send(llamaAndroid.getTemplate(messages))
                     .catch {
                         Log.e(tag, "send() failed", it)
                         addMessage("error", it.message ?: "")

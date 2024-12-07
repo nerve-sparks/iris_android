@@ -199,6 +199,11 @@ class MainActivity(
                 Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
                 File(extFilesDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
             ),
+            Downloadable(
+                "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+                Uri.parse("https://huggingface.co/h2oai/h2o-danube2-1.8b-chat-GGUF/resolve/main/h2o-danube2-1.8b-chat-Q4_K_M.gguf?download=true"),
+                File(extFilesDir, "h2o-danube3-500m-chat-Q8_0.gguf")
+            ),
         )
         models.forEach { model ->
             if (model.destination.exists()) {
@@ -758,16 +763,12 @@ fun MainCompose(
                             }
                         }
                         else {
+                            val prompts = viewModel.messages as? List<Map<String, String>> ?: emptyList()
                             LazyColumn(state = scrollState) {  //chat section starts here
 
-                                coroutineScope.launch {
 
-                                    if (autoScrollEnabled) {
-                                        scrollState.scrollToItem(viewModel.messages.size)
-                                    }
-                                }
 
-                                itemsIndexed(viewModel.messages) { _, messageMap ->
+                                itemsIndexed(viewModel.messages as? List<Map<String, String>> ?: emptyList()) { _, messageMap ->
                                     val role = messageMap["role"] ?: ""
                                     val content = messageMap["content"] ?: ""
                                     val trimmedMessage = if (content.endsWith("\n")) {
@@ -1018,6 +1019,11 @@ fun MainCompose(
 
                                         }
                                     }
+                                }
+                            }
+                            LaunchedEffect(prompts.size) {
+                                if (autoScrollEnabled && prompts.isNotEmpty()) {
+                                    scrollState.animateScrollToItem(prompts.size - 1)
                                 }
                             }
                         }
