@@ -180,7 +180,7 @@ class LLamaAndroid {
                         _isSending.value = false
                         break
                     }
-                    if (str == "User" || str == " User" || str== " user" || str == "user" || str == "<|im_end|>" || str == "\n" +
+                    if (str == "</s>" || str == " User" || str== " user" || str == "user" || str == "<|im_end|>" || str == "\n" +
                         "                                                                                                    "
                     ) {
 

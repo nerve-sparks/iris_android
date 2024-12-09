@@ -201,7 +201,7 @@ class MainActivity(
             ),
             Downloadable(
                 "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
-                Uri.parse("https://huggingface.co/h2oai/h2o-danube2-1.8b-chat-GGUF/resolve/main/h2o-danube2-1.8b-chat-Q4_K_M.gguf?download=true"),
+                Uri.parse("https://huggingface.co/tensorblock/mistral-1.1b-testing-GGUF/resolve/main/mistral-1.1b-testing-Q2_K.gguf?download=true"),
                 File(extFilesDir, "h2o-danube3-500m-chat-Q8_0.gguf")
             ),
         )
