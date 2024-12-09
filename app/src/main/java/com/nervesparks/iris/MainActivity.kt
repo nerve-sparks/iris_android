@@ -135,9 +135,17 @@ import kotlinx.coroutines.launch
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 import android.speech.tts.TextToSpeech
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.googlefonts.GoogleFont
+import androidx.lifecycle.viewModelScope
 import java.security.AccessController.getContext
 import java.util.Locale
 import kotlin.math.log
@@ -282,7 +290,7 @@ fun MainCompose(
 //    )
 
     //variable to toggle auto-scrolling
-    var autoScrollEnabled by remember { mutableStateOf(true) }
+
 //    var showModal by remember { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
 
@@ -313,7 +321,11 @@ fun MainCompose(
     }
     var isSpeaking by remember { mutableStateOf(false) }
 
-
+    fun scrollToBottom(scrollState: LazyListState) {
+        viewModel.viewModelScope.launch {
+            scrollState.scrollToItem(viewModel.messages.size - 1)
+        }
+    }
 
 
     Box() {
@@ -671,10 +683,10 @@ fun MainCompose(
                         .weight(1f)
                         .pointerInput(Unit) {
                             detectTapGestures(
-                                onTap = { autoScrollEnabled = false ; kc?.hide()  },
-                                onDoubleTap = { autoScrollEnabled = false; kc?.hide() },
-                                onLongPress = { autoScrollEnabled = false; kc?.hide() },
-                                onPress = { autoScrollEnabled = false; kc?.hide() },
+                                onTap = {  kc?.hide()  },
+                                onDoubleTap = {  kc?.hide() },
+                                onLongPress = { kc?.hide() },
+                                onPress = { kc?.hide() },
 
 
 
@@ -682,7 +694,7 @@ fun MainCompose(
                         }) {
 //
 
-                        if (viewModel.messages.size == 0 && viewModel.showModal==false && viewModel.showAlert ==false) {
+                        if (viewModel.messages.isEmpty() && !viewModel.showModal && !viewModel.showAlert) {
                             LazyColumn(
                                 modifier = Modifier
                                     .fillMaxSize() // Take up the whole screen
@@ -766,9 +778,8 @@ fun MainCompose(
                             }
                         }
                         else {
-                            val prompts = viewModel.messages as? List<Map<String, String>> ?: emptyList()
-                            LazyColumn(state = scrollState, modifier = Modifier.clickable {  }) {  //chat section starts here
 
+                            LazyColumn(state = scrollState) {  //chat section starts here
                                 itemsIndexed(viewModel.messages as? List<Map<String, String>> ?: emptyList()) { _, messageMap ->
                                     val role = messageMap["role"] ?: ""
                                     val content = messageMap["content"] ?: ""
@@ -781,7 +792,7 @@ fun MainCompose(
                                         if (role != "codeBlock") {
 
                                             Box(
-                                                modifier = Modifier
+
 
 //
 
@@ -902,7 +913,7 @@ fun MainCompose(
                                                     horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
                                                     modifier = Modifier
                                                         .fillMaxWidth()
-                                                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                                                        .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 0.dp),
 
                                                     ) {
                                                     if(role == "assistant")
@@ -1023,12 +1034,17 @@ fun MainCompose(
                                         }
                                     }
                                 }
-                            }
-                            LaunchedEffect(prompts.size) {
-                                if (autoScrollEnabled && prompts.isNotEmpty()) {
-                                    scrollState.animateScrollToItem(prompts.size - 1)
+                                item {
+                                    Spacer(modifier = Modifier.height(1.dp).fillMaxWidth())
                                 }
                             }
+
+                            ScrollToBottomButton(
+                                scrollState = scrollState,
+                                messages = viewModel.messages,
+                                viewModel = viewModel
+                            )
+
                         }
 
                          //chat section ends here
@@ -1087,7 +1103,6 @@ fun MainCompose(
 
 
                             IconButton(onClick = {
-                                autoScrollEnabled = true
                                 val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                                     putExtra(
                                         RecognizerIntent.EXTRA_LANGUAGE_MODEL,
@@ -1147,7 +1162,6 @@ fun MainCompose(
                             if (!viewModel.getIsSending()) {
 
                                 IconButton(onClick = {
-                                    autoScrollEnabled = true
                                     viewModel.send()
                                     focusManager.clearFocus()
                                 }
@@ -1186,6 +1200,82 @@ fun MainCompose(
 
 
 }
+@Composable
+fun ScrollToBottomButton(
+    viewModel: MainViewModel,
+    scrollState: LazyListState,
+    messages: List<Any>
+) {
+    val coroutineScope = rememberCoroutineScope()
+
+    // State to track if auto-scrolling is enabled
+    var isAutoScrolling by remember { mutableStateOf(false) }
+
+    // State to control the button's visibility
+    var isButtonVisible by remember { mutableStateOf(true) }
+
+    // Determine if the user can scroll down
+    val canScrollDown by remember {
+        derivedStateOf { scrollState.canScrollForward }
+    }
+
+    // Continuously scroll to the bottom while auto-scrolling is enabled
+    LaunchedEffect(viewModel.messages.size, isAutoScrolling) {
+        if (isAutoScrolling) {
+            coroutineScope.launch {
+                scrollState.scrollToItem(viewModel.messages.size + 1)
+            }
+        }
+    }
+
+    // Stop auto-scrolling when the user scrolls manually
+    LaunchedEffect(scrollState.isScrollInProgress) {
+        if (scrollState.isScrollInProgress) {
+            isAutoScrolling = false
+            isButtonVisible = true // Show the button again if the user scrolls manually
+        }
+    }
+
+    // Continuously monitor changes in the last item's content
+    LaunchedEffect(messages.lastOrNull()) {
+        if (isAutoScrolling && messages.isNotEmpty()) {
+            coroutineScope.launch {
+                scrollState.scrollToItem(viewModel.messages.size +1)
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        AnimatedVisibility(
+            visible = (canScrollDown || isAutoScrolling) && isButtonVisible, // Show button if needed
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            FloatingActionButton(
+                onClick = {
+                    isAutoScrolling = true // Enable auto-scrolling
+                    isButtonVisible = false // Hide the button on click
+                    coroutineScope.launch {
+                        scrollState.scrollToItem(messages.size +1 )
+                    }
+                },
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .size(56.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.KeyboardArrowDown,
+                    contentDescription = "Scroll to bottom"
+                )
+            }
+        }
+    }
+}
+
+
 
 
 
