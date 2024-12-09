@@ -14,6 +14,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import java.util.Locale
 import java.util.UUID
@@ -46,6 +47,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     var stateForTextToSpeech by mutableStateOf(true)
         private set
 
+    var eot_str = ""
 
 
 
@@ -144,20 +146,28 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
             viewModelScope.launch {
                 Log.i("This is the template", llamaAndroid.getTemplate(messages))
-                llamaAndroid.send(llamaAndroid.getTemplate(messages))
-                    .catch {
-                        Log.e(tag, "send() failed", it)
-                        addMessage("error", it.message ?: "")
-                    }
-                    .collect { response ->
-                        // Create a new assistant message with the response
-                        if (getIsMarked()) {
-                            addMessage("codeBlock", response)
-
-                        } else {
-                            addMessage("assistant", response)
+                try {
+                    llamaAndroid.send(llamaAndroid.getTemplate(messages))
+                        .catch {
+                            Log.e(tag, "send() failed", it)
+                            addMessage("error", it.message ?: "")
                         }
-                    }
+                        .collect { response ->
+                            // Create a new assistant message with the response
+                            if (getIsMarked()) {
+                                addMessage("codeBlock", response)
+
+                            } else {
+                                addMessage("assistant", response)
+                            }
+                        }
+                }
+                finally {
+                        trimEOT()
+                }
+
+
+
             }
         }
 
@@ -207,6 +217,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 addMessage("error", exc.message ?: "")
             }
             showModal = false
+            eot_str = llamaAndroid.send_eot_str()
         }
     }
     private fun addMessage(role: String, content: String) {
@@ -222,6 +233,16 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         } else {
             messages + listOf(newMessage)
         }
+    }
+
+    private fun trimEOT(){
+        val lastMessageContent = messages.last()["content"] ?: ""
+        val updatedContent = lastMessageContent.slice(0..(lastMessageContent.length-eot_str.length))
+        val updatedLastMessage = messages.last() + ("content" to updatedContent)
+        messages = messages.toMutableList().apply {
+            set(messages.lastIndex, updatedLastMessage)
+        }
+        messages.last()["content"]?.let { Log.e(tag, it) }
     }
 
     private fun removeExtraWhiteSpaces(input: String): String {
