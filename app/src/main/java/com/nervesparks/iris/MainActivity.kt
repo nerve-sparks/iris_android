@@ -575,7 +575,7 @@ fun MainCompose(
                     }
                 }
 
-                Column {
+
 
                     //Top app bar starts here.
                     Row(
@@ -584,7 +584,8 @@ fun MainCompose(
                             .background(color = Color.Transparent)
                             .padding(start = 20.dp, end = 10.dp)
                             .height(60.dp)
-                            .fillMaxWidth(),
+                            .fillMaxWidth().
+                        clickable { kc?.hide() },
                         horizontalArrangement = Arrangement.SpaceBetween,
 
                         verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
@@ -593,6 +594,7 @@ fun MainCompose(
 //                  icon of drawer
                         Button(
                             onClick = {
+                                kc?.hide()
                                 scope.launch {
                                     drawerState.apply {
                                         if (isClosed) open() else close()
@@ -631,6 +633,7 @@ fun MainCompose(
 
                         Button(
                             onClick = {
+                                kc?.hide()
                                 viewModel.clear()
                                 viewModel.stop()
 
@@ -653,7 +656,7 @@ fun MainCompose(
                         }
                     }
 //
-                }
+
                 //Top app bar stops here
 
 
@@ -662,23 +665,22 @@ fun MainCompose(
 
 
                     val scrollState = rememberLazyListState()
-                    val coroutineScope = rememberCoroutineScope()
 
-                    var focuseVal = LocalFocusManager.current
+
                     Box(modifier = Modifier
                         .weight(1f)
                         .pointerInput(Unit) {
                             detectTapGestures(
-                                onTap = { autoScrollEnabled = false ;  focuseVal.clearFocus()},
-                                onDoubleTap = { autoScrollEnabled = false;  focuseVal.clearFocus() },
-                                onLongPress = { autoScrollEnabled = false; focuseVal.clearFocus() },
-                                onPress = { autoScrollEnabled = false; focuseVal.clearFocus() },
+                                onTap = { autoScrollEnabled = false ; kc?.hide()  },
+                                onDoubleTap = { autoScrollEnabled = false; kc?.hide() },
+                                onLongPress = { autoScrollEnabled = false; kc?.hide() },
+                                onPress = { autoScrollEnabled = false; kc?.hide() },
 
 
 
                                 )
                         }) {
-//                        .blur(5.dp, BlurredEdgeTreatment.Rectangle)
+//
 
                         if (viewModel.messages.size == 0 && viewModel.showModal==false && viewModel.showAlert ==false) {
                             LazyColumn(
@@ -765,9 +767,7 @@ fun MainCompose(
                         }
                         else {
                             val prompts = viewModel.messages as? List<Map<String, String>> ?: emptyList()
-                            LazyColumn(state = scrollState) {  //chat section starts here
-
-
+                            LazyColumn(state = scrollState, modifier = Modifier.clickable {  }) {  //chat section starts here
 
                                 itemsIndexed(viewModel.messages as? List<Map<String, String>> ?: emptyList()) { _, messageMap ->
                                     val role = messageMap["role"] ?: ""
@@ -930,7 +930,9 @@ fun MainCompose(
                                                                 isSheetOpen = true
 //
                                                             },
-                                                            onClick = {}
+                                                            onClick = {
+                                                                kc?.hide()
+                                                            }
                                                         )
                                                     )
                                                     {
