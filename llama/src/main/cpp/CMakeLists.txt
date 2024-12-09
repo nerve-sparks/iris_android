@@ -51,3 +51,10 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         common
         android
         log)
+if (${ANDROID_ABI} STREQUAL "arm64-v8a")
+    message(STATUS "llama.android: Added optimizations for arm64-v8a")
+    add_compile_options(-O3 -mcpu=native -march=armv8.2-a+fp16 -mfpu=neon-v8fp16_va)
+else()
+    message(STATUS "llama.android: No optimizations added")
+    add_compile_options(-O3 -mcpu=native)
+endif()
