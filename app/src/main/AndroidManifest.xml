@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:allowBackup="true"
@@ -13,14 +14,17 @@
         android:roundIcon="@drawable/logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.LlamaAndroid"
-        >
-
+        android:windowSplashScreenBackground="#00FF00">
+        <activity
+            android:name=".Copy_screen"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.LlamaAndroid"
-            android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="portrait">
+            android:windowBackground="#00FF00"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

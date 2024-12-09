@@ -15,6 +15,7 @@ import kotlin.concurrent.thread
 class LLamaAndroid {
     private val tag: String? = this::class.simpleName
     private var stopGeneration: Boolean = false
+    //private var model_eot_str: String = ""
 
     private val threadLocalState: ThreadLocal<State> = ThreadLocal.withInitial { State.Idle }
 
@@ -61,7 +62,7 @@ class LLamaAndroid {
         }
     }.asCoroutineDispatcher()
 
-    private val nlen: Int = 512
+    private val nlen: Int = 1024
 
     private external fun log_to_android()
     private external fun load_model(filename: String): Long
@@ -93,6 +94,11 @@ class LLamaAndroid {
         nLen: Int
     ): Int
 
+    private external fun oaicompat_completion_param_parse(
+        allmessages: Array<Map<String, String>>,
+        model: Long
+    ): String
+
     private external fun completion_loop(
         context: Long,
         batch: Long,
@@ -102,6 +108,10 @@ class LLamaAndroid {
     ): String?
 
     private external fun kv_cache_clear(context: Long)
+
+    private external fun get_eot_str(model: Long): String
+
+
 
     suspend fun bench(pp: Int, tg: Int, pl: Int, nr: Int = 1): String {
         return withContext(runLoop) {
@@ -132,12 +142,34 @@ class LLamaAndroid {
                     val sampler = new_sampler()
                     if (sampler == 0L) throw IllegalStateException("new_sampler() failed")
 
+                    val model_eot_str = get_eot_str(model)
+                    if (model_eot_str == "") throw IllegalStateException("eot_fetch() failed")
+
                     Log.i(tag, "Loaded model $pathToModel")
-                    threadLocalState.set(State.Loaded(model, context, batch, sampler))
+                    threadLocalState.set(State.Loaded(model, context, batch, sampler, model_eot_str))
                 }
                 else -> throw IllegalStateException("Model already loaded")
             }
         }
+    }
+
+
+    suspend fun getTemplate(messages: List<Map<String, String>>): String {
+        var data = ""
+        withContext(runLoop) {
+            when (val state = threadLocalState.get()) {
+                is State.Loaded -> {
+                    val arrayMessages = messages.toTypedArray() // Convert list to array for JNI compatibility
+                    data = oaicompat_completion_param_parse(
+                        allmessages = arrayMessages,
+                        model = state.model
+                    )
+                }
+                else -> {}
+            }
+        }
+
+        return data
     }
 
     suspend fun send(message: String): Flow<String> = flow {
@@ -145,6 +177,7 @@ class LLamaAndroid {
         when (val state = threadLocalState.get()) {
             is State.Loaded -> {
                 val ncur = IntVar(completion_init(state.context, state.batch, message, nlen))
+                var end_token_store = ""
                 while (ncur.value <= nlen && !stopGeneration) {
                     _isSending.value = true
                     val str = completion_loop(state.context, state.batch, state.sampler, nlen, ncur)
@@ -155,13 +188,24 @@ class LLamaAndroid {
                         _isSending.value = false
                         break
                     }
-                    if (str == "User" || str == "user" || str == "<|im_end|>" || str == "\n" +
-                        "                                                                                                    "
-                    ) {
+                    end_token_store = end_token_store+str
+                    if((end_token_store.length > state.modelEotStr.length) and end_token_store.contains(state.modelEotStr)){
                         _isSending.value = false
                         break
-
                     }
+                    if((end_token_store.length/2) > state.modelEotStr.length ){
+                        end_token_store = end_token_store.slice(end_token_store.length/2..end_token_store.length-1)
+                    }
+
+
+//                    if (str == "</s>" || str == " User" || str== " user" || str == "user" || str == "<|im_end|>" || str == "\n" +
+//                        "                                                                                                    "
+//                    ) {
+//
+//                        _isSending.value = false
+//                        break
+//
+//                    }
                     if (stopGeneration) {
                         break
                     }
@@ -197,6 +241,17 @@ class LLamaAndroid {
         }
     }
 
+    suspend fun send_eot_str(): String {
+
+        when (val state = threadLocalState.get()) {
+            is State.Loaded -> {
+            return state.modelEotStr
+            }
+            else -> {return "<|im_end|>"}
+        }
+
+    }
+
     companion object {
         private class IntVar(value: Int) {
             @Volatile
@@ -212,7 +267,7 @@ class LLamaAndroid {
 
         private sealed interface State {
             data object Idle: State
-            data class Loaded(val model: Long, val context: Long, val batch: Long, val sampler: Long): State
+            data class Loaded(val model: Long, val context: Long, val batch: Long, val sampler: Long , val modelEotStr:String): State
         }
 
         // Enforce only one instance of Llm.

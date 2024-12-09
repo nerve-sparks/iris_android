@@ -3,8 +3,18 @@ package com.nervesparks.iris
 import android.app.DownloadManager
 import android.net.Uri
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -13,8 +23,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.core.database.getLongOrNull
 import androidx.core.net.toUri
 import kotlinx.coroutines.delay
@@ -80,7 +92,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
             fun onClick() {
                 when (val s = status) {
                     is Downloaded -> {
-                        viewModel.showModal = false
+                        viewModel.showModal = true
                         viewModel.load(item.destination.path)
                     }
 
@@ -114,33 +126,52 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
             }
 
             if (status !is Downloaded) {
-                Button(
-                    onClick = { onClick() },
-                    enabled = status !is Downloading,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    when (status) {
-                        is Downloading -> Text(
-                            text = "Downloading ${(progress * 100).toInt()}%",
-                            color = Color.White
-                        )
+                Column (
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
 
-                        is Downloaded -> Text(
-                            "Load ${item.name}",
-                            color = Color.White
+                    Button(
+                        onClick = { onClick() },
+                        enabled = status !is Downloading,
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF141414) // Navy Blue color
                         )
+                    ) {
 
-                        is Ready -> Text(
-                            "Download ${item.name}",
-                            color = Color.White
-                        )
+                        when (status) {
+                            is Downloading -> Text(
+                                text = "Downloading ${(progress * 100).toInt()}%",
+                                color = Color.White
+                            )
 
-                        is Error -> Text(
-                            "Download ${item.name}",
-                            color = Color.White
-                        )
+                            is Downloaded -> Text(
+                                "Load ${item.name}",
+                                color = Color.White
+                            )
+
+                            is Ready -> Text(
+                                "Download ${item.name}",
+                                color = Color.White
+                            )
+
+                            is Error -> Text(
+                                "Download ${item.name}",
+                                color = Color.White
+                            )
+                        }
                     }
+                    Spacer(Modifier.height(10.dp))
+
+                    CircularProgressIndicator(
+                        progress = { progress.toFloat() },
+                        modifier = Modifier.width(64.dp),
+                        color = Color.Cyan,
+                        trackColor = Color.Black
+                    )
                 }
+
             }
         }
 

@@ -1,14 +1,23 @@
 package com.nervesparks.iris
 
+import android.content.Context
 import android.llama.cpp.LLamaAndroid
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.util.Log
+import androidx.compose.material.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
+import java.util.Locale
+import java.util.UUID
 
 class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instance()): ViewModel() {
     companion object {
@@ -19,10 +28,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     private val tag: String? = this::class.simpleName
 
     var messages by mutableStateOf(
-        listOf<Map<String, String>>(
 
+            listOf<Map<String, String>>(),
         )
-    )
         private set
 
     private var first by mutableStateOf(
@@ -32,14 +40,90 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     var message by mutableStateOf("")
         private set
 
-    var showModal by  mutableStateOf(true)
 
+    private var textToSpeech:TextToSpeech? = null
+
+    var textForTextToSpeech = ""
+    var stateForTextToSpeech by mutableStateOf(true)
+        private set
+
+    var eot_str = ""
+
+
+
+    fun textToSpeech(context: Context) {
+        if (!getIsSending()) {
+            // If TTS is already initialized, stop it first
+            textToSpeech?.stop()
+
+            textToSpeech = TextToSpeech(context) { status ->
+                if (status == TextToSpeech.SUCCESS) {
+                    textToSpeech?.let { txtToSpeech ->
+                        txtToSpeech.language = Locale.US
+                        txtToSpeech.setSpeechRate(1.0f)
+
+                        // Add a unique utterance ID for tracking
+                        val utteranceId = UUID.randomUUID().toString()
+
+                        txtToSpeech.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                            override fun onDone(utteranceId: String?) {
+                                // Reset state when speech is complete
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    stateForTextToSpeech = true
+                                }
+                            }
+
+                            override fun onError(utteranceId: String?) {
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    stateForTextToSpeech = true
+                                }
+                            }
+
+                            override fun onStart(utteranceId: String?) {
+                                // Update state to indicate speech is playing
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    stateForTextToSpeech = false
+                                }
+                            }
+                        })
+
+                        txtToSpeech.speak(
+                            textForTextToSpeech,
+                            TextToSpeech.QUEUE_FLUSH,
+                            null,
+                            utteranceId
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun stopTextToSpeech() {
+        textToSpeech?.apply {
+            stop()  // Stops current speech
+            shutdown()  // Releases the resources
+        }
+        textToSpeech = null
+
+        // Reset state to allow restarting
+        stateForTextToSpeech = true
+    }
+
+
+
+    var toggler by mutableStateOf(false)
+    var showModal by  mutableStateOf(true)
+    var showAlert by mutableStateOf(false)
     override fun onCleared() {
+        textToSpeech?.shutdown()
         super.onCleared()
 
         viewModelScope.launch {
             try {
+
                 llamaAndroid.unload()
+
             } catch (exc: IllegalStateException) {
                 addMessage("error", exc.message ?: "")
             }
@@ -56,23 +140,34 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 addMessage("system", "This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.")
                 first = false
             }
-            addMessage("user", userMessage)
-            val text = parseTemplateJson(messages)+"assistant \n"
-            viewModelScope.launch {
-                llamaAndroid.send(text)
-                    .catch {
-                        Log.e(tag, "send() failed", it)
-                        addMessage("error", it.message ?: "")
-                    }
-                    .collect { response ->
-                        // Create a new assistant message with the response
-                        if (getIsMarked()) {
-                            addMessage("codeBlock", response)
 
-                        } else {
-                            addMessage("assistant", response)
+            addMessage("user", userMessage)
+
+
+            viewModelScope.launch {
+                Log.i("This is the template", llamaAndroid.getTemplate(messages))
+                try {
+                    llamaAndroid.send(llamaAndroid.getTemplate(messages))
+                        .catch {
+                            Log.e(tag, "send() failed", it)
+                            addMessage("error", it.message ?: "")
                         }
-                    }
+                        .collect { response ->
+                            // Create a new assistant message with the response
+                            if (getIsMarked()) {
+                                addMessage("codeBlock", response)
+
+                            } else {
+                                addMessage("assistant", response)
+                            }
+                        }
+                }
+                finally {
+                        trimEOT()
+                }
+
+
+
             }
         }
 
@@ -113,13 +208,16 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 Log.e(tag, "load() failed", exc)
             }
             try {
+                showAlert = true
                 llamaAndroid.load(pathToModel)
-                addMessage("log", "Loaded $pathToModel")
+                showAlert = false
+
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "load() failed", exc)
                 addMessage("error", exc.message ?: "")
             }
             showModal = false
+            eot_str = llamaAndroid.send_eot_str()
         }
     }
     private fun addMessage(role: String, content: String) {
@@ -135,6 +233,16 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         } else {
             messages + listOf(newMessage)
         }
+    }
+
+    private fun trimEOT(){
+        val lastMessageContent = messages.last()["content"] ?: ""
+        val updatedContent = lastMessageContent.slice(0..(lastMessageContent.length-eot_str.length))
+        val updatedLastMessage = messages.last() + ("content" to updatedContent)
+        messages = messages.toMutableList().apply {
+            set(messages.lastIndex, updatedLastMessage)
+        }
+        messages.last()["content"]?.let { Log.e(tag, it) }
     }
 
     private fun removeExtraWhiteSpaces(input: String): String {
@@ -166,7 +274,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     }
 
     fun log(message: String) {
-        addMessage("log", message)
+//        addMessage("log", message)
     }
 
     fun getIsSending(): Boolean {
