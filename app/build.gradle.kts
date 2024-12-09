@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.nervesparks.iris"
-    compileSdk = 35
+    compileSdk = 34
 
     ndkVersion = "26.1.10909125"
 

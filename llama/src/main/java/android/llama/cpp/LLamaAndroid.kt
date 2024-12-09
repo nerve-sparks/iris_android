@@ -170,6 +170,7 @@ class LLamaAndroid {
         when (val state = threadLocalState.get()) {
             is State.Loaded -> {
                 val ncur = IntVar(completion_init(state.context, state.batch, message, nlen))
+                val end_token_store: String = ""
                 while (ncur.value <= nlen && !stopGeneration) {
                     _isSending.value = true
                     val str = completion_loop(state.context, state.batch, state.sampler, nlen, ncur)
