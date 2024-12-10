@@ -135,6 +135,15 @@ import kotlinx.coroutines.launch
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 import android.speech.tts.TextToSpeech
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -146,6 +155,8 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.lifecycle.viewModelScope
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.toSize
 import java.security.AccessController.getContext
 import java.util.Locale
 import kotlin.math.log
@@ -397,6 +408,51 @@ fun MainCompose(
                                 )
                             }
                         }
+                        //models dropdown
+                        Column(Modifier.padding(20.dp)) {
+                            var mExpanded by remember { mutableStateOf(false) }
+                            var mSelectedText by remember { mutableStateOf("") }
+                            var mTextFieldSize by remember { mutableStateOf(Size.Zero)}
+                            val icon = if (mExpanded)
+                                Icons.Filled.KeyboardArrowUp
+                            else
+                                Icons.Filled.KeyboardArrowDown
+                            val Models = listOf("llama", "Gemini", "Open AI")
+                            OutlinedTextField(
+                                value = mSelectedText,
+                                onValueChange = { mSelectedText = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .onGloballyPositioned { coordinates ->
+                                        mTextFieldSize = coordinates.size.toSize()
+                                    },
+                                label = {Text("Select Model", color = Color.White)},
+                                trailingIcon = {
+                                    Icon(icon,"contentDescription",
+                                        Modifier.clickable { mExpanded = !mExpanded })
+                                },
+                                textStyle = TextStyle(color = Color.White),
+                                readOnly = true
+                            )
+                        DropdownMenu(
+                            modifier = Modifier
+                                .background(Color(0xFF01081a))
+                                .width(with(LocalDensity.current){mTextFieldSize.width.toDp()}),
+                            expanded = mExpanded,
+                            onDismissRequest = {
+                                mExpanded = false
+                            }
+                        ) {
+                            Models.forEach { label ->
+                                DropdownMenuItem(onClick = {
+                                    mSelectedText = label
+                                    mExpanded = false
+                                }) {
+                                    Text(text = label, color = Color.White)
+                                }
+                            }
+                        }
+                    }
 
                         // This will push the buttons to the bottom
                         Spacer(modifier = Modifier.weight(1f))
