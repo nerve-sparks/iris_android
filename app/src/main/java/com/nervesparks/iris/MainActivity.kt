@@ -202,21 +202,21 @@ class MainActivity(
         val extFilesDir = getExternalFilesDir(null)
 
         val models = listOf(
-            Downloadable(
-                "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
-                Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
-                File(extFilesDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
-            ),
+//            Downloadable(
+//                "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
+//                Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
+//                File(extFilesDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
+//            ),
             Downloadable(
                 "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
                 Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
                 File(extFilesDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
             ),
-            Downloadable(
-                "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
-                Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
-                File(extFilesDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
-            ),
+//            Downloadable(
+//                "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+//                Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
+//                File(extFilesDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
+//            ),
 
         )
         models.forEach { model ->
@@ -299,11 +299,26 @@ fun MainCompose(
 //    var showModal by remember { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
 
-    val Prompts = listOf("Today's match score ", "Tell me more about ..", "Can you tell me about your services?" , "I need help with an issue I’m facing. Can you assist me?" , "What’s the capital of France?", "I’d like to schedule an appointment for ",
-        "What are the top 5 things to do in Paris?" , "What are some good exercises to improve my posture?" , "Can you recommend some good books/movies based on ?" , "Can you translate this sentence into Spanish?" , "Tell me about the latest news.")
+    val Prompts = listOf(
+        "Can you tell me more about a recent historical match?",
+        "Provide detailed information about a topic of interest.",
+        "What are some key services typically offered by businesses in your field?",
+        "How can I troubleshoot an issue effectively? Can you guide me?",
+        "What is the history behind France’s capital city?",
+        "Can you help me plan a meeting schedule or appointment?",
+        "What are some must-visit places in Paris and why?",
+        "Can you suggest exercises to improve posture based on research?",
+        "Recommend timeless books or movies in a specific genre.",
+        "How do I translate this sentence into Spanish with correct grammar?",
+        "Can you share insights or overviews about current global trends?"
+    )
 
     val allModelsExist = models.all { model -> model.destination.exists() }
-    val Prompts_Home = listOf("Explain quantum computing in simple terms", "Remember what user said earlier!!", "May occasionally generate incorrect")
+    val Prompts_Home = listOf(
+        "Explains complex topics simply.",
+        "Remembers previous inputs.",
+        "May sometimes be inaccurate."
+    )
     var recognizedText by remember {mutableStateOf("")}
     val speechRecognizerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
         result ->
