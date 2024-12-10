@@ -1316,7 +1316,7 @@ fun ScrollToBottomButton(
     LaunchedEffect(messages.lastOrNull()) {
         if (isAutoScrolling && messages.isNotEmpty()) {
             coroutineScope.launch {
-                scrollState.scrollToItem(viewModel.messages.size +1)
+                scrollState.scrollToItem(viewModel.messages.size + 1)
             }
         }
     }
@@ -1335,21 +1335,27 @@ fun ScrollToBottomButton(
                     isAutoScrolling = true // Enable auto-scrolling
                     isButtonVisible = false // Hide the button on click
                     coroutineScope.launch {
-                        scrollState.scrollToItem(messages.size +1 )
+                        scrollState.scrollToItem(viewModel.messages.size + 1)
                     }
                 },
                 modifier = Modifier
                     .padding(bottom = 16.dp)
-                    .size(56.dp)
+                    .size(56.dp),
+                // Ensures a circular shape
+                shape = RoundedCornerShape(percent = 50),
+                containerColor = Color.White.copy(alpha = 0.5f),
+                contentColor = Color.Black
             ) {
                 Icon(
                     imageVector = Icons.Filled.KeyboardArrowDown,
-                    contentDescription = "Scroll to bottom"
+                    contentDescription = "Scroll to bottom",
+                    tint = Color.White // White icon for better visibility
                 )
             }
         }
     }
 }
+
 
 
 
