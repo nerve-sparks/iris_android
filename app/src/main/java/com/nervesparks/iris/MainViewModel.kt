@@ -37,18 +37,18 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         listOf(
             mapOf(
                 "name" to "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
-                "link" to "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true",
-                "fileDir" to "Llama-3.2-3B-Instruct-Q4_K_L.gguf"
+                "source" to "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true",
+                "destination" to "Llama-3.2-3B-Instruct-Q4_K_L.gguf"
             ),
             mapOf(
                 "name" to "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
-                "link" to "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true",
-                "fileDir" to "Llama-3.2-1B-Instruct-Q6_K_L.gguf"
+                "source" to "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true",
+                "destination" to "Llama-3.2-1B-Instruct-Q6_K_L.gguf"
             ),
             mapOf(
                 "name" to "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
-                "link" to "https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true",
-                "fileDir" to "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf"
+                "source" to "https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true",
+                "destination" to "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf"
             ),
 
         )
@@ -137,6 +137,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     var toggler by mutableStateOf(false)
     var showModal by  mutableStateOf(true)
     var showAlert by mutableStateOf(false)
+    var switchModal by mutableStateOf(false)
+    var currentDownloadable: Downloadable? by mutableStateOf(null)
+
     override fun onCleared() {
         textToSpeech?.shutdown()
         super.onCleared()
@@ -225,11 +228,13 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     fun load(pathToModel: String) {
         viewModelScope.launch {
             try{
+                Log.e("this is my message", pathToModel)
                 llamaAndroid.unload()
             } catch (exc: IllegalStateException){
                 Log.e(tag, "load() failed", exc)
             }
             try {
+                Log.e("this is my message 237", pathToModel)
                 showAlert = true
                 llamaAndroid.load(pathToModel)
                 showAlert = false

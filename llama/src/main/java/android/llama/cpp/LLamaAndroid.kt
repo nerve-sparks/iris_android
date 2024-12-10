@@ -229,10 +229,16 @@ class LLamaAndroid {
         withContext(runLoop) {
             when (val state = threadLocalState.get()) {
                 is State.Loaded -> {
+                    Log.d(tag, "this is my new message")
                     free_context(state.context)
+                    Log.d(tag, "234")
                     free_model(state.model)
+                    Log.d(tag, "236")
                     free_batch(state.batch)
+                    Log.d(tag, "238")
                     free_sampler(state.sampler);
+
+                    Log.d(tag, "this is my new message 237")
 
                     threadLocalState.set(State.Idle)
                 }

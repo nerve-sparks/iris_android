@@ -93,6 +93,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 when (val s = status) {
                     is Downloaded -> {
                         viewModel.showModal = true
+                        Log.d("item.destination.path", item.destination.path.toString())
                         viewModel.load(item.destination.path)
                     }
 
@@ -125,7 +126,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 }
             }
 
-            if (status !is Downloaded) {
+
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
@@ -172,7 +173,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     )
                 }
 
-            }
+
         }
 
     }

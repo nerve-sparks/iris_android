@@ -150,6 +150,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.text.font.Font
@@ -251,6 +252,7 @@ class MainActivity(
                         clipboardManager,
                         downloadManager,
                         models,
+                        extFilesDir
                     )
                 }
 
@@ -297,7 +299,8 @@ fun MainCompose(
     viewModel: MainViewModel,
     clipboard: ClipboardManager,
     dm: DownloadManager,
-    models: List<Downloadable>
+    models: List<Downloadable>,
+    extFileDir: File?
 ) {
     val kc = LocalSoftwareKeyboardController.current
 //    val systemUiController = rememberSystemUiController()
@@ -410,63 +413,8 @@ fun MainCompose(
                             }
                         }
                         //models dropdown
-                        Column(Modifier.padding(20.dp)) {
-                            var mExpanded by remember { mutableStateOf(false) }
-                            var mSelectedText by remember { mutableStateOf("") }
-                            var mTextFieldSize by remember { mutableStateOf(Size.Zero)}
-                            val icon = if (mExpanded)
-                                Icons.Filled.KeyboardArrowUp
-                            else
-                                Icons.Filled.KeyboardArrowDown
 
-                            OutlinedTextField(
-                                value = mSelectedText,
-                                onValueChange = { mSelectedText = it },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .onGloballyPositioned { coordinates ->
-                                        mTextFieldSize = coordinates.size.toSize()
-                                    },
-                                label = { Text("Select Model") },
-                                trailingIcon = {
-                                    Icon(
-                                        icon,
-                                        contentDescription = "contentDescription",
-                                        Modifier.clickable { mExpanded = !mExpanded }
-                                    )
-                                },
-                                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
-                                readOnly = true,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                                    focusedBorderColor = Color.Red,
-                                    cursorColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    focusedLabelColor = MaterialTheme.colorScheme.primary
-                                )
-                            )
-                        DropdownMenu(
-                            modifier = Modifier
-                                .background(Color(0xFF01081a))
-                                .width(with(LocalDensity.current){mTextFieldSize.width.toDp()}),
-                            expanded = mExpanded,
-                            onDismissRequest = {
-                                mExpanded = false
-                            }
-                        ) {
-                            viewModel.allModels.forEach { model ->
-                                DropdownMenuItem(modifier = Modifier
-                                    .background(color = Color(0xFF22314A))
-                                    .padding(horizontal = 2.dp, vertical = 5.dp),
-                                    onClick = {
-                                    mSelectedText = model["name"].toString()
-                                    mExpanded = false
-                                }) {
-                                    model["name"]?.let { Text(text = it, color = Color.White) }
-                                }
-                            }
-                        }
-                    }
+                       ModelSelectorWithDownloadModal(viewModel = viewModel, downloadManager = dm, extFileDir = extFileDir)
 
                         // This will push the buttons to the bottom
                         Spacer(modifier = Modifier.weight(1f))
@@ -586,6 +534,7 @@ fun MainCompose(
 
            // Screen content
             Column() {
+
 
                 // Show modal if required
                 if (viewModel.showModal) {
@@ -1371,7 +1320,147 @@ fun ScrollToBottomButton(
 }
 
 
+@Composable
+fun ModelSelectorWithDownloadModal(
+    viewModel: MainViewModel,
+    downloadManager: DownloadManager,
+    extFileDir: File?
+) {
+    val models = listOf(
+        Downloadable(
+            "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
+            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
+            File(extFileDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
+        ),
+        Downloadable(
+            "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
+            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
+            File(extFileDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
+        ),
+        Downloadable(
+            "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+            Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
+            File(extFileDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
+        )
+    )
 
+    var mExpanded by remember { mutableStateOf(false) }
+    var mSelectedText by remember { mutableStateOf("") }
+    var mTextFieldSize by remember { mutableStateOf(Size.Zero) }
+    var selectedModel by remember { mutableStateOf<Map<String, Any>?>(null) }
+
+    val icon = if (mExpanded)
+        Icons.Filled.KeyboardArrowUp
+    else
+        Icons.Filled.KeyboardArrowDown
+
+    Column(Modifier.padding(20.dp)) {
+        OutlinedTextField(
+            value = mSelectedText,
+            onValueChange = { mSelectedText = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    mTextFieldSize = coordinates.size.toSize()
+                },
+            label = { Text("Select Model") },
+            trailingIcon = {
+                Icon(
+                    icon,
+                    contentDescription = "Toggle dropdown",
+                    Modifier.clickable { mExpanded = !mExpanded }
+                )
+            },
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
+            readOnly = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedBorderColor = Color.Red,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                focusedLabelColor = MaterialTheme.colorScheme.primary
+            )
+        )
+
+        DropdownMenu(
+            modifier = Modifier
+                .background(Color(0xFF01081a))
+                .width(with(LocalDensity.current) { mTextFieldSize.width.toDp() }),
+            expanded = mExpanded,
+            onDismissRequest = {
+                mExpanded = false
+            }
+        ) {
+            viewModel.allModels.forEach { model ->
+                DropdownMenuItem(
+                    modifier = Modifier
+                        .background(color = Color(0xFF22314A))
+                        .padding(horizontal = 2.dp, vertical = 5.dp),
+                    onClick = {
+                        mSelectedText = model["name"].toString()
+                        selectedModel = model
+                        mExpanded = false
+
+                        // Convert model to Downloadable and show modal
+                        val downloadable = Downloadable(
+                            name = model["name"].toString(),
+                            source = Uri.parse(model["source"].toString()),
+                            destination = File(extFileDir, model["destination"].toString())
+                        )
+
+                        viewModel.showModal = true
+                        viewModel.currentDownloadable = downloadable
+                    }
+                ) {
+                    model["name"]?.let { Text(text = it, color = Color.White) }
+                }
+            }
+        }
+
+        // Use showModal instead of switchModal
+        if (viewModel.showModal && viewModel.currentDownloadable != null) {
+            Dialog(onDismissRequest = {
+                viewModel.showModal = false  // Consistent with the condition
+                viewModel.currentDownloadable = null  // Optional: clear the current downloadable
+            }) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color.Black,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .height(230.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .height(140.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Download Required",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Don't close or minimize the app!",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(35.dp))
+
+                        // Use the current downloadable from the view model
+
+                        viewModel.currentDownloadable?.let { downloadable ->
+                            Downloadable.Button(viewModel, downloadManager, downloadable)
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 
