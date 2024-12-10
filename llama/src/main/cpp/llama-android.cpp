@@ -590,3 +590,24 @@ Java_android_llama_cpp_LLamaAndroid_oaicompat_1completion_1param_1parse(
         return env->NewStringUTF("");
     }
 }
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_android_llama_cpp_LLamaAndroid_get_1eot_1str(JNIEnv *env, jobject , jlong jmodel) {
+    auto model = reinterpret_cast<llama_model *>(jmodel);
+    const auto eot = llama_token_eot(model);
+
+    std::string piece;
+    piece.resize(piece.capacity());  // using string internal cache, 15 bytes + '\n'
+    const int n_chars = llama_token_to_piece(model, eot, &piece[0], piece.size(), 0, true);
+    if (n_chars < 0) {
+        piece.resize(-n_chars);
+        int check = llama_token_to_piece(model, eot, &piece[0], piece.size(), 0, true);
+        GGML_ASSERT(check == -n_chars);
+    }
+    else {
+        piece.resize(n_chars);
+    }
+
+     return env->NewStringUTF(piece.c_str());
+
+}
