@@ -151,6 +151,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.googlefonts.GoogleFont
@@ -417,7 +418,7 @@ fun MainCompose(
                                 Icons.Filled.KeyboardArrowUp
                             else
                                 Icons.Filled.KeyboardArrowDown
-                            val Models = listOf("llama", "Gemini", "Open AI")
+
                             OutlinedTextField(
                                 value = mSelectedText,
                                 onValueChange = { mSelectedText = it },
@@ -426,13 +427,23 @@ fun MainCompose(
                                     .onGloballyPositioned { coordinates ->
                                         mTextFieldSize = coordinates.size.toSize()
                                     },
-                                label = {Text("Select Model", color = Color.White)},
+                                label = { Text("Select Model") },
                                 trailingIcon = {
-                                    Icon(icon,"contentDescription",
-                                        Modifier.clickable { mExpanded = !mExpanded })
+                                    Icon(
+                                        icon,
+                                        contentDescription = "contentDescription",
+                                        Modifier.clickable { mExpanded = !mExpanded }
+                                    )
                                 },
-                                textStyle = TextStyle(color = Color.White),
-                                readOnly = true
+                                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
+                                readOnly = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                    focusedBorderColor = Color.Red,
+                                    cursorColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    focusedLabelColor = MaterialTheme.colorScheme.primary
+                                )
                             )
                         DropdownMenu(
                             modifier = Modifier
@@ -443,12 +454,15 @@ fun MainCompose(
                                 mExpanded = false
                             }
                         ) {
-                            Models.forEach { label ->
-                                DropdownMenuItem(onClick = {
-                                    mSelectedText = label
+                            viewModel.allModels.forEach { model ->
+                                DropdownMenuItem(modifier = Modifier
+                                    .background(color = Color(0xFF22314A))
+                                    .padding(horizontal = 2.dp, vertical = 5.dp),
+                                    onClick = {
+                                    mSelectedText = model["name"].toString()
                                     mExpanded = false
                                 }) {
-                                    Text(text = label, color = Color.White)
+                                    model["name"]?.let { Text(text = it, color = Color.White) }
                                 }
                             }
                         }
