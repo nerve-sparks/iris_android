@@ -1371,7 +1371,7 @@ fun ModelSelectorWithDownloadModal(
     Column(Modifier.padding(20.dp)) {
 
         OutlinedTextField(
-            value = mSelectedText,
+            value= viewModel.loadedModelName.value,
             onValueChange = { mSelectedText = it },
             modifier = Modifier
                 .fillMaxWidth()
