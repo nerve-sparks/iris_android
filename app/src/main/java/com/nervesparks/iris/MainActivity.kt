@@ -149,6 +149,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.filled.AccountBox
@@ -157,6 +158,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.viewModelScope
@@ -175,11 +177,11 @@ class MainActivity(
 //    private val tag: String? = this::class.simpleName
 //
 //    private val activityManager by lazy { activityManager ?: getSystemService<ActivityManager>()!! }
-
     private val downloadManager by lazy { downloadManager ?: getSystemService<DownloadManager>()!! }
     private val clipboardManager by lazy { clipboardManager ?: getSystemService<ClipboardManager>()!! }
 
     private val viewModel: MainViewModel by viewModels()
+    private var model_name = "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)"
 
     // Get a MemoryInfo object for the device's current memory status.
 //    private fun availableMemory(): ActivityManager.MemoryInfo {
@@ -236,10 +238,14 @@ class MainActivity(
             )
         )
 
-
-        models.find { model -> model.destination.exists() }?.let { model ->
-            viewModel.load(model.destination.path)
+        models.forEach { model ->
+            if (model.destination.exists() and (model.name == model_name)) {
+                viewModel.load(model.destination.path)
+            }
         }
+//        models.find { model -> model.destination.exists() }?.let { model ->
+//            viewModel.load(model.destination.path)
+//        }
 
         setContent {
 
@@ -262,22 +268,6 @@ class MainActivity(
 
         }
     }
-
-//    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-//        if (event.action == MotionEvent.ACTION_DOWN) {
-//
-//                val focusedView = currentFocus
-//
-//            if (focusedView != null && focusedView !is TextField) {
-//                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-//                imm.hideSoftInputFromWindow(focusedView.windowToken, 0)
-//                focusedView.clearFocus()
-//            }
-//        }
-//        return super.dispatchTouchEvent(event)
-//    }
-
-
 }
 
 @Composable
@@ -292,9 +282,6 @@ fun LinearGradient() {
     )
     Box(modifier = Modifier.background(gradient))
 }
-
-
-
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -388,6 +375,7 @@ fun MainCompose(
                         // Top section with logo and name
                         Column {
                             Row(
+                                Modifier.padding(start = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Image(
@@ -434,9 +422,16 @@ fun MainCompose(
                                     .height(48.dp)
                                     .padding(horizontal = 16.dp)
                                     .background(
-                                        color = Color(0xFF22314A),
+                                        color = Color(0xFF14161f),
                                         shape = RoundedCornerShape(8.dp)
-                                    ),
+                                    )
+                                    .border(
+                                        border = BorderStroke(
+                                            width = 1.dp,
+                                            color = Color.LightGray.copy(alpha = 0.5f)
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
                             ) {
                                 val context = LocalContext.current
                                 Row(
@@ -472,7 +467,14 @@ fun MainCompose(
                                     .height(48.dp)
                                     .padding(horizontal = 16.dp)
                                     .background(
-                                        color = Color(0xFF22314A),
+                                        color = Color(0xFF14161f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .border(
+                                        border = BorderStroke(
+                                            width = 1.dp,
+                                            color = Color.LightGray.copy(alpha = 0.5f)
+                                        ),
                                         shape = RoundedCornerShape(8.dp)
                                     )
                             ) {
@@ -618,6 +620,12 @@ fun MainCompose(
                                         color = Color.White,
                                     )
                                 }
+                                Text(
+                                    text = viewModel.loadedModelName.value,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
                                 LinearProgressIndicator(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -1424,17 +1432,6 @@ fun ModelSelectorWithDownloadModal(
                     modifier = Modifier
                         .background(color = Color(0xFF090b1a))
                         .padding(horizontal = 1.dp, vertical = 0.dp),
-
-//                        .drawBehind {
-//                            val strokeWidth = 1.dp.toPx()
-//                            drawLine(
-//                                color = Color.LightGray.copy(alpha = 0.5f),
-//                                start = Offset(0f, size.height),
-//                                end = Offset(size.width, size.height),
-//                                strokeWidth = strokeWidth
-//                            )
-//                        },
-
                     onClick = {
                         mSelectedText = model["name"].toString()
                         selectedModel = model
@@ -1501,6 +1498,7 @@ fun ModelSelectorWithDownloadModal(
                                         viewModel.showModal = false
                                         viewModel.currentDownloadable = null
 
+                                        Toast.makeText(context, "Restarting App!!.", Toast.LENGTH_SHORT).show()
                                         val packageManager: PackageManager = context.packageManager
                                                val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
                                                val componentName: ComponentName = intent.component!!
