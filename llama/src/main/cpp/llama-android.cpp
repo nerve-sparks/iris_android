@@ -383,14 +383,30 @@ Java_android_llama_cpp_LLamaAndroid_new_1batch(JNIEnv *, jobject, jint n_tokens,
     return reinterpret_cast<jlong>(batch);
 }
 
+void fixed_llama_batch_free(struct llama_batch batch) {
+    if (batch.token)    free(batch.token);
+    if (batch.embd)     free(batch.embd);
+    if (batch.pos)      free(batch.pos);
+
+    if (batch.seq_id) {
+        for (int i = 0; i < *batch.n_seq_id; ++i) {
+            free(batch.seq_id[i]);
+        }
+        if (batch.n_seq_id) free(batch.n_seq_id);
+        free(batch.seq_id);
+    }
+    if (batch.logits)   free(batch.logits);
+}
+
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_android_llama_cpp_LLamaAndroid_free_1batch(JNIEnv *, jobject, jlong batch_pointer) {
 
 
-    common_batch_clear(*reinterpret_cast<llama_batch *>(batch_pointer));
+//    common_batch_clear(*reinterpret_cast<llama_batch *>(batch_pointer));
 
-//    llama_batch_free(*reinterpret_cast<llama_batch *>(batch_pointer));
+    fixed_llama_batch_free(*reinterpret_cast<llama_batch *>(batch_pointer));
 
 }
 
