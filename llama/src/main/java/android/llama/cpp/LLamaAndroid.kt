@@ -142,11 +142,11 @@ class LLamaAndroid {
                     val sampler = new_sampler()
                     if (sampler == 0L) throw IllegalStateException("new_sampler() failed")
 
-                    val model_eot_str = get_eot_str(model)
-                    if (model_eot_str == "") throw IllegalStateException("eot_fetch() failed")
+                    val modelEotStr = get_eot_str(model)
+                    if (modelEotStr == "") throw IllegalStateException("eot_fetch() failed")
 
                     Log.i(tag, "Loaded model $pathToModel")
-                    threadLocalState.set(State.Loaded(model, context, batch, sampler, model_eot_str))
+                    threadLocalState.set(State.Loaded(model, context, batch, sampler, modelEotStr))
                 }
                 else -> throw IllegalStateException("Model already loaded")
             }
@@ -251,11 +251,14 @@ class LLamaAndroid {
 
     suspend fun send_eot_str(): String {
 
-        when (val state = threadLocalState.get()) {
+        return when (val state = threadLocalState.get()) {
             is State.Loaded -> {
-            return state.modelEotStr
+                state.modelEotStr
             }
-            else -> {return "<|im_end|>"}
+
+            else -> {
+                "<|im_end|>"
+            }
         }
 
     }
