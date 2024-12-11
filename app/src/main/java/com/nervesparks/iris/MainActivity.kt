@@ -147,6 +147,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -891,9 +892,9 @@ fun MainCompose(
                                                                     modifier = Modifier
                                                                         .fillMaxWidth()
                                                                         .padding(vertical = 8.dp),
-
+                                                                    enabled = !viewModel.getIsSending(),
                                                                     onClick = {
-                                                                       viewModel.toggler = !viewModel.toggler
+                                                                            viewModel.toggler = !viewModel.toggler
                                                                     }
                                                                 ) {
                                                                     Text(text = "Select Text To Copy", color = Color(0xFFA0A0A5))
@@ -1354,6 +1355,7 @@ fun ModelSelectorWithDownloadModal(
         Icons.Filled.KeyboardArrowDown
 
     Column(Modifier.padding(20.dp)) {
+
         OutlinedTextField(
             value = mSelectedText,
             onValueChange = { mSelectedText = it },
@@ -1362,32 +1364,50 @@ fun ModelSelectorWithDownloadModal(
                 .onGloballyPositioned { coordinates ->
                     mTextFieldSize = coordinates.size.toSize()
                 }
-                .clickable { mExpanded = !mExpanded },
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            Log.d("Dropdown", "Box clicked")
+                            mExpanded = !mExpanded
+                        },
+                        onPress = {
+                            Log.d("Dropdown", "Box clicked")
+                            mExpanded = !mExpanded
+                        }
+                    )}
+                .clickable {
+                    Log.d("Dropdown", "Box clicked")
+                    mExpanded = !mExpanded
+                },
             label = { Text("Select Model") },
             trailingIcon = {
                 Icon(
                     icon,
                     contentDescription = "Toggle dropdown",
-                    Modifier.clickable { mExpanded = !mExpanded }
+                    Modifier.clickable { mExpanded = !mExpanded },
+                    tint =Color(0xFFcfcfd1)
                 )
             },
             textStyle = TextStyle(color = Color(0xFFf5f5f5)),
             readOnly = true,
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor =  Color(0xFF666666),
+                unfocusedBorderColor = Color(0xFF666666),
                 focusedBorderColor = Color(0xFFcfcfd1),
-                unfocusedLabelColor =  Color(0xFF666666),
+                unfocusedLabelColor = Color(0xFF666666),
                 focusedLabelColor = Color(0xFFcfcfd1),
                 unfocusedTextColor = Color(0xFFf5f5f5),
-                focusedTextColor =Color(0xFFf7f5f5),
-
-                )
+                focusedTextColor = Color(0xFFf7f5f5),
+            )
         )
+
+
 
         DropdownMenu(
             modifier = Modifier
                 .background(Color(0xFF01081a))
-                .width(with(LocalDensity.current) { mTextFieldSize.width.toDp() }),
+                .width(with(LocalDensity.current) { mTextFieldSize.width.toDp() })
+                .padding(top = 2.dp)
+                .border(1.dp,color = Color.LightGray.copy(alpha = 0.5f)),
             expanded = mExpanded,
             onDismissRequest = {
                 mExpanded = false
@@ -1396,17 +1416,18 @@ fun ModelSelectorWithDownloadModal(
             viewModel.allModels.forEach { model ->
                 DropdownMenuItem(
                     modifier = Modifier
-                        .background(color = Color(0xFF22314A))
-                        .padding(horizontal = 0.dp, vertical = 5.dp)
-                        .drawBehind {
-                            val strokeWidth = 1.dp.toPx()
-                            drawLine(
-                                color = Color.Black.copy(alpha = 0.4f),
-                                start = Offset(0f, size.height),
-                                end = Offset(size.width, size.height),
-                                strokeWidth = strokeWidth
-                            )
-                        },
+                        .background(color = Color(0xFF090b1a))
+                        .padding(horizontal = 1.dp, vertical = 0.dp),
+
+//                        .drawBehind {
+//                            val strokeWidth = 1.dp.toPx()
+//                            drawLine(
+//                                color = Color.LightGray.copy(alpha = 0.5f),
+//                                start = Offset(0f, size.height),
+//                                end = Offset(size.width, size.height),
+//                                strokeWidth = strokeWidth
+//                            )
+//                        },
 
                     onClick = {
                         mSelectedText = model["name"].toString()
