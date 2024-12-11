@@ -232,11 +232,9 @@ class MainActivity(
 //            ),
 
         )
-//        models.forEach { model ->
-//            if (model.destination.exists()) {
-//                viewModel.load(model.destination.path)
-//            }
-//        }
+        models.find { model -> model.destination.exists() }?.let { model ->
+            viewModel.load(model.destination.path)
+        }
 
         setContent {
 
