@@ -149,6 +149,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.filled.AccountBox
@@ -262,22 +263,6 @@ class MainActivity(
 
         }
     }
-
-//    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-//        if (event.action == MotionEvent.ACTION_DOWN) {
-//
-//                val focusedView = currentFocus
-//
-//            if (focusedView != null && focusedView !is TextField) {
-//                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-//                imm.hideSoftInputFromWindow(focusedView.windowToken, 0)
-//                focusedView.clearFocus()
-//            }
-//        }
-//        return super.dispatchTouchEvent(event)
-//    }
-
-
 }
 
 @Composable
@@ -292,9 +277,6 @@ fun LinearGradient() {
     )
     Box(modifier = Modifier.background(gradient))
 }
-
-
-
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -388,6 +370,7 @@ fun MainCompose(
                         // Top section with logo and name
                         Column {
                             Row(
+                                Modifier.padding(start = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Image(
@@ -434,9 +417,16 @@ fun MainCompose(
                                     .height(48.dp)
                                     .padding(horizontal = 16.dp)
                                     .background(
-                                        color = Color(0xFF22314A),
+                                        color = Color(0xFF14161f),
                                         shape = RoundedCornerShape(8.dp)
-                                    ),
+                                    )
+                                    .border(
+                                        border = BorderStroke(
+                                            width = 1.dp,
+                                            color = Color.LightGray.copy(alpha = 0.5f)
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
                             ) {
                                 val context = LocalContext.current
                                 Row(
@@ -472,7 +462,14 @@ fun MainCompose(
                                     .height(48.dp)
                                     .padding(horizontal = 16.dp)
                                     .background(
-                                        color = Color(0xFF22314A),
+                                        color = Color(0xFF14161f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .border(
+                                        border = BorderStroke(
+                                            width = 1.dp,
+                                            color = Color.LightGray.copy(alpha = 0.5f)
+                                        ),
                                         shape = RoundedCornerShape(8.dp)
                                     )
                             ) {
@@ -1424,17 +1421,6 @@ fun ModelSelectorWithDownloadModal(
                     modifier = Modifier
                         .background(color = Color(0xFF090b1a))
                         .padding(horizontal = 1.dp, vertical = 0.dp),
-
-//                        .drawBehind {
-//                            val strokeWidth = 1.dp.toPx()
-//                            drawLine(
-//                                color = Color.LightGray.copy(alpha = 0.5f),
-//                                start = Offset(0f, size.height),
-//                                end = Offset(size.width, size.height),
-//                                strokeWidth = strokeWidth
-//                            )
-//                        },
-
                     onClick = {
                         mSelectedText = model["name"].toString()
                         selectedModel = model
