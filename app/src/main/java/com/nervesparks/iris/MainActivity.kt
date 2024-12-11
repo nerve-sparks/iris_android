@@ -177,6 +177,7 @@ class MainActivity(
     private val clipboardManager by lazy { clipboardManager ?: getSystemService<ClipboardManager>()!! }
 
     private val viewModel: MainViewModel by viewModels()
+    private var model_name = "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)"
 
     // Get a MemoryInfo object for the device's current memory status.
 //    private fun availableMemory(): ActivityManager.MemoryInfo {
@@ -233,9 +234,15 @@ class MainActivity(
 //            ),
 
         )
-        models.find { model -> model.destination.exists() }?.let { model ->
-            viewModel.load(model.destination.path)
+
+        models.forEach { model ->
+            if (model.destination.exists() and (model.name == model_name)) {
+                viewModel.load(model.destination.path)
+            }
         }
+//        models.find { model -> model.destination.exists() }?.let { model ->
+//            viewModel.load(model.destination.path)
+//        }
 
         setContent {
 
