@@ -229,10 +229,18 @@ class LLamaAndroid {
         withContext(runLoop) {
             when (val state = threadLocalState.get()) {
                 is State.Loaded -> {
+
+                    Log.d(tag, "this is my new message")
                     free_context(state.context)
+                    Log.d(tag, "234")
                     free_model(state.model)
-                    free_batch(state.batch)
+                    Log.d(tag, "236")
+
+                    Log.d(tag, "238")
                     free_sampler(state.sampler);
+
+                    Log.d(tag, "this is my new message 237")
+                    free_batch(state.batch)
 
                     threadLocalState.set(State.Idle)
                 }
@@ -243,11 +251,14 @@ class LLamaAndroid {
 
     suspend fun send_eot_str(): String {
 
-        when (val state = threadLocalState.get()) {
+        return when (val state = threadLocalState.get()) {
             is State.Loaded -> {
-            return state.modelEotStr
+                state.modelEotStr
             }
-            else -> {return "<|im_end|>"}
+
+            else -> {
+                "<|im_end|>"
+            }
         }
 
     }

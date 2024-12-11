@@ -135,9 +135,31 @@ import kotlinx.coroutines.launch
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
 import android.speech.tts.TextToSpeech
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.googlefonts.GoogleFont
+import androidx.lifecycle.viewModelScope
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.toSize
 import java.security.AccessController.getContext
 import java.util.Locale
 import kotlin.math.log
@@ -194,27 +216,25 @@ class MainActivity(
         val extFilesDir = getExternalFilesDir(null)
 
         val models = listOf(
-            Downloadable(
-                "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
-                Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
-                File(extFilesDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
-            ),
+//            Downloadable(
+//                "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
+//                Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
+//                File(extFilesDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
+//            ),
             Downloadable(
                 "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
                 Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
                 File(extFilesDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
             ),
-            Downloadable(
-                "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
-                Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
-                File(extFilesDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
-            ),
+//            Downloadable(
+//                "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+//                Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
+//                File(extFilesDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
+//            ),
 
         )
-        models.forEach { model ->
-            if (model.destination.exists()) {
-                viewModel.load(model.destination.path)
-            }
+        models.find { model -> model.destination.exists() }?.let { model ->
+            viewModel.load(model.destination.path)
         }
 
         setContent {
@@ -231,6 +251,7 @@ class MainActivity(
                         clipboardManager,
                         downloadManager,
                         models,
+                        extFilesDir
                     )
                 }
 
@@ -277,7 +298,8 @@ fun MainCompose(
     viewModel: MainViewModel,
     clipboard: ClipboardManager,
     dm: DownloadManager,
-    models: List<Downloadable>
+    models: List<Downloadable>,
+    extFileDir: File?
 ) {
     val kc = LocalSoftwareKeyboardController.current
 //    val systemUiController = rememberSystemUiController()
@@ -287,15 +309,30 @@ fun MainCompose(
 //    )
 
     //variable to toggle auto-scrolling
-    var autoScrollEnabled by remember { mutableStateOf(true) }
+
 //    var showModal by remember { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
 
-    val Prompts = listOf("Today's match score ", "Tell me more about ..", "Can you tell me about your services?" , "I need help with an issue I’m facing. Can you assist me?" , "What’s the capital of France?", "I’d like to schedule an appointment for ",
-        "What are the top 5 things to do in Paris?" , "What are some good exercises to improve my posture?" , "Can you recommend some good books/movies based on ?" , "Can you translate this sentence into Spanish?" , "Tell me about the latest news.")
+    val Prompts = listOf(
+        "Can you tell me more about a recent historical match?",
+        "Provide detailed information about a topic of interest.",
+        "What are some key services typically offered by businesses in your field?",
+        "How can I troubleshoot an issue effectively? Can you guide me?",
+        "What is the history behind France’s capital city?",
+        "Can you help me plan a meeting schedule or appointment?",
+        "What are some must-visit places in Paris and why?",
+        "Can you suggest exercises to improve posture based on research?",
+        "Recommend timeless books or movies in a specific genre.",
+        "How do I translate this sentence into Spanish with correct grammar?",
+        "Can you share insights or overviews about current global trends?"
+    )
 
     val allModelsExist = models.all { model -> model.destination.exists() }
-    val Prompts_Home = listOf("Explain quantum computing in simple terms", "Remember what user said earlier!!", "May occasionally generate incorrect")
+    val Prompts_Home = listOf(
+        "Explains complex topics simply.",
+        "Remembers previous inputs.",
+        "May sometimes be inaccurate."
+    )
     var recognizedText by remember {mutableStateOf("")}
     val speechRecognizerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
         result ->
@@ -318,7 +355,11 @@ fun MainCompose(
     }
     var isSpeaking by remember { mutableStateOf(false) }
 
-
+    fun scrollToBottom(scrollState: LazyListState) {
+        viewModel.viewModelScope.launch {
+            scrollState.scrollToItem(viewModel.messages.size - 1)
+        }
+    }
 
 
     Box() {
@@ -370,6 +411,9 @@ fun MainCompose(
                                 )
                             }
                         }
+                        //models dropdown
+
+                       ModelSelectorWithDownloadModal(viewModel = viewModel, downloadManager = dm, extFileDir = extFileDir)
 
                         // This will push the buttons to the bottom
                         Spacer(modifier = Modifier.weight(1f))
@@ -489,6 +533,7 @@ fun MainCompose(
 
            // Screen content
             Column() {
+
 
                 // Show modal if required
                 if (viewModel.showModal) {
@@ -676,10 +721,10 @@ fun MainCompose(
                         .weight(1f)
                         .pointerInput(Unit) {
                             detectTapGestures(
-                                onTap = { autoScrollEnabled = false ; kc?.hide()  },
-                                onDoubleTap = { autoScrollEnabled = false; kc?.hide() },
-                                onLongPress = { autoScrollEnabled = false; kc?.hide() },
-                                onPress = { autoScrollEnabled = false; kc?.hide() },
+                                onTap = {  kc?.hide()  },
+                                onDoubleTap = {  kc?.hide() },
+                                onLongPress = { kc?.hide() },
+                                onPress = { kc?.hide() },
 
 
 
@@ -687,7 +732,7 @@ fun MainCompose(
                         }) {
 //
 
-                        if (viewModel.messages.size == 0 && viewModel.showModal==false && viewModel.showAlert ==false) {
+                        if (viewModel.messages.isEmpty() && !viewModel.showModal && !viewModel.showAlert) {
                             LazyColumn(
                                 modifier = Modifier
                                     .fillMaxSize() // Take up the whole screen
@@ -771,9 +816,8 @@ fun MainCompose(
                             }
                         }
                         else {
-                            val prompts = viewModel.messages as? List<Map<String, String>> ?: emptyList()
-                            LazyColumn(state = scrollState, modifier = Modifier.clickable {  }) {  //chat section starts here
 
+                            LazyColumn(state = scrollState) {  //chat section starts here
                                 itemsIndexed(viewModel.messages as? List<Map<String, String>> ?: emptyList()) { _, messageMap ->
                                     val role = messageMap["role"] ?: ""
                                     val content = messageMap["content"] ?: ""
@@ -786,7 +830,7 @@ fun MainCompose(
                                         if (role != "codeBlock") {
 
                                             Box(
-                                                modifier = Modifier
+
 
 //
 
@@ -907,7 +951,7 @@ fun MainCompose(
                                                     horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
                                                     modifier = Modifier
                                                         .fillMaxWidth()
-                                                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                                                        .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 0.dp),
 
                                                     ) {
                                                     if(role == "assistant")
@@ -1028,12 +1072,17 @@ fun MainCompose(
                                         }
                                     }
                                 }
-                            }
-                            LaunchedEffect(prompts.size) {
-                                if (autoScrollEnabled && prompts.isNotEmpty()) {
-                                    scrollState.animateScrollToItem(prompts.size - 1)
+                                item {
+                                    Spacer(modifier = Modifier.height(1.dp).fillMaxWidth())
                                 }
                             }
+
+                            ScrollToBottomButton(
+                                scrollState = scrollState,
+                                messages = viewModel.messages,
+                                viewModel = viewModel
+                            )
+
                         }
 
                          //chat section ends here
@@ -1092,7 +1141,6 @@ fun MainCompose(
 
 
                             IconButton(onClick = {
-                                autoScrollEnabled = true
                                 val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                                     putExtra(
                                         RecognizerIntent.EXTRA_LANGUAGE_MODEL,
@@ -1152,7 +1200,6 @@ fun MainCompose(
                             if (!viewModel.getIsSending()) {
 
                                 IconButton(onClick = {
-                                    autoScrollEnabled = true
                                     viewModel.send()
                                     focusManager.clearFocus()
                                 }
@@ -1190,6 +1237,241 @@ fun MainCompose(
     }
 
 
+}
+@Composable
+fun ScrollToBottomButton(
+    viewModel: MainViewModel,
+    scrollState: LazyListState,
+    messages: List<Any>
+) {
+    val coroutineScope = rememberCoroutineScope()
+
+    // State to track if auto-scrolling is enabled
+    var isAutoScrolling by remember { mutableStateOf(false) }
+
+    // State to control the button's visibility
+    var isButtonVisible by remember { mutableStateOf(true) }
+
+    // Determine if the user can scroll down
+    val canScrollDown by remember {
+        derivedStateOf { scrollState.canScrollForward }
+    }
+
+    // Continuously scroll to the bottom while auto-scrolling is enabled
+    LaunchedEffect(viewModel.messages.size, isAutoScrolling) {
+        if (isAutoScrolling) {
+            coroutineScope.launch {
+                scrollState.scrollToItem(viewModel.messages.size + 1)
+            }
+        }
+    }
+
+    // Stop auto-scrolling when the user scrolls manually
+    LaunchedEffect(scrollState.isScrollInProgress) {
+        if (scrollState.isScrollInProgress) {
+            isAutoScrolling = false
+            isButtonVisible = true // Show the button again if the user scrolls manually
+        }
+    }
+
+    // Continuously monitor changes in the last item's content
+    LaunchedEffect(messages.lastOrNull()) {
+        if (isAutoScrolling && messages.isNotEmpty()) {
+            coroutineScope.launch {
+                scrollState.scrollToItem(viewModel.messages.size + 1)
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        AnimatedVisibility(
+            visible = (canScrollDown || isAutoScrolling) && isButtonVisible, // Show button if needed
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            FloatingActionButton(
+                onClick = {
+                    isAutoScrolling = true // Enable auto-scrolling
+                    isButtonVisible = false // Hide the button on click
+                    coroutineScope.launch {
+                        scrollState.scrollToItem(viewModel.messages.size + 1)
+                    }
+                },
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .size(56.dp),
+                // Ensures a circular shape
+                shape = RoundedCornerShape(percent = 50),
+                containerColor = Color.White.copy(alpha = 0.5f),
+                contentColor = Color.Black
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.KeyboardArrowDown,
+                    contentDescription = "Scroll to bottom",
+                    tint = Color.White // White icon for better visibility
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun ModelSelectorWithDownloadModal(
+    viewModel: MainViewModel,
+    downloadManager: DownloadManager,
+    extFileDir: File?
+) {
+    val models = listOf(
+        Downloadable(
+            "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
+            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
+            File(extFileDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
+        ),
+        Downloadable(
+            "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
+            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
+            File(extFileDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
+        ),
+        Downloadable(
+            "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+            Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
+            File(extFileDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
+        )
+    )
+
+    var mExpanded by remember { mutableStateOf(false) }
+    var mSelectedText by remember { mutableStateOf("") }
+    var mTextFieldSize by remember { mutableStateOf(Size.Zero) }
+    var selectedModel by remember { mutableStateOf<Map<String, Any>?>(null) }
+
+    val icon = if (mExpanded)
+        Icons.Filled.KeyboardArrowUp
+    else
+        Icons.Filled.KeyboardArrowDown
+
+    Column(Modifier.padding(20.dp)) {
+        OutlinedTextField(
+            value = mSelectedText,
+            onValueChange = { mSelectedText = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    mTextFieldSize = coordinates.size.toSize()
+                }
+                .clickable { mExpanded = !mExpanded },
+            label = { Text("Select Model") },
+            trailingIcon = {
+                Icon(
+                    icon,
+                    contentDescription = "Toggle dropdown",
+                    Modifier.clickable { mExpanded = !mExpanded }
+                )
+            },
+            textStyle = TextStyle(color = Color(0xFFf5f5f5)),
+            readOnly = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor =  Color(0xFF666666),
+                focusedBorderColor = Color(0xFFcfcfd1),
+                unfocusedLabelColor =  Color(0xFF666666),
+                focusedLabelColor = Color(0xFFcfcfd1),
+                unfocusedTextColor = Color(0xFFf5f5f5),
+                focusedTextColor =Color(0xFFf7f5f5),
+
+                )
+        )
+
+        DropdownMenu(
+            modifier = Modifier
+                .background(Color(0xFF01081a))
+                .width(with(LocalDensity.current) { mTextFieldSize.width.toDp() }),
+            expanded = mExpanded,
+            onDismissRequest = {
+                mExpanded = false
+            }
+        ) {
+            viewModel.allModels.forEach { model ->
+                DropdownMenuItem(
+                    modifier = Modifier
+                        .background(color = Color(0xFF22314A))
+                        .padding(horizontal = 0.dp, vertical = 5.dp)
+                        .drawBehind {
+                            val strokeWidth = 1.dp.toPx()
+                            drawLine(
+                                color = Color.Black.copy(alpha = 0.4f),
+                                start = Offset(0f, size.height),
+                                end = Offset(size.width, size.height),
+                                strokeWidth = strokeWidth
+                            )
+                        },
+
+                    onClick = {
+                        mSelectedText = model["name"].toString()
+                        selectedModel = model
+                        mExpanded = false
+
+                        // Convert model to Downloadable and show modal
+                        val downloadable = Downloadable(
+                            name = model["name"].toString(),
+                            source = Uri.parse(model["source"].toString()),
+                            destination = File(extFileDir, model["destination"].toString())
+                        )
+
+                        viewModel.showModal = true
+                        viewModel.currentDownloadable = downloadable
+                    }
+                ) {
+                    model["name"]?.let { Text(text = it, color = Color.White) }
+                }
+            }
+        }
+
+        // Use showModal instead of switchModal
+        if (viewModel.showModal && viewModel.currentDownloadable != null) {
+            Dialog(onDismissRequest = {
+                viewModel.showModal = false  // Consistent with the condition
+                viewModel.currentDownloadable = null  // Optional: clear the current downloadable
+            }) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color.Black,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .height(230.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .height(140.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Download Required",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Don't close or minimize the app!",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(35.dp))
+
+                        // Use the current downloadable from the view model
+
+                        viewModel.currentDownloadable?.let { downloadable ->
+                            Downloadable.Button(viewModel, downloadManager, downloadable)
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
+                }
+            }
+        }
+    }
 }
 
 

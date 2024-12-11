@@ -93,6 +93,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 when (val s = status) {
                     is Downloaded -> {
                         viewModel.showModal = true
+                        Log.d("item.destination.path", item.destination.path.toString())
                         viewModel.load(item.destination.path)
                     }
 
@@ -108,7 +109,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                         val request = DownloadManager.Request(item.source).apply {
                             setTitle("Downloading model")
                             setDescription("Downloading model: ${item.name}")
-                            setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
+                            setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
                             setDestinationUri(item.destination.toUri())
                         }
 
@@ -125,14 +126,14 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 }
             }
 
-            if (status !is Downloaded) {
+
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
 
                     Button(
                         onClick = { onClick() },
-                        enabled = status !is Downloading,
+                        enabled = status !is Downloading && !viewModel.getIsSending(),
                         modifier = Modifier
                             .fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
@@ -172,7 +173,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     )
                 }
 
-            }
+
         }
 
     }
