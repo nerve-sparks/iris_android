@@ -191,7 +191,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                     if (!getIsCompleteEOT()) {
                         trimEOT()
                     }
-                    }
+                }
 
 
 

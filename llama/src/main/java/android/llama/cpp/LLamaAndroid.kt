@@ -193,6 +193,7 @@ class LLamaAndroid {
                     }
                     if (str == null) {
                         _isSending.value = false
+                        _isCompleteEOT.value = true
                         break
                     }
                     end_token_store = end_token_store+str
