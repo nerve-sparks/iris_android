@@ -1,6 +1,7 @@
 package android.llama.cpp
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -25,6 +26,9 @@ class LLamaAndroid {
     private val _isMarked = mutableStateOf(false)
     private val isMarked: Boolean by _isMarked
 
+    private val _isCompleteEOT = mutableStateOf(true)
+    private val isCompleteEOT: Boolean by _isCompleteEOT
+
     fun getIsSending(): Boolean {
         return isSending
     }
@@ -32,6 +36,10 @@ class LLamaAndroid {
 
     fun getIsMarked(): Boolean {
         return isMarked
+    }
+
+    fun getIsCompleteEOT(): Boolean {
+        return isCompleteEOT
     }
 
     fun stopTextGeneration() {
@@ -142,13 +150,15 @@ class LLamaAndroid {
                     val sampler = new_sampler()
                     if (sampler == 0L) throw IllegalStateException("new_sampler() failed")
 
-                    val model_eot_str = get_eot_str(model)
-                    if (model_eot_str == "") throw IllegalStateException("eot_fetch() failed")
+                    val modelEotStr = get_eot_str(model)
+                    if (modelEotStr == "") throw IllegalStateException("eot_fetch() failed")
 
                     Log.i(tag, "Loaded model $pathToModel")
-                    threadLocalState.set(State.Loaded(model, context, batch, sampler, model_eot_str))
+                    threadLocalState.set(State.Loaded(model, context, batch, sampler, modelEotStr))
                 }
-                else -> throw IllegalStateException("Model already loaded")
+                else -> {
+                    throw IllegalStateException("Model already loaded")
+                }
             }
         }
     }
@@ -186,11 +196,13 @@ class LLamaAndroid {
                     }
                     if (str == null) {
                         _isSending.value = false
+                        _isCompleteEOT.value = true
                         break
                     }
                     end_token_store = end_token_store+str
                     if((end_token_store.length > state.modelEotStr.length) and end_token_store.contains(state.modelEotStr)){
                         _isSending.value = false
+                        _isCompleteEOT.value = false
                         break
                     }
                     if((end_token_store.length/2) > state.modelEotStr.length ){
@@ -231,8 +243,8 @@ class LLamaAndroid {
                 is State.Loaded -> {
                     free_context(state.context)
                     free_model(state.model)
+                    free_sampler(state.sampler)
                     free_batch(state.batch)
-                    free_sampler(state.sampler);
 
                     threadLocalState.set(State.Idle)
                 }
@@ -243,11 +255,14 @@ class LLamaAndroid {
 
     suspend fun send_eot_str(): String {
 
-        when (val state = threadLocalState.get()) {
+        return when (val state = threadLocalState.get()) {
             is State.Loaded -> {
-            return state.modelEotStr
+                state.modelEotStr
             }
-            else -> {return "<|im_end|>"}
+
+            else -> {
+                "<|im_end|>"
+            }
         }
 
     }

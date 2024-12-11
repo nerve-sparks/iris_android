@@ -3,18 +3,12 @@ package com.nervesparks.iris
 import android.app.DownloadManager
 import android.net.Uri
 import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +20,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.database.getLongOrNull
 import androidx.core.net.toUri
@@ -93,6 +90,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 when (val s = status) {
                     is Downloaded -> {
                         viewModel.showModal = true
+                        Log.d("item.destination.path", item.destination.path.toString())
                         viewModel.load(item.destination.path)
                     }
 
@@ -108,7 +106,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                         val request = DownloadManager.Request(item.source).apply {
                             setTitle("Downloading model")
                             setDescription("Downloading model: ${item.name}")
-                            setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
+                            setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
                             setDestinationUri(item.destination.toUri())
                         }
 
@@ -125,14 +123,14 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 }
             }
 
-            if (status !is Downloaded) {
+
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
 
                     Button(
                         onClick = { onClick() },
-                        enabled = status !is Downloading,
+                        enabled = status !is Downloading && !viewModel.getIsSending(),
                         modifier = Modifier
                             .fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
@@ -142,7 +140,12 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
 
                         when (status) {
                             is Downloading -> Text(
-                                text = "Downloading ${(progress * 100).toInt()}%",
+                                text = buildAnnotatedString {
+                                    append("Downloading ")
+                                    withStyle(style = SpanStyle(color = Color.Cyan)) {
+                                        append("${(progress * 100).toInt()}%")
+                                    }
+                                },
                                 color = Color.White
                             )
 
@@ -164,15 +167,10 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     }
                     Spacer(Modifier.height(10.dp))
 
-                    CircularProgressIndicator(
-                        progress = { progress.toFloat() },
-                        modifier = Modifier.width(64.dp),
-                        color = Color.Cyan,
-                        trackColor = Color.Black
-                    )
+
                 }
 
-            }
+
         }
 
     }

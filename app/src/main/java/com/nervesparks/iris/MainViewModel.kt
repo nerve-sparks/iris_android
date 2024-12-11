@@ -33,6 +33,28 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         )
         private set
 
+    var allModels by mutableStateOf(
+        listOf(
+            mapOf(
+                "name" to "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
+                "source" to "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true",
+                "destination" to "Llama-3.2-3B-Instruct-Q4_K_L.gguf"
+            ),
+            mapOf(
+                "name" to "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
+                "source" to "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true",
+                "destination" to "Llama-3.2-1B-Instruct-Q6_K_L.gguf"
+            ),
+            mapOf(
+                "name" to "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+                "source" to "https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true",
+                "destination" to "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf"
+            ),
+
+        )
+    )
+        private set
+
     private var first by mutableStateOf(
         true
     )
@@ -115,6 +137,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     var toggler by mutableStateOf(false)
     var showModal by  mutableStateOf(true)
     var showAlert by mutableStateOf(false)
+    var switchModal by mutableStateOf(false)
+    var currentDownloadable: Downloadable? by mutableStateOf(null)
+
     override fun onCleared() {
         textToSpeech?.shutdown()
         super.onCleared()
@@ -145,7 +170,6 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
 
             viewModelScope.launch {
-                Log.i("This is the template", llamaAndroid.getTemplate(messages))
                 try {
                     llamaAndroid.send(llamaAndroid.getTemplate(messages))
                         .catch {
@@ -163,7 +187,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                         }
                 }
                 finally {
+                    if (!getIsCompleteEOT()) {
                         trimEOT()
+                    }
                 }
 
 
@@ -200,6 +226,11 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 //        }
 //    }
 
+    suspend fun unload(){
+        llamaAndroid.unload()
+    }
+    var loadedModelName = mutableStateOf("");
+
     fun load(pathToModel: String) {
         viewModelScope.launch {
             try{
@@ -208,6 +239,8 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 Log.e(tag, "load() failed", exc)
             }
             try {
+                var modelName = pathToModel.split("/")
+                loadedModelName.value = modelName.last()
                 showAlert = true
                 llamaAndroid.load(pathToModel)
                 showAlert = false
@@ -283,6 +316,10 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
     private fun getIsMarked(): Boolean {
         return llamaAndroid.getIsMarked()
+    }
+
+    fun getIsCompleteEOT(): Boolean{
+        return llamaAndroid.getIsCompleteEOT()
     }
 
     fun stop() {
