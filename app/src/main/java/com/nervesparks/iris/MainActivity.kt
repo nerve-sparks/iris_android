@@ -157,6 +157,8 @@ class MainActivity(
 
 
 
+
+
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(darkNavyBlue, lightNavyBlue)
     )
@@ -257,6 +259,10 @@ fun MainCompose(
     val kc = LocalSoftwareKeyboardController.current
 
     val focusManager = LocalFocusManager.current
+
+    val input_prompt = remember {
+        mutableStateOf(TextFieldValue(""))
+    }
 
     val Prompts = listOf(
         "Can you tell me more about a recent historical match?",
@@ -1040,6 +1046,11 @@ fun MainCompose(
                                     modifier = Modifier
                                         .height(100.dp)
                                         .clickable {
+                                            val text = Prompts[index]
+                                            input_prompt.value = input_prompt.value.copy(
+                                                text = text,
+                                                selection = TextRange(0, text.length)
+                                            )
                                             viewModel.updateMessage(Prompts[index])
                                             focusRequester.requestFocus()
                                         }
@@ -1109,8 +1120,10 @@ fun MainCompose(
 
 
                             TextField(
-                                value = TextFieldValue(text = viewModel.message, selection = TextRange(viewModel.message.length)),
-                                onValueChange = { viewModel.updateMessage(it.text) },
+                                value = input_prompt.value,//TextFieldValue(text = viewModel.message, selection = TextRange(viewModel.message.length)),
+                                onValueChange = { text ->
+                                    input_prompt.value = text
+                                    viewModel.updateMessage(text.text) },
 
 
                                 placeholder = { Text("Message") },
@@ -1121,6 +1134,14 @@ fun MainCompose(
                                     }
                                     .focusRequester(focusRequester)
                                     .onFocusChanged { focusState ->
+
+                                        if (focusState.isFocused){
+                                            val text = input_prompt.value.text
+                                            input_prompt.value = input_prompt.value.copy(
+                                                text = text,
+                                                selection = TextRange(0, text.length)
+                                            )
+                                        }
                                         isFocused = focusState.isFocused
                                     },
 
@@ -1145,6 +1166,11 @@ fun MainCompose(
                                 IconButton(onClick = {
 
                                     viewModel.send()
+                                    val text = ""
+                                    input_prompt.value = input_prompt.value.copy(
+                                        text = text,
+                                        selection = TextRange(0, text.length)
+                                    )
                                     focusManager.clearFocus()
                                 }
                                 ) {
