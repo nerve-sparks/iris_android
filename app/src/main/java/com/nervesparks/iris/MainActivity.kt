@@ -290,7 +290,11 @@ fun MainCompose(
         val data = result.data
         val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
         recognizedText = results?.get(0)?:""
-        viewModel.updateMessage(recognizedText)
+        input_prompt.value = input_prompt.value.copy(
+            text = recognizedText,
+            selection = TextRange(0, recognizedText.length)
+        )
+        //viewModel.updateMessage(recognizedText)
 
     }
 
