@@ -157,6 +157,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.viewModelScope
@@ -618,6 +619,12 @@ fun MainCompose(
                                         color = Color.White,
                                     )
                                 }
+                                Text(
+                                    text = viewModel.loadedModelName.value,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
                                 LinearProgressIndicator(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -1501,6 +1508,7 @@ fun ModelSelectorWithDownloadModal(
                                         viewModel.showModal = false
                                         viewModel.currentDownloadable = null
 
+                                        Toast.makeText(context, "Restarting App!!.", Toast.LENGTH_SHORT).show()
                                         val packageManager: PackageManager = context.packageManager
                                                val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
                                                val componentName: ComponentName = intent.component!!

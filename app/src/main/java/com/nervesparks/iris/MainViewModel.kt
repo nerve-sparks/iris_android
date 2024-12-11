@@ -229,6 +229,8 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     suspend fun unload(){
         llamaAndroid.unload()
     }
+    var loadedModelName = mutableStateOf("");
+
     fun load(pathToModel: String) {
         viewModelScope.launch {
             try{
@@ -238,6 +240,8 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 Log.e(tag, "load() failed", exc)
             }
             try {
+                var modelName = pathToModel.split("/")
+                loadedModelName.value = modelName.last()
                 Log.e("this is my message 237", pathToModel)
                 showAlert = true
                 llamaAndroid.load(pathToModel)
