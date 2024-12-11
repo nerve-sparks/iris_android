@@ -4,8 +4,10 @@ package com.nervesparks.iris
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.ClipboardManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
@@ -218,10 +220,20 @@ class MainActivity(
 
         val models = listOf(
             Downloadable(
+                "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
+                Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
+                File(extFilesDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
+            ),
+            Downloadable(
                 "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
                 Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
                 File(extFilesDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
             ),
+            Downloadable(
+                "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+                Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
+                File(extFilesDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
+            )
         )
 
 
@@ -537,7 +549,7 @@ fun MainCompose(
                                 .padding(10.dp)
                                 .height(230.dp)
                         ) {
-                            Column(
+                            LazyColumn(
                                 modifier = Modifier
                                     .padding(16.dp)
                                     .height(140.dp)
@@ -545,27 +557,28 @@ fun MainCompose(
                                 horizontalAlignment = Alignment.CenterHorizontally
 
                             ) {
-                                Text(
+                                item {  Text(
                                     text = "Download Required",
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
-                                )
+                                )}
+                                item {
                                 Text(
                                     text = "Don't close or minimize the app!",
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
-                                )
-                                Spacer(modifier = Modifier.height(35.dp))
+                                )}
+                                item {Spacer(modifier = Modifier.height(35.dp))}
 
-                                models.forEach { model ->
+                               item{ models.forEach { model ->
                                     if (!model.destination.exists()) {
 //                                        Text(text = model.name, modifier = Modifier.padding(9.dp))
                                         Downloadable.Button(viewModel, dm, model)
                                     }
-                                }
+                                }}
 
 
-                                Spacer(modifier = Modifier.height(20.dp))
+                                item {Spacer(modifier = Modifier.height(20.dp))}
 
 
 
@@ -1487,10 +1500,14 @@ fun ModelSelectorWithDownloadModal(
                                         // Reset dialog visibility and update UI
                                         viewModel.showModal = false
                                         viewModel.currentDownloadable = null
-                                        val allModelsExistenceCheck = models.all { model-> model.destination.exists() }
-                                        if(!allModelsExistenceCheck){
-                                            context.recreate()
-                                        }
+
+                                        val packageManager: PackageManager = context.packageManager
+                                               val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
+                                               val componentName: ComponentName = intent.component!!
+                                               val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
+                                               context.startActivity(restartIntent)
+                                               Runtime.getRuntime().exit(0)
+
 
 
                                     },
