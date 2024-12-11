@@ -4,8 +4,10 @@ package com.nervesparks.iris
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.ClipboardManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
@@ -147,6 +149,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -154,9 +158,9 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.lifecycle.viewModelScope
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.toSize
@@ -217,32 +221,31 @@ class MainActivity(
         val extFilesDir = getExternalFilesDir(null)
 
         val models = listOf(
-//            Downloadable(
-//                "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
-//                Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
-//                File(extFilesDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
-//            ),
+            Downloadable(
+                "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
+                Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
+                File(extFilesDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
+            ),
             Downloadable(
                 "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
                 Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
                 File(extFilesDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
             ),
-//            Downloadable(
-//                "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
-//                Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
-//                File(extFilesDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
-//            ),
-
+            Downloadable(
+                "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+                Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
+                File(extFilesDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
+            )
         )
 
-        models.forEach { model ->
-            if (model.destination.exists() and (model.name == model_name)) {
-                viewModel.load(model.destination.path)
-            }
-        }
-//        models.find { model -> model.destination.exists() }?.let { model ->
-//            viewModel.load(model.destination.path)
+//        models.forEach { model ->
+//            if (model.destination.exists() and (model.name == model_name)) {
+//                viewModel.load(model.destination.path)
+//            }
 //        }
+        models.find { model -> model.destination.exists() }?.let { model ->
+            viewModel.load(model.destination.path)
+        }
 
         setContent {
 
@@ -265,22 +268,6 @@ class MainActivity(
 
         }
     }
-
-//    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-//        if (event.action == MotionEvent.ACTION_DOWN) {
-//
-//                val focusedView = currentFocus
-//
-//            if (focusedView != null && focusedView !is TextField) {
-//                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-//                imm.hideSoftInputFromWindow(focusedView.windowToken, 0)
-//                focusedView.clearFocus()
-//            }
-//        }
-//        return super.dispatchTouchEvent(event)
-//    }
-
-
 }
 
 @Composable
@@ -295,9 +282,6 @@ fun LinearGradient() {
     )
     Box(modifier = Modifier.background(gradient))
 }
-
-
-
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -349,7 +333,6 @@ fun MainCompose(
         viewModel.updateMessage(recognizedText)
 
     }
-    val fontname = GoogleFont("Jost")
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed = interactionSource.collectIsPressedAsState()
     val focusRequester = FocusRequester()
@@ -392,6 +375,7 @@ fun MainCompose(
                         // Top section with logo and name
                         Column {
                             Row(
+                                Modifier.padding(start = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Image(
@@ -438,9 +422,16 @@ fun MainCompose(
                                     .height(48.dp)
                                     .padding(horizontal = 16.dp)
                                     .background(
-                                        color = Color(0xFF22314A),
+                                        color = Color(0xFF14161f),
                                         shape = RoundedCornerShape(8.dp)
-                                    ),
+                                    )
+                                    .border(
+                                        border = BorderStroke(
+                                            width = 1.dp,
+                                            color = Color.LightGray.copy(alpha = 0.5f)
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
                             ) {
                                 val context = LocalContext.current
                                 Row(
@@ -476,7 +467,14 @@ fun MainCompose(
                                     .height(48.dp)
                                     .padding(horizontal = 16.dp)
                                     .background(
-                                        color = Color(0xFF22314A),
+                                        color = Color(0xFF14161f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .border(
+                                        border = BorderStroke(
+                                            width = 1.dp,
+                                            color = Color.LightGray.copy(alpha = 0.5f)
+                                        ),
                                         shape = RoundedCornerShape(8.dp)
                                     )
                             ) {
@@ -553,7 +551,7 @@ fun MainCompose(
                                 .padding(10.dp)
                                 .height(230.dp)
                         ) {
-                            Column(
+                            LazyColumn(
                                 modifier = Modifier
                                     .padding(16.dp)
                                     .height(140.dp)
@@ -561,27 +559,28 @@ fun MainCompose(
                                 horizontalAlignment = Alignment.CenterHorizontally
 
                             ) {
-                                Text(
+                                item {  Text(
                                     text = "Download Required",
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
-                                )
+                                )}
+                                item {
                                 Text(
                                     text = "Don't close or minimize the app!",
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
-                                )
-                                Spacer(modifier = Modifier.height(35.dp))
+                                )}
+                                item {Spacer(modifier = Modifier.height(35.dp))}
 
-                                models.forEach { model ->
+                               item{ models.forEach { model ->
                                     if (!model.destination.exists()) {
 //                                        Text(text = model.name, modifier = Modifier.padding(9.dp))
                                         Downloadable.Button(viewModel, dm, model)
                                     }
-                                }
+                                }}
 
 
-                                Spacer(modifier = Modifier.height(20.dp))
+                                item {Spacer(modifier = Modifier.height(20.dp))}
 
 
 
@@ -621,6 +620,12 @@ fun MainCompose(
                                         color = Color.White,
                                     )
                                 }
+                                Text(
+                                    text = viewModel.loadedModelName.value,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
                                 LinearProgressIndicator(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -898,9 +903,9 @@ fun MainCompose(
                                                                     modifier = Modifier
                                                                         .fillMaxWidth()
                                                                         .padding(vertical = 8.dp),
-
+                                                                    enabled = !viewModel.getIsSending(),
                                                                     onClick = {
-                                                                       viewModel.toggler = !viewModel.toggler
+                                                                            viewModel.toggler = !viewModel.toggler
                                                                     }
                                                                 ) {
                                                                     Text(text = "Select Text To Copy", color = Color(0xFFA0A0A5))
@@ -1207,6 +1212,7 @@ fun MainCompose(
                             if (!viewModel.getIsSending()) {
 
                                 IconButton(onClick = {
+
                                     viewModel.send()
                                     focusManager.clearFocus()
                                 }
@@ -1332,6 +1338,8 @@ fun ModelSelectorWithDownloadModal(
     downloadManager: DownloadManager,
     extFileDir: File?
 ) {
+    val context = LocalContext.current as Activity
+    val coroutineScope = rememberCoroutineScope()
     val models = listOf(
         Downloadable(
             "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
@@ -1361,40 +1369,59 @@ fun ModelSelectorWithDownloadModal(
         Icons.Filled.KeyboardArrowDown
 
     Column(Modifier.padding(20.dp)) {
+
         OutlinedTextField(
-            value = mSelectedText,
+            value= viewModel.loadedModelName.value,
             onValueChange = { mSelectedText = it },
             modifier = Modifier
                 .fillMaxWidth()
                 .onGloballyPositioned { coordinates ->
                     mTextFieldSize = coordinates.size.toSize()
                 }
-                .clickable { mExpanded = !mExpanded },
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            Log.d("Dropdown", "Box clicked")
+                            mExpanded = !mExpanded
+                        },
+                        onPress = {
+                            Log.d("Dropdown", "Box clicked")
+                            mExpanded = !mExpanded
+                        }
+                    )}
+                .clickable {
+                    Log.d("Dropdown", "Box clicked")
+                    mExpanded = !mExpanded
+                },
             label = { Text("Select Model") },
             trailingIcon = {
                 Icon(
                     icon,
                     contentDescription = "Toggle dropdown",
-                    Modifier.clickable { mExpanded = !mExpanded }
+                    Modifier.clickable { mExpanded = !mExpanded },
+                    tint =Color(0xFFcfcfd1)
                 )
             },
             textStyle = TextStyle(color = Color(0xFFf5f5f5)),
             readOnly = true,
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor =  Color(0xFF666666),
+                unfocusedBorderColor = Color(0xFF666666),
                 focusedBorderColor = Color(0xFFcfcfd1),
-                unfocusedLabelColor =  Color(0xFF666666),
+                unfocusedLabelColor = Color(0xFF666666),
                 focusedLabelColor = Color(0xFFcfcfd1),
                 unfocusedTextColor = Color(0xFFf5f5f5),
-                focusedTextColor =Color(0xFFf7f5f5),
-
-                )
+                focusedTextColor = Color(0xFFf7f5f5),
+            )
         )
+
+
 
         DropdownMenu(
             modifier = Modifier
                 .background(Color(0xFF01081a))
-                .width(with(LocalDensity.current) { mTextFieldSize.width.toDp() }),
+                .width(with(LocalDensity.current) { mTextFieldSize.width.toDp() })
+                .padding(top = 2.dp)
+                .border(1.dp,color = Color.LightGray.copy(alpha = 0.5f)),
             expanded = mExpanded,
             onDismissRequest = {
                 mExpanded = false
@@ -1403,18 +1430,8 @@ fun ModelSelectorWithDownloadModal(
             viewModel.allModels.forEach { model ->
                 DropdownMenuItem(
                     modifier = Modifier
-                        .background(color = Color(0xFF22314A))
-                        .padding(horizontal = 0.dp, vertical = 5.dp)
-                        .drawBehind {
-                            val strokeWidth = 1.dp.toPx()
-                            drawLine(
-                                color = Color.Black.copy(alpha = 0.4f),
-                                start = Offset(0f, size.height),
-                                end = Offset(size.width, size.height),
-                                strokeWidth = strokeWidth
-                            )
-                        },
-
+                        .background(color = Color(0xFF090b1a))
+                        .padding(horizontal = 1.dp, vertical = 0.dp),
                     onClick = {
                         mSelectedText = model["name"].toString()
                         selectedModel = model
@@ -1447,7 +1464,7 @@ fun ModelSelectorWithDownloadModal(
                     color = Color.Black,
                     modifier = Modifier
                         .padding(10.dp)
-                        .height(230.dp)
+                        .height(300.dp)
                 ) {
                     Column(
                         modifier = Modifier
@@ -1466,13 +1483,37 @@ fun ModelSelectorWithDownloadModal(
                             color = Color.White
                         )
                         Spacer(modifier = Modifier.height(35.dp))
-
                         // Use the current downloadable from the view model
-
                         viewModel.currentDownloadable?.let { downloadable ->
                             Downloadable.Button(viewModel, downloadManager, downloadable)
-                        }
+                            if (downloadable.destination.exists()){
+                                Spacer(modifier = Modifier.height(25.dp))
+                                Button(
+                                    onClick = {
 
+                                        coroutineScope.launch {  viewModel.unload()}
+                                        // Delete the model file
+                                        downloadable.destination.delete()
+                                        // Reset dialog visibility and update UI
+                                        viewModel.showModal = false
+                                        viewModel.currentDownloadable = null
+
+                                        Toast.makeText(context, "Restarting App!!.", Toast.LENGTH_SHORT).show()
+                                        val packageManager: PackageManager = context.packageManager
+                                               val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
+                                               val componentName: ComponentName = intent.component!!
+                                               val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
+                                               context.startActivity(restartIntent)
+                                               Runtime.getRuntime().exit(0)
+
+
+
+                                    },
+                                ) {
+                                    Text(text = "Delete Model")
+                                }
+                            }
+                        }
                         Spacer(modifier = Modifier.height(20.dp))
                     }
                 }

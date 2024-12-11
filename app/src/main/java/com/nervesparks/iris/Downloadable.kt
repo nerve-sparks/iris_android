@@ -26,6 +26,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.database.getLongOrNull
 import androidx.core.net.toUri
@@ -143,7 +146,12 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
 
                         when (status) {
                             is Downloading -> Text(
-                                text = "Downloading ${(progress * 100).toInt()}%",
+                                text = buildAnnotatedString {
+                                    append("Downloading ")
+                                    withStyle(style = SpanStyle(color = Color.Cyan)) {
+                                        append("${(progress * 100).toInt()}%")
+                                    }
+                                },
                                 color = Color.White
                             )
 
@@ -165,12 +173,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     }
                     Spacer(Modifier.height(10.dp))
 
-                    CircularProgressIndicator(
-                        progress = { progress.toFloat() },
-                        modifier = Modifier.width(64.dp),
-                        color = Color.Cyan,
-                        trackColor = Color.Black
-                    )
+
                 }
 
 

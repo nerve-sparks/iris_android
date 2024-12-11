@@ -404,9 +404,9 @@ JNIEXPORT void JNICALL
 Java_android_llama_cpp_LLamaAndroid_free_1batch(JNIEnv *, jobject, jlong batch_pointer) {
 
 
-//    common_batch_clear(*reinterpret_cast<llama_batch *>(batch_pointer));
+    common_batch_clear(*reinterpret_cast<llama_batch *>(batch_pointer));
 
-    fixed_llama_batch_free(*reinterpret_cast<llama_batch *>(batch_pointer));
+//    fixed_llama_batch_free(*reinterpret_cast<llama_batch *>(batch_pointer));
 
 }
 
