@@ -109,7 +109,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                         val request = DownloadManager.Request(item.source).apply {
                             setTitle("Downloading model")
                             setDescription("Downloading model: ${item.name}")
-                            setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
+                            setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
                             setDestinationUri(item.destination.toUri())
                         }
 

@@ -153,6 +153,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.googlefonts.GoogleFont
@@ -1360,7 +1361,8 @@ fun ModelSelectorWithDownloadModal(
                 .fillMaxWidth()
                 .onGloballyPositioned { coordinates ->
                     mTextFieldSize = coordinates.size.toSize()
-                },
+                }
+                .clickable { mExpanded = !mExpanded },
             label = { Text("Select Model") },
             trailingIcon = {
                 Icon(
@@ -1369,15 +1371,17 @@ fun ModelSelectorWithDownloadModal(
                     Modifier.clickable { mExpanded = !mExpanded }
                 )
             },
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
+            textStyle = TextStyle(color = Color(0xFFf5f5f5)),
             readOnly = true,
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedBorderColor = Color.Red,
-                cursorColor = MaterialTheme.colorScheme.primary,
-                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                focusedLabelColor = MaterialTheme.colorScheme.primary
-            )
+                unfocusedBorderColor =  Color(0xFF666666),
+                focusedBorderColor = Color(0xFFcfcfd1),
+                unfocusedLabelColor =  Color(0xFF666666),
+                focusedLabelColor = Color(0xFFcfcfd1),
+                unfocusedTextColor = Color(0xFFf5f5f5),
+                focusedTextColor =Color(0xFFf7f5f5),
+
+                )
         )
 
         DropdownMenu(
@@ -1393,7 +1397,17 @@ fun ModelSelectorWithDownloadModal(
                 DropdownMenuItem(
                     modifier = Modifier
                         .background(color = Color(0xFF22314A))
-                        .padding(horizontal = 2.dp, vertical = 5.dp),
+                        .padding(horizontal = 0.dp, vertical = 5.dp)
+                        .drawBehind {
+                            val strokeWidth = 1.dp.toPx()
+                            drawLine(
+                                color = Color.Black.copy(alpha = 0.4f),
+                                start = Offset(0f, size.height),
+                                end = Offset(size.width, size.height),
+                                strokeWidth = strokeWidth
+                            )
+                        },
+
                     onClick = {
                         mSelectedText = model["name"].toString()
                         selectedModel = model
