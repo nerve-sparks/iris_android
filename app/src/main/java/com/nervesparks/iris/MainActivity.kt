@@ -238,14 +238,14 @@ class MainActivity(
             )
         )
 
-        models.forEach { model ->
-            if (model.destination.exists() and (model.name == model_name)) {
-                viewModel.load(model.destination.path)
-            }
-        }
-//        models.find { model -> model.destination.exists() }?.let { model ->
-//            viewModel.load(model.destination.path)
+//        models.forEach { model ->
+//            if (model.destination.exists() and (model.name == model_name)) {
+//                viewModel.load(model.destination.path)
+//            }
 //        }
+        models.find { model -> model.destination.exists() }?.let { model ->
+            viewModel.load(model.destination.path)
+        }
 
         setContent {
 

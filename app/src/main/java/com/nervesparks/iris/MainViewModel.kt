@@ -189,7 +189,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                         }
                 }
                 finally {
+                    if (!getIsCompleteEOT()){
                         trimEOT()
+                    }
                 }
 
 
@@ -318,6 +320,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
     private fun getIsMarked(): Boolean {
         return llamaAndroid.getIsMarked()
+    }
+    fun getIsCompleteEOT(): Boolean{
+        return llamaAndroid.getIsCompleteEOT()
     }
 
     fun stop() {

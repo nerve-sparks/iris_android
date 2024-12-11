@@ -25,6 +25,9 @@ class LLamaAndroid {
     private val _isMarked = mutableStateOf(false)
     private val isMarked: Boolean by _isMarked
 
+    private val _isCompleteEOT = mutableStateOf(true)
+    private val isCompleteEOT: Boolean by _isCompleteEOT
+
     fun getIsSending(): Boolean {
         return isSending
     }
@@ -34,12 +37,18 @@ class LLamaAndroid {
         return isMarked
     }
 
+
+
     fun stopTextGeneration() {
 
         stopGeneration = true
         _isMarked.value = false
     }
 
+
+    fun getIsCompleteEOT(): Boolean {
+        return isCompleteEOT
+    }
 
     private val runLoop: CoroutineDispatcher = Executors.newSingleThreadExecutor {
         thread(start = false, name = "Llm-RunLoop") {
@@ -191,6 +200,7 @@ class LLamaAndroid {
                     end_token_store = end_token_store+str
                     if((end_token_store.length > state.modelEotStr.length) and end_token_store.contains(state.modelEotStr)){
                         _isSending.value = false
+                        _isCompleteEOT.value = false
                         break
                     }
                     if((end_token_store.length/2) > state.modelEotStr.length ){
