@@ -170,7 +170,6 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
 
             viewModelScope.launch {
-                Log.i("This is the template", llamaAndroid.getTemplate(messages))
                 try {
                     llamaAndroid.send(llamaAndroid.getTemplate(messages))
                         .catch {
@@ -235,7 +234,6 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     fun load(pathToModel: String) {
         viewModelScope.launch {
             try{
-                Log.e("this is my message", pathToModel)
                 llamaAndroid.unload()
             } catch (exc: IllegalStateException){
                 Log.e(tag, "load() failed", exc)
@@ -243,7 +241,6 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             try {
                 var modelName = pathToModel.split("/")
                 loadedModelName.value = modelName.last()
-                Log.e("this is my message 237", pathToModel)
                 showAlert = true
                 llamaAndroid.load(pathToModel)
                 showAlert = false

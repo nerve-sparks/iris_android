@@ -5,7 +5,6 @@ import android.app.Activity
 import android.app.DownloadManager
 import android.content.ClipboardManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -13,12 +12,7 @@ import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
 import android.speech.RecognizerIntent
-import android.text.Editable
 import android.util.Log
-import android.view.MotionEvent
-import android.view.inputmethod.InputMethodManager
-import android.text.format.Formatter
-import android.transition.Transition
 import android.widget.Toast
 
 import androidx.activity.ComponentActivity
@@ -26,16 +20,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +38,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -57,7 +46,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.*
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -65,9 +53,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -81,7 +66,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -99,26 +83,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.LinearGradient
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -134,16 +110,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.getSystemService
 import kotlinx.coroutines.launch
-import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 import java.io.File
-import android.speech.tts.TextToSpeech
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.AnimatedVisibility
@@ -152,21 +124,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.input.pointer.motionEventSpy
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.viewModelScope
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.toSize
-import java.security.AccessController.getContext
-import java.util.Locale
-import kotlin.math.log
 
 
 class MainActivity(
@@ -249,7 +211,7 @@ class MainActivity(
 
         setContent {
 
-                // A surface container using the 'background' color from the theme
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -293,15 +255,7 @@ fun MainCompose(
     extFileDir: File?
 ) {
     val kc = LocalSoftwareKeyboardController.current
-//    val systemUiController = rememberSystemUiController()
-//
-//    systemUiController.setSystemBarsColor(
-//        color = Color(0xFF232627)
-//    )
 
-    //variable to toggle auto-scrolling
-
-//    var showModal by remember { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
 
     val Prompts = listOf(
@@ -333,24 +287,13 @@ fun MainCompose(
         viewModel.updateMessage(recognizedText)
 
     }
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed = interactionSource.collectIsPressedAsState()
+
     val focusRequester = FocusRequester()
     var isFocused by remember { mutableStateOf(false) }
-    var isTappedInsideTextField by remember { mutableStateOf(false) }
     var textFieldBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
-    // Hide modal if all model destinations exist
     if (allModelsExist) {
         viewModel.showModal = false
     }
-    var isSpeaking by remember { mutableStateOf(false) }
-
-    fun scrollToBottom(scrollState: LazyListState) {
-        viewModel.viewModelScope.launch {
-            scrollState.scrollToItem(viewModel.messages.size - 1)
-        }
-    }
-
 
     Box() {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -402,14 +345,14 @@ fun MainCompose(
                                 )
                             }
                         }
-                        //models dropdown
+
 
                        ModelSelectorWithDownloadModal(viewModel = viewModel, downloadManager = dm, extFileDir = extFileDir)
 
-                        // This will push the buttons to the bottom
+
                         Spacer(modifier = Modifier.weight(1f))
 
-                        // Bottom section with link buttons
+
                         Column(
                             verticalArrangement = Arrangement.Bottom,
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -636,10 +579,7 @@ fun MainCompose(
                         }
                     }
                 }
-
-
-
-                    //Top app bar starts here.
+                //Top app bar starts here.
                     Row(
 
                         modifier = Modifier
@@ -650,7 +590,7 @@ fun MainCompose(
                         clickable { kc?.hide() },
                         horizontalArrangement = Arrangement.SpaceBetween,
 
-                        verticalAlignment = Alignment.CenterVertically,// This will make the Row take the full width of the Box
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
 
 //                  icon of drawer
@@ -686,13 +626,6 @@ fun MainCompose(
                                 fontSize = 24.sp
                             )
                         }
-
-
-
-                        //New Text Button
-
-                        //New Chat Button
-
                         Button(
                             onClick = {
                                 kc?.hide()
@@ -720,8 +653,6 @@ fun MainCompose(
 //
 
                 //Top app bar stops here
-
-
 
                 Column {
 
@@ -1218,13 +1149,12 @@ fun MainCompose(
                                 }
                                 ) {
                                     Icon(
-//                                imageVector = Icons.Default.Send,
                                         modifier = Modifier
                                             .size(28.dp)
                                             .weight(1f),
                                         painter = painterResource(id = R.drawable.send_2_svgrepo_com),
                                         contentDescription = "Send",
-                                        tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
+                                        tint = Color(0xFFDDDDE4)
                                     )
                                 }
                             } else if (viewModel.getIsSending()) {
@@ -1235,7 +1165,7 @@ fun MainCompose(
                                             .size(32.dp),
                                         painter = painterResource(id = R.drawable.square_svgrepo_com),
                                         contentDescription = "Stop",
-                                        tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
+                                        tint = Color(0xFFDDDDE4)
                                     )
                                 }
                             }
@@ -1381,16 +1311,13 @@ fun ModelSelectorWithDownloadModal(
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = {
-                            Log.d("Dropdown", "Box clicked")
                             mExpanded = !mExpanded
                         },
                         onPress = {
-                            Log.d("Dropdown", "Box clicked")
                             mExpanded = !mExpanded
                         }
                     )}
                 .clickable {
-                    Log.d("Dropdown", "Box clicked")
                     mExpanded = !mExpanded
                 },
             label = { Text("Select Model") },

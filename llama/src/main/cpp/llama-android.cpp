@@ -594,13 +594,9 @@ inline std::string format_chat(const llama_model *model, const std::string &tmpl
 extern "C" JNIEXPORT jstring JNICALL
 Java_android_llama_cpp_LLamaAndroid_oaicompat_1completion_1param_1parse(
         JNIEnv *env, jobject, jobjectArray allMessages, jlong model) {
-    LOGi("Entered 521");
-
     try {
         // Convert the messages to JSON
         std::string parsedData = mapListToJSONString(env, allMessages);
-        LOGi("527");
-
         // Parse and format
         std::vector<json> jsonMessages = json::parse(parsedData);
         const auto formattedPrompts = format_chat(reinterpret_cast<const llama_model *>(model), "", jsonMessages);

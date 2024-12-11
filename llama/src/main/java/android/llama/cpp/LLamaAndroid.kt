@@ -1,6 +1,7 @@
 package android.llama.cpp
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -155,7 +156,9 @@ class LLamaAndroid {
                     Log.i(tag, "Loaded model $pathToModel")
                     threadLocalState.set(State.Loaded(model, context, batch, sampler, modelEotStr))
                 }
-                else -> throw IllegalStateException("Model already loaded")
+                else -> {
+                    throw IllegalStateException("Model already loaded")
+                }
             }
         }
     }
@@ -238,17 +241,9 @@ class LLamaAndroid {
         withContext(runLoop) {
             when (val state = threadLocalState.get()) {
                 is State.Loaded -> {
-
-                    Log.d(tag, "this is my new message")
                     free_context(state.context)
-                    Log.d(tag, "234")
                     free_model(state.model)
-                    Log.d(tag, "236")
-
-                    Log.d(tag, "238")
-                    free_sampler(state.sampler);
-
-                    Log.d(tag, "this is my new message 237")
+                    free_sampler(state.sampler)
                     free_batch(state.batch)
 
                     threadLocalState.set(State.Idle)
