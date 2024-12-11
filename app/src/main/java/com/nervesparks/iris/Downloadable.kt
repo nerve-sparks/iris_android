@@ -79,7 +79,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     cursor.close()
 
                     if (sofar == total) {
-                        viewModel.load(item.destination.path)
+//                        viewModel.load(item.destination.path)
                         return Downloaded(item)
                     }
 
