@@ -25,6 +25,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 //        private val NanosPerSecond = 1_000_000_000.0
     }
 
+
     private val tag: String? = this::class.simpleName
 
     var messages by mutableStateOf(
@@ -225,6 +226,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 //        }
 //    }
 
+    suspend fun unload(){
+        llamaAndroid.unload()
+    }
     fun load(pathToModel: String) {
         viewModelScope.launch {
             try{
