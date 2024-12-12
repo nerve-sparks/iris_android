@@ -125,12 +125,20 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.viewModelScope
 import androidx.compose.ui.unit.toSize
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
+import java.net.URL
+import java.net.UnknownHostException
 
 
 class MainActivity(
@@ -256,6 +264,8 @@ fun MainCompose(
     models: List<Downloadable>,
     extFileDir: File?
 ) {
+
+
     val kc = LocalSoftwareKeyboardController.current
 
     val focusManager = LocalFocusManager.current
@@ -288,11 +298,24 @@ fun MainCompose(
         viewModel.updateMessage(recognizedText)
 
     }
+    var isBottomSheetVisible by remember { mutableStateOf(false) }
+    var modelData by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    var UserGivenModel by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = viewModel.userGivenModel,
+                selection = TextRange(viewModel.userGivenModel.length) // Ensure cursor starts at the end
+            )
+        )
+    }
 
 
 
 
-    val focusRequester = FocusRequester()
+        val focusRequester = FocusRequester()
     var isFocused by remember { mutableStateOf(false) }
     var textFieldBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
     if (allModelsExist) {
@@ -349,9 +372,134 @@ fun MainCompose(
                                 )
                             }
                         }
+                        val coroutineScope = rememberCoroutineScope()
 
+                        // Bottom sheet content
+                        val sheetState = rememberModalBottomSheetState()
+
+                        if (isBottomSheetVisible) {
+                            ModalBottomSheet(
+                                onDismissRequest = {
+                                    isBottomSheetVisible = false
+                                },
+                                sheetState = sheetState,
+                            ) {
+                                // Bottom sheet content
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                ) {
+                                    if (isLoading) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                                        )
+                                    } else if (errorMessage != null) {
+                                        Text(
+                                            text = errorMessage ?: "An error occurred",
+                                            color = MaterialTheme.colorScheme.error,
+                                            modifier = Modifier.padding(8.dp)
+                                        )
+                                    } else {
+
+                                            Text(
+                                                text = modelData,
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                modifier = Modifier.padding(bottom = 8.dp)
+                                            )
+                                            // Customize this based on your actual ModelData structure
+
+                                            // Add more details as needed
+
+                                    }
+                                }
+                            }
+                        }
 
                        ModelSelectorWithDownloadModal(viewModel = viewModel, downloadManager = dm, extFileDir = extFileDir)
+
+                        TextField(
+                            value = UserGivenModel,
+                            onValueChange = { newValue ->
+                                UserGivenModel = newValue
+                                // Update ViewModel or perform other actions with the new value
+                                viewModel.userGivenModel = newValue.text
+                            },
+                            label = { Text("User Given Model") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            singleLine = true,
+                            maxLines = 1
+                        )
+                        Spacer(Modifier.height(5.dp))
+                        Button(
+                            onClick = {
+                                // Perform action when button is clicked
+                                coroutineScope.launch {
+                                    isLoading = true // Show loading state
+
+                                    try {
+                                        val response = withContext(Dispatchers.IO) {
+                                            // Perform network request
+                                            val url = URL("https://huggingface.co/api/models/${viewModel.userGivenModel}")
+                                            val connection = url.openConnection() as HttpURLConnection
+                                            connection.requestMethod = "GET"
+                                            connection.setRequestProperty("Accept", "application/json")
+                                            connection.connectTimeout = 10000
+                                            connection.readTimeout = 10000
+
+                                            val responseCode = connection.responseCode
+                                            if (responseCode == HttpURLConnection.HTTP_OK) {
+                                                connection.inputStream.bufferedReader().use { it.readText() }
+                                            } else {
+                                                val errorStream = connection.errorStream?.bufferedReader()?.use { it.readText() }
+                                                throw Exception("HTTP error code: $responseCode - ${errorStream ?: "No additional error details"}")
+                                            }
+                                        }
+
+                                        // Handle the response
+                                        Log.i("response", response)
+                                        val jsonResponse = JSONObject(response)
+                                        modelData = jsonResponse["id"].toString()
+                                        isBottomSheetVisible = true
+                                    } catch (e: Exception) {
+                                        // Handle exceptions
+                                        Log.e("ModelFetch", "Failed to fetch model", e)
+
+                                        errorMessage = when (e) {
+                                            is UnknownHostException -> "No internet connection"
+                                            is SocketTimeoutException -> "Connection timed out"
+                                            else -> "Failed to fetch model: ${e.localizedMessage ?: "Unknown error"}"
+                                        }
+                                    } finally {
+                                        isLoading = false // Hide loading state
+                                    }
+                                }
+
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            enabled = UserGivenModel.text.isNotBlank(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color.White,
+                                disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                disabledContentColor = Color.White.copy(alpha = 0.5f)
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 4.dp,
+                                pressedElevation = 2.dp
+                            )
+                        ) {
+                            Text(
+                                text = "Process Model",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
 
 
                         Spacer(modifier = Modifier.weight(1f))

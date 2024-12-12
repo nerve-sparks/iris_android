@@ -62,6 +62,8 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     var message by mutableStateOf("")
         private set
 
+    var userGivenModel by mutableStateOf("")
+
 
     private var textToSpeech:TextToSpeech? = null
 
