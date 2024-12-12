@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.DownloadManager
 import android.content.ClipboardManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -126,6 +127,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SheetState
 import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.viewModelScope
 import androidx.compose.ui.unit.toSize
@@ -265,17 +267,16 @@ fun MainCompose(
     }
 
     val Prompts = listOf(
-        "Can you tell me more about a recent historical match?",
-        "Provide detailed information about a topic of interest.",
-        "What are some key services typically offered by businesses in your field?",
-        "How can I troubleshoot an issue effectively? Can you guide me?",
-        "What is the history behind France’s capital city?",
-        "Can you help me plan a meeting schedule or appointment?",
-        "What are some must-visit places in Paris and why?",
-        "Can you suggest exercises to improve posture based on research?",
-        "Recommend timeless books or movies in a specific genre.",
-        "How do I translate this sentence into Spanish with correct grammar?",
-        "Can you share insights or overviews about current global trends?"
+        "Explain the strategic turning points of the Battle of Midway during World War II",
+        "Describe the innovative technologies that are transforming renewable energy production",
+        "Outline the core consulting services provided by management consulting firms like McKinsey",
+        "Walk me through a systematic approach to debugging a complex software issue",
+        "Trace the architectural and cultural evolution of Paris from medieval times to the modern era",
+        "Highlight the architectural marvels of Paris, from the Eiffel Tower to the hidden gems of Montmartre",
+        "Recommend a targeted 15-minute daily routine to improve posture and reduce back pain",
+        "List the top 5 science fiction novels that have most influenced modern technological thinking",
+        "Provide a precise Spanish translation of 'Innovation drives progress' with grammatical explanations",
+        "Analyze the impact of artificial intelligence on global economic and social landscapes in 2024"
     )
 
     val allModelsExist = models.all { model -> model.destination.exists() }
@@ -293,6 +294,9 @@ fun MainCompose(
         viewModel.updateMessage(recognizedText)
 
     }
+
+
+
 
     val focusRequester = FocusRequester()
     var isFocused by remember { mutableStateOf(false) }
@@ -635,8 +639,9 @@ fun MainCompose(
                         Button(
                             onClick = {
                                 kc?.hide()
-                                viewModel.clear()
                                 viewModel.stop()
+                                viewModel.clear()
+
 
                             },
                             modifier = Modifier
@@ -671,7 +676,6 @@ fun MainCompose(
                         .pointerInput(Unit) {
                             detectTapGestures(
                                 onTap = {
-                                    focusManager.clearFocus()
                                     kc?.hide()
                                 },
                                 onDoubleTap = {  kc?.hide() },
@@ -796,108 +800,17 @@ fun MainCompose(
                                                     mutableStateOf(false)
                                                 }
                                                 if(isSheetOpen){
-                                                    ModalBottomSheet(
-                                                        sheetState = sheetState,
-                                                        containerColor = Color(0xFF01081a),
-                                                        onDismissRequest = {
+                                                    MessageBottomSheet(
+                                                        message = trimmedMessage,
+                                                        clipboard = clipboard,
+                                                        context = context,
+                                                        viewModel = viewModel,
+                                                        onDismiss = {
                                                             isSheetOpen = false
                                                             viewModel.toggler = false
-                                                        })
-                                                    {
-                                                        //Bottom Sheet
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .fillMaxSize()
-                                                                .padding(20.dp)
-                                                                .background(color = Color(0xFF01081a))
-
-                                                        ){
-                                                            var sheetScrollState = rememberLazyListState()
-                                                            Column (
-                                                                modifier = Modifier
-                                                                    .fillMaxWidth()
-                                                                    .fillMaxWidth()
-                                                                    .padding(vertical = 5.dp)
-
-                                                            ){
-                                                                //copy text
-                                                                TextButton(
-                                                                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
-                                                                    modifier = Modifier
-                                                                        .fillMaxWidth()
-                                                                        .padding(vertical = 8.dp),
-                                                                    onClick = {
-                                                                    clipboard.setText(
-                                                                        AnnotatedString(trimmedMessage)
-                                                                    )
-                                                                    Toast.makeText(context, "text copied!!", Toast.LENGTH_SHORT).show()
-                                                                }
-                                                                ) {
-                                                                    Text( text = "Copy Text", color = Color(0xFFA0A0A5))
-                                                                }
-
-                                                                //copy select text
-
-                                                                TextButton(
-                                                                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
-                                                                    modifier = Modifier
-                                                                        .fillMaxWidth()
-                                                                        .padding(vertical = 8.dp),
-                                                                    enabled = !viewModel.getIsSending(),
-                                                                    onClick = {
-                                                                            viewModel.toggler = !viewModel.toggler
-                                                                    }
-                                                                ) {
-                                                                    Text(text = "Select Text To Copy", color = Color(0xFFA0A0A5))
-                                                                }
-
-                                                                TextButton(
-                                                                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
-                                                                    modifier = Modifier
-                                                                        .fillMaxWidth()
-                                                                        .padding(vertical = 8.dp),
-                                                                    enabled = !viewModel.getIsSending(),
-                                                                    onClick = {
-                                                                        if (viewModel.stateForTextToSpeech) {
-                                                                            viewModel.textForTextToSpeech = trimmedMessage
-                                                                            viewModel.textToSpeech(context)
-                                                                        } else {
-                                                                            viewModel.stopTextToSpeech()
-                                                                        }
-                                                                    }
-                                                                ) {
-                                                                    Text(
-                                                                        text = if (viewModel.stateForTextToSpeech) "Text To Speech" else "Stop",
-                                                                        color = Color(0xFFA0A0A5)
-                                                                    )
-                                                                }
-                                                                LazyColumn(state = sheetScrollState) {
-                                                                    item {
-                                                                        SelectionContainer {
-                                                                            if(viewModel.toggler) {
-                                                                                Box(
-                                                                                    contentAlignment = Alignment.Center,
-                                                                                    modifier = Modifier
-                                                                                        .fillMaxWidth()
-                                                                                        .background( color = Color.Black)
-                                                                                        .padding(25.dp)
-
-                                                                                ){
-                                                                                    Text(
-                                                                                        text = AnnotatedString(
-                                                                                            trimmedMessage
-                                                                                        ), color = Color.White
-                                                                                    )
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-
-                                                        }
-//
-                                                    }
+                                                        },
+                                                        sheetState = sheetState
+                                                    )
                                                 }
                                                 Row(
                                                     horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
@@ -1066,7 +979,7 @@ fun MainCompose(
                                             text = Prompts[index],
                                             style = MaterialTheme.typography.bodySmall.copy(
                                                 color = Color(0xFFA0A0A5),
-                                                fontSize = 15.sp,
+                                                fontSize = 12.sp,
                                             ),
                                             textAlign = TextAlign.Center,
                                             modifier = Modifier
@@ -1500,6 +1413,115 @@ fun ModelSelectorWithDownloadModal(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MessageBottomSheet(
+    message: String,
+    clipboard: ClipboardManager,
+    context: Context,
+    viewModel: MainViewModel,
+    onDismiss: () -> Unit,
+    sheetState: SheetState
+) {
+
+
+    ModalBottomSheet(
+        sheetState = sheetState,
+        containerColor = Color(0xFF01081a),
+        onDismissRequest = onDismiss
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp)
+                .background(color = Color(0xFF01081a))
+        ) {
+            var sheetScrollState = rememberLazyListState()
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
+
+            ) {
+                // Copy Text Button
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    onClick = {
+                        clipboard.setText(AnnotatedString(message))
+                        Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
+                        onDismiss()
+                    }
+                ) {
+                    Text(text = "Copy Text", color = Color(0xFFA0A0A5))
+                }
+
+                // Select Text Button
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    enabled = !viewModel.getIsSending(),
+                    onClick = {
+                        viewModel.toggler = !viewModel.toggler
+                    }
+                ) {
+                    Text(text = "Select Text To Copy", color = Color(0xFFA0A0A5))
+                }
+
+                // Text to Speech Button
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    enabled = !viewModel.getIsSending(),
+                    onClick = {
+                        if (viewModel.stateForTextToSpeech) {
+                            viewModel.textForTextToSpeech = message
+                            viewModel.textToSpeech(context)
+                        } else {
+                            viewModel.stopTextToSpeech()
+                        }
+                        onDismiss()
+                    }
+                ) {
+                    Text(
+                        text = if (viewModel.stateForTextToSpeech) "Text To Speech" else "Stop",
+                        color = Color(0xFFA0A0A5)
+                    )
+                }
+
+                // Selection Container
+                LazyColumn(state = sheetScrollState) {
+                    item {
+                        SelectionContainer {
+                            if (viewModel.toggler) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(color = Color.Black)
+                                        .padding(25.dp)
+                                ) {
+                                    Text(
+                                        text = AnnotatedString(message),
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 
