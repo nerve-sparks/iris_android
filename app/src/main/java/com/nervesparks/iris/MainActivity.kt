@@ -767,8 +767,12 @@ fun MainCompose(
                         }
                         else {
 
-                            LazyColumn(state = scrollState) {  //chat section starts here
-                                itemsIndexed(viewModel.messages as? List<Map<String, String>> ?: emptyList()) { _, messageMap ->
+                            LazyColumn(state = scrollState) {
+                                // Track the first user and assistant messages
+                                var isFirstUserMessageSkipped = false
+                                var isFirstAssistantMessageSkipped = false
+
+                                itemsIndexed(viewModel.messages as? List<Map<String, String>> ?: emptyList()) { index, messageMap ->
                                     val role = messageMap["role"] ?: ""
                                     val content = messageMap["content"] ?: ""
                                     val trimmedMessage = if (content.endsWith("\n")) {
@@ -776,17 +780,21 @@ fun MainCompose(
                                     } else {
                                         content
                                     }
+
+                                    // Skip rendering first user and first assistant messages
+                                    if (role == "user" && !isFirstUserMessageSkipped) {
+                                        isFirstUserMessageSkipped = true
+                                        return@itemsIndexed
+                                    }
+
+                                    if (role == "assistant" && !isFirstAssistantMessageSkipped) {
+                                        isFirstAssistantMessageSkipped = true
+                                        return@itemsIndexed
+                                    }
+
                                     if (role != "system") {
                                         if (role != "codeBlock") {
-
-                                            Box(
-
-
-//
-
-                                            )
-                                            {
-
+                                            Box {
                                                 val context = LocalContext.current
                                                 val interactionSource = remember { MutableInteractionSource() }
                                                 val sheetState = rememberModalBottomSheetState()
@@ -811,10 +819,8 @@ fun MainCompose(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 0.dp),
-
-                                                    ) {
-                                                    if(role == "assistant")
-                                                    {
+                                                ) {
+                                                    if(role == "assistant") {
                                                         Image(
                                                             painter = painterResource(
                                                                 id = R.drawable.logo
@@ -823,12 +829,10 @@ fun MainCompose(
                                                             modifier = Modifier.size(20.dp)
                                                         )
                                                     }
-                                                    Box( modifier = Modifier
+                                                    Box(modifier = Modifier
                                                         .padding(horizontal = 2.dp)
                                                         .background(
-                                                            color = if (role == "user") Color(
-                                                                0xFF171E2C
-                                                            ) else Color.Transparent,
+                                                            color = if (role == "user") Color(0xFF171E2C) else Color.Transparent,
                                                             shape = RoundedCornerShape(12.dp),
                                                         )
                                                         .combinedClickable(
@@ -841,15 +845,12 @@ fun MainCompose(
                                                                 else {
                                                                     isSheetOpen = true
                                                                 }
-
-//
                                                             },
                                                             onClick = {
                                                                 kc?.hide()
                                                             }
                                                         )
-                                                    )
-                                                    {
+                                                    ) {
                                                         Row(
                                                             modifier = Modifier
                                                                 .padding(5.dp)
@@ -858,23 +859,19 @@ fun MainCompose(
                                                                 modifier = Modifier
                                                                     .widthIn(max = 300.dp)
                                                                     .padding(3.dp)
-
-                                                                ){
-                                                                    //selection text
-                                                                    Text(
-                                                                        text = if (trimmedMessage.startsWith("```")) {
-                                                                            trimmedMessage.substring(3)
-                                                                        } else {
-                                                                            trimmedMessage
-                                                                        },
-                                                                        style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
-                                                                        modifier = Modifier
-                                                                            .padding(start = 1.dp, end = 1.dp)
-                                                                    )
-
-                                                                }
+                                                            ){
+                                                                Text(
+                                                                    text = if (trimmedMessage.startsWith("```")) {
+                                                                        trimmedMessage.substring(3)
+                                                                    } else {
+                                                                        trimmedMessage
+                                                                    },
+                                                                    style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
+                                                                    modifier = Modifier
+                                                                        .padding(start = 1.dp, end = 1.dp)
+                                                                )
                                                             }
-
+                                                        }
                                                     }
                                                     if(role == "user") {
                                                         Image(
@@ -887,8 +884,8 @@ fun MainCompose(
                                                     }
                                                 }
                                             }
-
                                         } else {
+                                            // Code block rendering remains the same
                                             Box(
                                                 modifier = Modifier
                                                     .padding(horizontal = 10.dp, vertical = 4.dp)
@@ -897,7 +894,6 @@ fun MainCompose(
                                                         shape = RoundedCornerShape(8.dp)
                                                     )
                                                     .fillMaxWidth()
-
                                             ) {
                                                 Column {
                                                     Row(
@@ -911,10 +907,7 @@ fun MainCompose(
                                                                 end = 6.dp
                                                             )
                                                     ) {
-
-
-//
-
+                                                        // Previous content here
                                                     }
                                                     Text(
                                                         text = if (trimmedMessage.startsWith("```")) {
@@ -923,17 +916,12 @@ fun MainCompose(
                                                             trimmedMessage
                                                         },
                                                         style = MaterialTheme.typography.bodyLarge.copy(
-                                                            color = Color(
-                                                                0xFFA0A0A5
-                                                            )
+                                                            color = Color(0xFFA0A0A5)
                                                         ),
-                                                        modifier = Modifier.padding(16.dp) // Add padding for content
+                                                        modifier = Modifier.padding(16.dp)
                                                     )
                                                 }
-
-
                                             }
-
                                         }
                                     }
                                 }
@@ -1099,7 +1087,6 @@ fun MainCompose(
                             if (!viewModel.getIsSending()) {
 
                                 IconButton(onClick = {
-
                                     viewModel.send()
                                     focusManager.clearFocus()
                                 }

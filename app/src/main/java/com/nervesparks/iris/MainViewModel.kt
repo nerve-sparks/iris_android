@@ -163,6 +163,8 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         if (userMessage != "" && userMessage != " ") {
             if(first){
                 addMessage("system", "This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.")
+                addMessage("user", "Hi")
+                addMessage("assistant", "How may I help You?")
                 first = false
             }
 

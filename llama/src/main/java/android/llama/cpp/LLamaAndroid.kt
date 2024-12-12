@@ -184,6 +184,7 @@ class LLamaAndroid {
 
     suspend fun send(message: String): Flow<String> = flow {
         stopGeneration = false
+        _isSending.value = true
         when (val state = threadLocalState.get()) {
             is State.Loaded -> {
                 val ncur = IntVar(completion_init(state.context, state.batch, message, nlen))
