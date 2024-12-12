@@ -670,7 +670,10 @@ fun MainCompose(
                         .weight(1f)
                         .pointerInput(Unit) {
                             detectTapGestures(
-                                onTap = {  kc?.hide()  },
+                                onTap = {
+                                    focusManager.clearFocus()
+                                    kc?.hide()
+                                },
                                 onDoubleTap = {  kc?.hide() },
                                 onLongPress = { kc?.hide() },
                                 onPress = { kc?.hide() },
@@ -1119,13 +1122,44 @@ fun MainCompose(
 
 
 
+                            val dragSelection = remember { mutableStateOf<TextRange?>(null) }
+                            val lastKnownText = remember { mutableStateOf(viewModel.message) }
+
+                            val textFieldValue = remember {
+                                mutableStateOf(
+                                    TextFieldValue(
+                                        text = viewModel.message,
+                                        selection = TextRange(viewModel.message.length) // Ensure cursor starts at the end
+                                    )
+                                )
+                            }
+
                             TextField(
-                                value = input_prompt.value,//TextFieldValue(text = viewModel.message, selection = TextRange(viewModel.message.length)),
-                                onValueChange = { text ->
-                                    input_prompt.value = text
-                                    viewModel.updateMessage(text.text) },
+                                value = textFieldValue.value.copy(
+                                    text = viewModel.message,
+                                    selection = if (viewModel.message != lastKnownText.value) {
+                                        // If the message has changed programmatically, move cursor to the end
+                                        TextRange(viewModel.message.length)
+                                    } else {
+                                        // Otherwise, preserve the drag selection
+                                        dragSelection.value ?: TextRange(viewModel.message.length)
+                                    }
+                                ),
+                                onValueChange = { newValue ->
+                                    // Update drag selection when the user drags or selects
+                                    dragSelection.value = if (newValue.text == textFieldValue.value.text) {
+                                        newValue.selection
+                                    } else {
+                                        null // Reset drag selection if the text changes programmatically
+                                    }
 
+                                    // Update the local state
+                                    textFieldValue.value = newValue
 
+                                    // Save the last known text and update ViewModel
+                                    lastKnownText.value = newValue.text
+                                    viewModel.updateMessage(newValue.text)
+                                },
                                 placeholder = { Text("Message") },
                                 modifier = Modifier
                                     .weight(1f)
@@ -1134,20 +1168,10 @@ fun MainCompose(
                                     }
                                     .focusRequester(focusRequester)
                                     .onFocusChanged { focusState ->
-
-                                        if (focusState.isFocused){
-                                            val text = input_prompt.value.text
-                                            input_prompt.value = input_prompt.value.copy(
-                                                text = text,
-                                                selection = TextRange(0, text.length)
-                                            )
-                                        }
                                         isFocused = focusState.isFocused
                                     },
-
                                 shape = RoundedCornerShape(size = 18.dp),
                                 colors = TextFieldDefaults.colors(
-
                                     focusedTextColor = Color(0xFFBECBD1),
                                     unfocusedTextColor = Color(0xFFBECBD1),
                                     focusedIndicatorColor = Color.Transparent,
@@ -1158,6 +1182,7 @@ fun MainCompose(
                                     focusedContainerColor = Color(0xFF22314A)
                                 )
                             )
+
 
 
 
