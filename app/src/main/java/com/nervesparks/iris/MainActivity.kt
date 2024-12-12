@@ -163,6 +163,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.viewModelScope
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.toSize
+import androidx.room.util.copy
 import java.security.AccessController.getContext
 import java.util.Locale
 import kotlin.math.log
@@ -1179,12 +1180,44 @@ fun MainCompose(
                             }
 
 
+                            val dragSelection = remember { mutableStateOf<TextRange?>(null) }
+                            val lastKnownText = remember { mutableStateOf(viewModel.message) }
+
+                            val textFieldValue = remember {
+                                mutableStateOf(
+                                    TextFieldValue(
+                                        text = viewModel.message,
+                                        selection = TextRange(viewModel.message.length) // Ensure cursor starts at the end
+                                    )
+                                )
+                            }
 
                             TextField(
-                                value = TextFieldValue(text = viewModel.message, selection = TextRange(viewModel.message.length)),
-                                onValueChange = { viewModel.updateMessage(it.text) },
+                                value = textFieldValue.value.copy(
+                                    text = viewModel.message,
+                                    selection = if (viewModel.message != lastKnownText.value) {
+                                        // If the message has changed programmatically, move cursor to the end
+                                        TextRange(viewModel.message.length)
+                                    } else {
+                                        // Otherwise, preserve the drag selection
+                                        dragSelection.value ?: TextRange(viewModel.message.length)
+                                    }
+                                ),
+                                onValueChange = { newValue ->
+                                    // Update drag selection when the user drags or selects
+                                    dragSelection.value = if (newValue.text == textFieldValue.value.text) {
+                                        newValue.selection
+                                    } else {
+                                        null // Reset drag selection if the text changes programmatically
+                                    }
 
+                                    // Update the local state
+                                    textFieldValue.value = newValue
 
+                                    // Save the last known text and update ViewModel
+                                    lastKnownText.value = newValue.text
+                                    viewModel.updateMessage(newValue.text)
+                                },
                                 placeholder = { Text("Message") },
                                 modifier = Modifier
                                     .weight(1f)
@@ -1195,10 +1228,8 @@ fun MainCompose(
                                     .onFocusChanged { focusState ->
                                         isFocused = focusState.isFocused
                                     },
-
                                 shape = RoundedCornerShape(size = 18.dp),
                                 colors = TextFieldDefaults.colors(
-
                                     focusedTextColor = Color(0xFFBECBD1),
                                     unfocusedTextColor = Color(0xFFBECBD1),
                                     focusedIndicatorColor = Color.Transparent,
@@ -1209,6 +1240,7 @@ fun MainCompose(
                                     focusedContainerColor = Color(0xFF22314A)
                                 )
                             )
+
 
 
 
