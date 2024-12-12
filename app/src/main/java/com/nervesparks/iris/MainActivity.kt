@@ -1025,12 +1025,16 @@ fun MainCompose(
 
                                 value = textFieldValue.value.copy(
                                     text = viewModel.message,
-                                    selection = if (viewModel.message != lastKnownText.value) {
-                                        // If the message has changed programmatically, move cursor to the end
-                                        TextRange(viewModel.message.length)
-                                    } else {
-                                        // Otherwise, preserve the drag selection
-                                        dragSelection.value ?: TextRange(viewModel.message.length)
+                                    selection = when {
+                                        viewModel.message != lastKnownText.value -> {
+                                            // If the message has changed programmatically,
+                                            // preserve the current cursor/selection position
+                                            textFieldValue.value.selection
+                                        }
+                                        else -> {
+                                            // Otherwise, use the drag selection or current selection
+                                            dragSelection.value ?: textFieldValue.value.selection
+                                        }
                                     }
                                 ),
                                 onValueChange = { newValue ->
