@@ -159,8 +159,6 @@ class MainActivity(
 
 
 
-
-
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(darkNavyBlue, lightNavyBlue)
     )
@@ -261,10 +259,6 @@ fun MainCompose(
     val kc = LocalSoftwareKeyboardController.current
 
     val focusManager = LocalFocusManager.current
-
-    val input_prompt = remember {
-        mutableStateOf(TextFieldValue(""))
-    }
 
     val Prompts = listOf(
         "Explain the strategic turning points of the Battle of Midway during World War II",
@@ -968,11 +962,6 @@ fun MainCompose(
                                     modifier = Modifier
                                         .height(100.dp)
                                         .clickable {
-                                            val text = Prompts[index]
-                                            input_prompt.value = input_prompt.value.copy(
-                                                text = text,
-                                                selection = TextRange(0, text.length)
-                                            )
                                             viewModel.updateMessage(Prompts[index])
                                             focusRequester.requestFocus()
                                         }
@@ -1054,6 +1043,7 @@ fun MainCompose(
                             }
 
                             TextField(
+
                                 value = textFieldValue.value.copy(
                                     text = viewModel.message,
                                     selection = if (viewModel.message != lastKnownText.value) {
@@ -1071,6 +1061,7 @@ fun MainCompose(
                                     } else {
                                         null // Reset drag selection if the text changes programmatically
                                     }
+
 
                                     // Update the local state
                                     textFieldValue.value = newValue
@@ -1110,11 +1101,6 @@ fun MainCompose(
                                 IconButton(onClick = {
 
                                     viewModel.send()
-                                    val text = ""
-                                    input_prompt.value = input_prompt.value.copy(
-                                        text = text,
-                                        selection = TextRange(0, text.length)
-                                    )
                                     focusManager.clearFocus()
                                 }
                                 ) {
