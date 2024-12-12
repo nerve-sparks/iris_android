@@ -270,8 +270,12 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         }
     }
 
-    private fun trimEOT(){
+    private fun trimEOT() {
+        if (messages.isEmpty()) return
         val lastMessageContent = messages.last()["content"] ?: ""
+        // Only slice if the content is longer than the EOT string
+        if (lastMessageContent.length < eot_str.length) return
+
         val updatedContent = lastMessageContent.slice(0..(lastMessageContent.length-eot_str.length))
         val updatedLastMessage = messages.last() + ("content" to updatedContent)
         messages = messages.toMutableList().apply {
