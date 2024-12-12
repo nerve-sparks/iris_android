@@ -769,10 +769,10 @@ fun MainCompose(
 
                             LazyColumn(state = scrollState) {
                                 // Track the first user and assistant messages
-                                var isFirstUserMessageSkipped = false
-                                var isFirstAssistantMessageSkipped = false
 
-                                itemsIndexed(viewModel.messages as? List<Map<String, String>> ?: emptyList()) { index, messageMap ->
+                                var length = viewModel.messages.size
+
+                                itemsIndexed(viewModel.messages.slice(3..< length) as? List<Map<String, String>> ?: emptyList()) { index, messageMap ->
                                     val role = messageMap["role"] ?: ""
                                     val content = messageMap["content"] ?: ""
                                     val trimmedMessage = if (content.endsWith("\n")) {
@@ -782,15 +782,6 @@ fun MainCompose(
                                     }
 
                                     // Skip rendering first user and first assistant messages
-                                    if (role == "user" && !isFirstUserMessageSkipped) {
-                                        isFirstUserMessageSkipped = true
-                                        return@itemsIndexed
-                                    }
-
-                                    if (role == "assistant" && !isFirstAssistantMessageSkipped) {
-                                        isFirstAssistantMessageSkipped = true
-                                        return@itemsIndexed
-                                    }
 
                                     if (role != "system") {
                                         if (role != "codeBlock") {
