@@ -799,7 +799,8 @@ fun MainCompose(
                                                 var isSheetOpen by rememberSaveable {
                                                     mutableStateOf(false)
                                                 }
-                                                if(isSheetOpen){
+                                                if(isSheetOpen && !viewModel.getIsSending()
+                                                    ){
                                                     MessageBottomSheet(
                                                         message = trimmedMessage,
                                                         clipboard = clipboard,
