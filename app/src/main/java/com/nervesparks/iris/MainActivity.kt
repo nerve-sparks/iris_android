@@ -1096,7 +1096,8 @@ fun MainCompose(
                                     )
                                 }
                             } else if (viewModel.getIsSending()) {
-                                IconButton(onClick = { viewModel.stop() }) {
+                                IconButton(onClick = {
+                                    viewModel.stop() }) {
                                     Icon(
                                         modifier = Modifier
                                             .weight(1f)
