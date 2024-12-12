@@ -384,12 +384,15 @@ fun MainCompose(
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxSize().clickable {
-                                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                                            data = Uri.parse("https://github.com/nerve-sparks/iris_android")
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable {
+                                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                data =
+                                                    Uri.parse("https://github.com/nerve-sparks/iris_android")
+                                            }
+                                            context.startActivity(intent)
                                         }
-                                        context.startActivity(intent)
-                                    }
                                 ) {
                                     Text(
                                         text = "Star us",
@@ -429,12 +432,14 @@ fun MainCompose(
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxSize().clickable {
-                                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                                            data = Uri.parse("https://nervesparks.com")
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable {
+                                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                data = Uri.parse("https://nervesparks.com")
+                                            }
+                                            context.startActivity(intent)
                                         }
-                                        context.startActivity(intent)
-                                    }
                                 ) {
                                     Text(
                                         text = "NerveSparks.com",
@@ -590,8 +595,8 @@ fun MainCompose(
                             .background(color = Color.Transparent)
                             .padding(start = 20.dp, end = 10.dp)
                             .height(60.dp)
-                            .fillMaxWidth().
-                        clickable { kc?.hide() },
+                            .fillMaxWidth()
+                            .clickable { kc?.hide() },
                         horizontalArrangement = Arrangement.SpaceBetween,
 
                         verticalAlignment = Alignment.CenterVertically,
@@ -672,10 +677,9 @@ fun MainCompose(
                                 onTap = {
                                     kc?.hide()
                                 },
-                                onDoubleTap = {  kc?.hide() },
+                                onDoubleTap = { kc?.hide() },
                                 onLongPress = { kc?.hide() },
                                 onPress = { kc?.hide() },
-
 
 
                                 )
@@ -769,10 +773,10 @@ fun MainCompose(
 
                             LazyColumn(state = scrollState) {
                                 // Track the first user and assistant messages
-                                var isFirstUserMessageSkipped = false
-                                var isFirstAssistantMessageSkipped = false
 
-                                itemsIndexed(viewModel.messages as? List<Map<String, String>> ?: emptyList()) { index, messageMap ->
+                                var length = viewModel.messages.size
+
+                                itemsIndexed(viewModel.messages.slice(3..< length) as? List<Map<String, String>> ?: emptyList()) { index, messageMap ->
                                     val role = messageMap["role"] ?: ""
                                     val content = messageMap["content"] ?: ""
                                     val trimmedMessage = if (content.endsWith("\n")) {
@@ -782,15 +786,6 @@ fun MainCompose(
                                     }
 
                                     // Skip rendering first user and first assistant messages
-                                    if (role == "user" && !isFirstUserMessageSkipped) {
-                                        isFirstUserMessageSkipped = true
-                                        return@itemsIndexed
-                                    }
-
-                                    if (role == "assistant" && !isFirstAssistantMessageSkipped) {
-                                        isFirstAssistantMessageSkipped = true
-                                        return@itemsIndexed
-                                    }
 
                                     if (role != "system") {
                                         if (role != "codeBlock") {
@@ -818,7 +813,12 @@ fun MainCompose(
                                                     horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
                                                     modifier = Modifier
                                                         .fillMaxWidth()
-                                                        .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 0.dp),
+                                                        .padding(
+                                                            start = 8.dp,
+                                                            top = 8.dp,
+                                                            end = 8.dp,
+                                                            bottom = 0.dp
+                                                        ),
                                                 ) {
                                                     if(role == "assistant") {
                                                         Image(
@@ -832,17 +832,24 @@ fun MainCompose(
                                                     Box(modifier = Modifier
                                                         .padding(horizontal = 2.dp)
                                                         .background(
-                                                            color = if (role == "user") Color(0xFF171E2C) else Color.Transparent,
+                                                            color = if (role == "user") Color(
+                                                                0xFF171E2C
+                                                            ) else Color.Transparent,
                                                             shape = RoundedCornerShape(12.dp),
                                                         )
                                                         .combinedClickable(
                                                             interactionSource = interactionSource,
                                                             indication = ripple(color = Color.Gray),
                                                             onLongClick = {
-                                                                if(viewModel.getIsSending()){
-                                                                    Toast.makeText(context, " Wait till generation is done! ", Toast.LENGTH_SHORT).show()
-                                                                }
-                                                                else {
+                                                                if (viewModel.getIsSending()) {
+                                                                    Toast
+                                                                        .makeText(
+                                                                            context,
+                                                                            " Wait till generation is done! ",
+                                                                            Toast.LENGTH_SHORT
+                                                                        )
+                                                                        .show()
+                                                                } else {
                                                                     isSheetOpen = true
                                                                 }
                                                             },
@@ -926,7 +933,9 @@ fun MainCompose(
                                     }
                                 }
                                 item {
-                                    Spacer(modifier = Modifier.height(1.dp).fillMaxWidth())
+                                    Spacer(modifier = Modifier
+                                        .height(1.dp)
+                                        .fillMaxWidth())
                                 }
                             }
 
@@ -1034,12 +1043,16 @@ fun MainCompose(
 
                                 value = textFieldValue.value.copy(
                                     text = viewModel.message,
-                                    selection = if (viewModel.message != lastKnownText.value) {
-                                        // If the message has changed programmatically, move cursor to the end
-                                        TextRange(viewModel.message.length)
-                                    } else {
-                                        // Otherwise, preserve the drag selection
-                                        dragSelection.value ?: TextRange(viewModel.message.length)
+                                    selection = when {
+                                        viewModel.message != lastKnownText.value -> {
+                                            // If the message has changed programmatically,
+                                            // preserve the current cursor/selection position
+                                            textFieldValue.value.selection
+                                        }
+                                        else -> {
+                                            // Otherwise, use the drag selection or current selection
+                                            dragSelection.value ?: textFieldValue.value.selection
+                                        }
                                     }
                                 ),
                                 onValueChange = { newValue ->
@@ -1101,7 +1114,8 @@ fun MainCompose(
                                     )
                                 }
                             } else if (viewModel.getIsSending()) {
-                                IconButton(onClick = { viewModel.stop() }) {
+                                IconButton(onClick = {
+                                    viewModel.stop() }) {
                                     Icon(
                                         modifier = Modifier
                                             .weight(1f)
@@ -1259,7 +1273,8 @@ fun ModelSelectorWithDownloadModal(
                         onPress = {
                             mExpanded = !mExpanded
                         }
-                    )}
+                    )
+                }
                 .clickable {
                     mExpanded = !mExpanded
                 },
@@ -1291,7 +1306,7 @@ fun ModelSelectorWithDownloadModal(
                 .background(Color(0xFF01081a))
                 .width(with(LocalDensity.current) { mTextFieldSize.width.toDp() })
                 .padding(top = 2.dp)
-                .border(1.dp,color = Color.LightGray.copy(alpha = 0.5f)),
+                .border(1.dp, color = Color.LightGray.copy(alpha = 0.5f)),
             expanded = mExpanded,
             onDismissRequest = {
                 mExpanded = false
