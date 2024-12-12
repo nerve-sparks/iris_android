@@ -799,8 +799,7 @@ fun MainCompose(
                                                 var isSheetOpen by rememberSaveable {
                                                     mutableStateOf(false)
                                                 }
-                                                if(isSheetOpen && !viewModel.getIsSending()
-                                                    ){
+                                                if(isSheetOpen){
                                                     MessageBottomSheet(
                                                         message = trimmedMessage,
                                                         clipboard = clipboard,
@@ -842,7 +841,13 @@ fun MainCompose(
                                                             interactionSource = interactionSource,
                                                             indication = ripple(color = Color.Gray),
                                                             onLongClick = {
-                                                                isSheetOpen = true
+                                                                if(viewModel.getIsSending()){
+                                                                    Toast.makeText(context, " Wait till generation is done! ", Toast.LENGTH_SHORT).show()
+                                                                }
+                                                                else {
+                                                                    isSheetOpen = true
+                                                                }
+
 //
                                                             },
                                                             onClick = {
