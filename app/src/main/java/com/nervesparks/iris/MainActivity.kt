@@ -216,7 +216,7 @@ class MainActivity(
 //            }
 //        }
         models.find { model -> model.destination.exists() }?.let { model ->
-            viewModel.load(model.destination.path)
+            viewModel.load(model.destination.path, userThreads = viewModel.userSpecifiedThreads)
         }
 
         setContent {
@@ -518,6 +518,8 @@ fun MainCompose(
                                 fontWeight = FontWeight.Bold
                             )
                         }
+
+
 
 
                         Spacer(modifier = Modifier.weight(1f))

@@ -75,7 +75,7 @@ class LLamaAndroid {
     private external fun log_to_android()
     private external fun load_model(filename: String): Long
     private external fun free_model(model: Long)
-    private external fun new_context(model: Long): Long
+    private external fun new_context(model: Long, userThreads: Int): Long
     private external fun free_context(context: Long)
     private external fun backend_init(numa: Boolean)
     private external fun backend_free()
@@ -134,14 +134,14 @@ class LLamaAndroid {
         }
     }
 
-    suspend fun load(pathToModel: String) {
+    suspend fun load(pathToModel: String, userThreads: Int){
         withContext(runLoop) {
             when (threadLocalState.get()) {
                 is State.Idle -> {
                     val model = load_model(pathToModel)
                     if (model == 0L)  throw IllegalStateException("load_model() failed")
 
-                    val context = new_context(model)
+                    val context = new_context(model, userThreads)
                     if (context == 0L) throw IllegalStateException("new_context() failed")
 
                     val batch = new_batch(512, 0, 1)
