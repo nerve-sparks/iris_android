@@ -99,7 +99,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                             }
                         }
 
-                        viewModel.load(item.destination.path)
+                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread)
                         return Downloaded(item)
                     }
 
@@ -114,7 +114,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     is Downloaded -> {
                         viewModel.showModal = true
                         Log.d("item.destination.path", item.destination.path.toString())
-                        viewModel.load(item.destination.path)
+                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread)
                     }
 
                     is Downloading -> {

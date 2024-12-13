@@ -128,6 +128,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Slider
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
@@ -219,7 +220,8 @@ class MainActivity(
 //            }
 //        }
         models.find { model -> model.destination.exists() }?.let { model ->
-            viewModel.load(model.destination.path)
+            viewModel.load(model.destination.path, userThreads = viewModel.user_thread)
+            viewModel.currentDownloadable = model
         }
 
         setContent {
@@ -272,7 +274,7 @@ fun MainCompose(
     val kc = LocalSoftwareKeyboardController.current
 
     val focusManager = LocalFocusManager.current
-
+    println("Thread started: ${Thread.currentThread().name}")
     val Prompts = listOf(
         "Explain the strategic turning points of the Battle of Midway during World War II",
         "Describe the innovative technologies that are transforming renewable energy production",
@@ -303,6 +305,7 @@ fun MainCompose(
     }
     var isBottomSheetVisible by remember { mutableStateOf(false) }
     var modelData by remember { mutableStateOf<List<Map<String, String>>?>(null) }
+    var selectedModel by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -437,14 +440,23 @@ fun MainCompose(
                                                 }
                                             }
                                         }
+
+                                            // Customize this based on your actual ModelData structure
+
+                                            // Add more details as needed
+
                                     }
                                 }
                             }
                         }
 
                        ModelSelectorWithDownloadModal(viewModel = viewModel, downloadManager = dm, extFileDir = extFileDir)
-
-                        TextField(
+                        Column (
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ){
+                        OutlinedTextField(
                             value = UserGivenModel,
                             onValueChange = { newValue ->
                                 UserGivenModel = newValue
@@ -454,9 +466,16 @@ fun MainCompose(
                             label = { Text("User Given Model") },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
+                                .background(color = Color.Transparent),
                             singleLine = true,
-                            maxLines = 1
+                            maxLines = 1,
+                            colors = OutlinedTextFieldDefaults.colors(unfocusedBorderColor = Color(0xFF666666),
+                            focusedBorderColor = Color(0xFFcfcfd1),
+                            unfocusedLabelColor = Color(0xFF666666),
+                            focusedLabelColor = Color(0xFFcfcfd1),
+                            unfocusedTextColor = Color(0xFFf5f5f5),
+                            focusedTextColor = Color(0xFFf7f5f5),
+                        )
                         )
                         Spacer(Modifier.height(5.dp))
                         Button(
@@ -464,7 +483,6 @@ fun MainCompose(
                                 // Perform action when button is clicked
                                 coroutineScope.launch {
                                     isLoading = true // Show loading state
-                                    isBottomSheetVisible = true
 
                                     try {
                                         val response = withContext(Dispatchers.IO) {
@@ -515,34 +533,84 @@ fun MainCompose(
                                     }
                                 }
 
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
-                            enabled = UserGivenModel.text.isNotBlank(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = Color.White,
-                                disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                                disabledContentColor = Color.White.copy(alpha = 0.5f)
-                            ),
-                            shape = RoundedCornerShape(8.dp),
-                            elevation = ButtonDefaults.buttonElevation(
-                                defaultElevation = 4.dp,
-                                pressedElevation = 2.dp
-                            )
-                        ) {
-                            Text(
-                                text = "Process Model",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold
-                            )
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(50.dp),
+                                    enabled = UserGivenModel.text.isNotBlank(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.Transparent, // Set the containerColor to transparent
+                                        contentColor = Color.White,
+                                        disabledContainerColor = Color.DarkGray.copy(alpha = 0.5f),
+                                        disabledContentColor = Color.White.copy(alpha = 0.5f)
+                                    ),
+                                    shape = RoundedCornerShape(8.dp), // Slightly more rounded corners
+                                    elevation = ButtonDefaults.buttonElevation(
+                                        defaultElevation = 6.dp,
+                                        pressedElevation = 3.dp
+                                    )
+                                ){
+                                    Text(
+                                        text = "Search Model",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                    )
+                                }
+                            Spacer(modifier = Modifier.height(30.dp))
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        color = Color(0xFF14161f),
+                                        shape = RoundedCornerShape(8.dp),
+                                    )
+                                    .border(
+                                        border = BorderStroke(
+                                            width = 1.dp,
+                                            color = Color.LightGray.copy(alpha = 0.5f)
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(16.dp)
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "Select thread for process, 0 for default",
+                                        color = Color.White,
+                                    )
+                                    Spacer(modifier = Modifier.height(20.dp))
+                                    var value by remember { mutableFloatStateOf(0f) }
+                                    Text(
+                                        text = "${value.toInt()}",
+                                        color = Color.White
+                                    )
+                                    Slider(
+                                        value = value,
+                                        onValueChange = {
+                                            value = it
+                                            viewModel.user_thread = it.toInt()
+                                        },
+                                        valueRange = 0f..8f,
+                                        steps = 7
+                                    )
+                                    Spacer(modifier = Modifier.height(15.dp))
+                                    Text(
+                                        text = "After changing thread please reload the model!!",
+                                        color = Color.White,
+                                    )
+                                    Button(onClick = {
+                                        viewModel.currentDownloadable?.destination?.path?.let {
+                                            viewModel.load(
+                                                it, viewModel.user_thread)
+                                        }
+                                    }) {
+
+                                        Text("Reload")
+                                    }
+                                }
+                            }
+
                         }
 
-
                         Spacer(modifier = Modifier.weight(1f))
-
-
                         Column(
                             verticalArrangement = Arrangement.Bottom,
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -678,7 +746,7 @@ fun MainCompose(
                     // Modal dialog to show download options
                     Dialog(onDismissRequest = {}) {
                         Surface(
-                            shape = RoundedCornerShape(10.dp),
+                            shape = RoundedCornerShape(8.dp),
                             color = Color.Black,
                             modifier = Modifier
                                 .padding(10.dp)
@@ -1397,29 +1465,26 @@ fun ModelSelectorWithDownloadModal(
     downloadManager: DownloadManager,
     extFileDir: File?
 ) {
-    fun loadExistingModels(directory: File, viewModel: MainViewModel) {
-        directory.listFiles { file ->
-            file.extension == "gguf"
-        }?.forEach { file ->
-            val modelName = file.nameWithoutExtension
-            if (!viewModel.allModels.any { it["name"] == modelName }) {
-                val currentName = file.toString().split("/")
-                viewModel.allModels += mapOf(
-                    "name" to modelName,
-                    "source" to "local",
-                    "destination" to currentName.last()
-                )
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        extFileDir?.let {
-            loadExistingModels(it, viewModel)
-        }
-    }
     val context = LocalContext.current as Activity
     val coroutineScope = rememberCoroutineScope()
+    val models = listOf(
+        Downloadable(
+            "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
+            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
+            File(extFileDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
+        ),
+        Downloadable(
+            "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
+            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
+            File(extFileDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
+        ),
+        Downloadable(
+            "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+            Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
+            File(extFileDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
+        )
+    )
+
     var mExpanded by remember { mutableStateOf(false) }
     var mSelectedText by remember { mutableStateOf("") }
     var mTextFieldSize by remember { mutableStateOf(Size.Zero) }
@@ -1430,27 +1495,10 @@ fun ModelSelectorWithDownloadModal(
     else
         Icons.Filled.KeyboardArrowDown
 
-    // Search for local .gguf models
-    val localModels = remember(extFileDir) {
-        extFileDir?.listFiles { _, name -> name.endsWith(".gguf") }
-            ?.map { file ->
-                mapOf(
-                    "name" to file.nameWithoutExtension,
-                    "source" to file.toURI().toString(),
-                    "destination" to file.absolutePath
-                )
-            } ?: emptyList()
-    }
-
-    // Combine local and remote models, ensuring uniqueness
-    val combinedModels = remember(viewModel.allModels, localModels) {
-        (viewModel.allModels + localModels).distinctBy { it["name"] }
-    }
-
     Column(Modifier.padding(20.dp)) {
 
         OutlinedTextField(
-            value = viewModel.loadedModelName.value,
+            value= viewModel.loadedModelName.value,
             onValueChange = { mSelectedText = it },
             modifier = Modifier
                 .fillMaxWidth()
@@ -1459,18 +1507,23 @@ fun ModelSelectorWithDownloadModal(
                 }
                 .pointerInput(Unit) {
                     detectTapGestures(
-                        onTap = { mExpanded = !mExpanded },
-                        onPress = { mExpanded = !mExpanded }
-                    )
-                }
-                .clickable { mExpanded = !mExpanded },
+                        onTap = {
+                            mExpanded = !mExpanded
+                        },
+                        onPress = {
+                            mExpanded = !mExpanded
+                        }
+                    )}
+                .clickable {
+                    mExpanded = !mExpanded
+                },
             label = { Text("Select Model") },
             trailingIcon = {
                 Icon(
                     icon,
                     contentDescription = "Toggle dropdown",
                     Modifier.clickable { mExpanded = !mExpanded },
-                    tint = Color(0xFFcfcfd1)
+                    tint =Color(0xFFcfcfd1)
                 )
             },
             textStyle = TextStyle(color = Color(0xFFf5f5f5)),
@@ -1485,16 +1538,20 @@ fun ModelSelectorWithDownloadModal(
             )
         )
 
+
+
         DropdownMenu(
             modifier = Modifier
                 .background(Color(0xFF01081a))
                 .width(with(LocalDensity.current) { mTextFieldSize.width.toDp() })
                 .padding(top = 2.dp)
-                .border(1.dp, color = Color.LightGray.copy(alpha = 0.5f)),
+                .border(1.dp,color = Color.LightGray.copy(alpha = 0.5f)),
             expanded = mExpanded,
-            onDismissRequest = { mExpanded = false }
+            onDismissRequest = {
+                mExpanded = false
+            }
         ) {
-            combinedModels.forEach { model ->
+            viewModel.allModels.forEach { model ->
                 DropdownMenuItem(
                     modifier = Modifier
                         .background(color = Color(0xFF090b1a))
@@ -1504,6 +1561,7 @@ fun ModelSelectorWithDownloadModal(
                         selectedModel = model
                         mExpanded = false
 
+                        // Convert model to Downloadable and show modal
                         val downloadable = Downloadable(
                             name = model["name"].toString(),
                             source = Uri.parse(model["source"].toString()),
@@ -1519,10 +1577,11 @@ fun ModelSelectorWithDownloadModal(
             }
         }
 
+        // Use showModal instead of switchModal
         if (viewModel.showModal && viewModel.currentDownloadable != null) {
             Dialog(onDismissRequest = {
-                viewModel.showModal = false
-                viewModel.currentDownloadable = null
+                viewModel.showModal = false  // Consistent with the condition
+                viewModel.currentDownloadable = null  // Optional: clear the current downloadable
             }) {
                 Surface(
                     shape = RoundedCornerShape(10.dp),
@@ -1548,24 +1607,31 @@ fun ModelSelectorWithDownloadModal(
                             color = Color.White
                         )
                         Spacer(modifier = Modifier.height(35.dp))
+                        // Use the current downloadable from the view model
                         viewModel.currentDownloadable?.let { downloadable ->
                             Downloadable.Button(viewModel, downloadManager, downloadable)
-                            if (downloadable.destination.exists()) {
+                            if (downloadable.destination.exists()){
                                 Spacer(modifier = Modifier.height(25.dp))
                                 Button(
                                     onClick = {
-                                        coroutineScope.launch { viewModel.unload() }
+
+                                        coroutineScope.launch {  viewModel.unload()}
+                                        // Delete the model file
                                         downloadable.destination.delete()
+                                        // Reset dialog visibility and update UI
                                         viewModel.showModal = false
                                         viewModel.currentDownloadable = null
 
                                         Toast.makeText(context, "Restarting App!!.", Toast.LENGTH_SHORT).show()
                                         val packageManager: PackageManager = context.packageManager
-                                        val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
-                                        val componentName: ComponentName = intent.component!!
-                                        val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
-                                        context.startActivity(restartIntent)
-                                        Runtime.getRuntime().exit(0)
+                                               val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
+                                               val componentName: ComponentName = intent.component!!
+                                               val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
+                                               context.startActivity(restartIntent)
+                                               Runtime.getRuntime().exit(0)
+
+
+
                                     },
                                 ) {
                                     Text(text = "Delete Model")
@@ -1579,7 +1645,6 @@ fun ModelSelectorWithDownloadModal(
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
