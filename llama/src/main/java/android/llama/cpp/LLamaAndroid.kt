@@ -43,6 +43,7 @@ class LLamaAndroid {
     }
 
     fun stopTextGeneration() {
+        _isSending.value = false
 
         stopGeneration = true
         _isMarked.value = false
