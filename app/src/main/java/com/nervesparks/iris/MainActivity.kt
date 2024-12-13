@@ -217,7 +217,7 @@ class MainActivity(
 //            }
 //        }
         models.find { model -> model.destination.exists() }?.let { model ->
-            viewModel.load(model.destination.path)
+            viewModel.load(model.destination.path, userThreads = viewModel.user_thread)
         }
 
         setContent {
@@ -562,6 +562,8 @@ fun MainCompose(
                                     color = Color.White,
                                 )
                             }
+
+
 
                         Spacer(modifier = Modifier.weight(1f))
                         Column(

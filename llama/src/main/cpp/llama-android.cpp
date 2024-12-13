@@ -188,7 +188,7 @@ Java_android_llama_cpp_LLamaAndroid_free_1model(JNIEnv *, jobject, jlong model) 
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_android_llama_cpp_LLamaAndroid_new_1context(JNIEnv *env, jobject, jlong jmodel) {
+Java_android_llama_cpp_LLamaAndroid_new_1context(JNIEnv *env, jobject, jlong jmodel, jint userThreads) {
     auto model = reinterpret_cast<llama_model *>(jmodel);
 
     if (!model) {
@@ -199,11 +199,13 @@ Java_android_llama_cpp_LLamaAndroid_new_1context(JNIEnv *env, jobject, jlong jmo
 
     int n_threads = std::max(1, std::min(8, (int) sysconf(_SC_NPROCESSORS_ONLN) - 2));
     LOGi("Using %d threads", n_threads);
-
+    int userSpecifiedThreads = (userThreads > 0) ? std::min(8, std::max(1, userThreads))
+                                                 : std::max(1, std::min(8, (int) sysconf(_SC_NPROCESSORS_ONLN) - 2));
+    LOGi("Using %d threads for computation", userSpecifiedThreads);
     llama_context_params ctx_params = llama_context_default_params();
 
     ctx_params.n_ctx           = 2048;
-    ctx_params.n_threads       = n_threads;
+    ctx_params.n_threads       = userSpecifiedThreads;
     ctx_params.n_threads_batch = n_threads;
 
     llama_context * context = llama_new_context_with_model(model, ctx_params);

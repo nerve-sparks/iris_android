@@ -6,6 +6,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -58,7 +59,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     private var first by mutableStateOf(
         true
     )
-
+    var userSpecifiedThreads by mutableIntStateOf(2)
     var message by mutableStateOf("")
         private set
 
@@ -237,7 +238,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     }
     var loadedModelName = mutableStateOf("");
 
-    fun load(pathToModel: String) {
+    fun load(pathToModel: String, userThreads: Int)  {
         viewModelScope.launch {
             try{
                 llamaAndroid.unload()
@@ -248,7 +249,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 var modelName = pathToModel.split("/")
                 loadedModelName.value = modelName.last()
                 showAlert = true
-                llamaAndroid.load(pathToModel)
+                llamaAndroid.load(pathToModel, userThreads)
                 showAlert = false
 
             } catch (exc: IllegalStateException) {
@@ -331,5 +332,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     fun stop() {
         llamaAndroid.stopTextGeneration()
     }
+
+}
+
+fun sentThreadsValue(){
 
 }
