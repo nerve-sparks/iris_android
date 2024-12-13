@@ -299,7 +299,7 @@ fun MainCompose(
 
     }
     var isBottomSheetVisible by remember { mutableStateOf(false) }
-    var modelData by remember { mutableStateOf("") }
+    var modelData by remember { mutableStateOf<List<Map<String, String>>?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -402,11 +402,18 @@ fun MainCompose(
                                         )
                                     } else {
 
-                                            Text(
-                                                text = modelData,
-                                                style = MaterialTheme.typography.headlineMedium,
-                                                modifier = Modifier.padding(bottom = 8.dp)
-                                            )
+                                        modelData?.forEach { model ->
+                                            model["rfilename"]?.takeIf { it.endsWith(".gguf") }?.let {
+                                                Text(
+                                                    text = it,
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    modifier = Modifier
+                                                        .padding(bottom = 8.dp)
+                                                        .fillMaxWidth()
+                                                )
+                                            }
+                                        }
+
                                             // Customize this based on your actual ModelData structure
 
                                             // Add more details as needed
@@ -461,7 +468,18 @@ fun MainCompose(
                                         // Handle the response
                                         Log.i("response", response)
                                         val jsonResponse = JSONObject(response)
-                                        modelData = jsonResponse["id"].toString()
+                                        val siblingsArray = jsonResponse.getJSONArray("siblings")
+                                        modelData = (0 until siblingsArray.length()).mapNotNull { index ->
+                                            val jsonObject = siblingsArray.getJSONObject(index)
+                                            val filename = jsonObject.optString("rfilename", "")
+
+                                            if (filename.isNotEmpty()) {
+                                                mapOf("rfilename" to filename)
+                                            } else {
+                                                null
+                                            }
+                                        }
+                                        Log.i("response hello", modelData.toString())
                                         isBottomSheetVisible = true
                                     } catch (e: Exception) {
                                         // Handle exceptions
