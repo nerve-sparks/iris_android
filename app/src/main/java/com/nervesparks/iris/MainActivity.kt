@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
+import android.provider.OpenableColumns
 import android.speech.RecognizerIntent
 import android.util.Log
 import android.widget.Toast
@@ -124,6 +125,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
@@ -194,17 +196,18 @@ class MainActivity(
 
         val models = listOf(
             Downloadable(
-                "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
+                "Llama-3.2-1B-Instruct-Q6_K_L",
                 Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
                 File(extFilesDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
+
             ),
             Downloadable(
-                "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
+                "Llama-3.2-1B-Instruct-Q6_K_L",
                 Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
                 File(extFilesDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
             ),
             Downloadable(
-                "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+                "stablelm-2-1_6b-chat.Q4_K_M.imx",
                 Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
                 File(extFilesDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
             )
@@ -383,6 +386,7 @@ fun MainCompose(
                                     isBottomSheetVisible = false
                                 },
                                 sheetState = sheetState,
+                                containerColor = Color.Black,
                             ) {
                                 // Bottom sheet content
                                 Column(
@@ -401,23 +405,38 @@ fun MainCompose(
                                             modifier = Modifier.padding(8.dp)
                                         )
                                     } else {
+                                        // Make the models scrollable
+                                        LazyColumn(
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            modelData?.forEach { model ->
+                                                item {
+                                                    model["rfilename"]?.takeIf { it.endsWith(".gguf") }?.let { filename ->
+                                                        val fullUrl = "https://huggingface.co/${viewModel.userGivenModel}/resolve/main/${filename}?download=true"
+                                                        Log.i("This is the url", fullUrl)
 
-                                        modelData?.forEach { model ->
-                                            model["rfilename"]?.takeIf { it.endsWith(".gguf") }?.let {
-                                                Text(
-                                                    text = it,
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    modifier = Modifier
-                                                        .padding(bottom = 8.dp)
-                                                        .fillMaxWidth()
-                                                )
+                                                        Downloadable.Button(
+                                                            viewModel,
+                                                            dm,
+                                                            Downloadable(
+                                                                name = filename,
+                                                                source = Uri.parse(fullUrl),
+                                                                destination =  File(extFileDir, filename)
+                                                            )
+                                                        )
+
+//                                                        val fileSize = getRemoteFileSize(fullUrl)
+//                                                        fileSize?.let { size ->
+//                                                            Text(
+//                                                                text = size,
+//                                                                style = MaterialTheme.typography.bodyLarge,
+//                                                                fontWeight = FontWeight.Bold
+//                                                            )
+//                                                        }
+                                                    }
+                                                }
                                             }
                                         }
-
-                                            // Customize this based on your actual ModelData structure
-
-                                            // Add more details as needed
-
                                     }
                                 }
                             }
@@ -445,6 +464,7 @@ fun MainCompose(
                                 // Perform action when button is clicked
                                 coroutineScope.launch {
                                     isLoading = true // Show loading state
+                                    isBottomSheetVisible = true
 
                                     try {
                                         val response = withContext(Dispatchers.IO) {
@@ -484,7 +504,7 @@ fun MainCompose(
                                     } catch (e: Exception) {
                                         // Handle exceptions
                                         Log.e("ModelFetch", "Failed to fetch model", e)
-
+                                        isBottomSheetVisible = true
                                         errorMessage = when (e) {
                                             is UnknownHostException -> "No internet connection"
                                             is SocketTimeoutException -> "Connection timed out"
@@ -1377,26 +1397,29 @@ fun ModelSelectorWithDownloadModal(
     downloadManager: DownloadManager,
     extFileDir: File?
 ) {
+    fun loadExistingModels(directory: File, viewModel: MainViewModel) {
+        directory.listFiles { file ->
+            file.extension == "gguf"
+        }?.forEach { file ->
+            val modelName = file.nameWithoutExtension
+            if (!viewModel.allModels.any { it["name"] == modelName }) {
+                val currentName = file.toString().split("/")
+                viewModel.allModels += mapOf(
+                    "name" to modelName,
+                    "source" to "local",
+                    "destination" to currentName.last()
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        extFileDir?.let {
+            loadExistingModels(it, viewModel)
+        }
+    }
     val context = LocalContext.current as Activity
     val coroutineScope = rememberCoroutineScope()
-    val models = listOf(
-        Downloadable(
-            "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
-            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
-            File(extFileDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
-        ),
-        Downloadable(
-            "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
-            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
-            File(extFileDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
-        ),
-        Downloadable(
-            "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
-            Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
-            File(extFileDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
-        )
-    )
-
     var mExpanded by remember { mutableStateOf(false) }
     var mSelectedText by remember { mutableStateOf("") }
     var mTextFieldSize by remember { mutableStateOf(Size.Zero) }
@@ -1407,10 +1430,27 @@ fun ModelSelectorWithDownloadModal(
     else
         Icons.Filled.KeyboardArrowDown
 
+    // Search for local .gguf models
+    val localModels = remember(extFileDir) {
+        extFileDir?.listFiles { _, name -> name.endsWith(".gguf") }
+            ?.map { file ->
+                mapOf(
+                    "name" to file.nameWithoutExtension,
+                    "source" to file.toURI().toString(),
+                    "destination" to file.absolutePath
+                )
+            } ?: emptyList()
+    }
+
+    // Combine local and remote models, ensuring uniqueness
+    val combinedModels = remember(viewModel.allModels, localModels) {
+        (viewModel.allModels + localModels).distinctBy { it["name"] }
+    }
+
     Column(Modifier.padding(20.dp)) {
 
         OutlinedTextField(
-            value= viewModel.loadedModelName.value,
+            value = viewModel.loadedModelName.value,
             onValueChange = { mSelectedText = it },
             modifier = Modifier
                 .fillMaxWidth()
@@ -1419,23 +1459,18 @@ fun ModelSelectorWithDownloadModal(
                 }
                 .pointerInput(Unit) {
                     detectTapGestures(
-                        onTap = {
-                            mExpanded = !mExpanded
-                        },
-                        onPress = {
-                            mExpanded = !mExpanded
-                        }
-                    )}
-                .clickable {
-                    mExpanded = !mExpanded
-                },
+                        onTap = { mExpanded = !mExpanded },
+                        onPress = { mExpanded = !mExpanded }
+                    )
+                }
+                .clickable { mExpanded = !mExpanded },
             label = { Text("Select Model") },
             trailingIcon = {
                 Icon(
                     icon,
                     contentDescription = "Toggle dropdown",
                     Modifier.clickable { mExpanded = !mExpanded },
-                    tint =Color(0xFFcfcfd1)
+                    tint = Color(0xFFcfcfd1)
                 )
             },
             textStyle = TextStyle(color = Color(0xFFf5f5f5)),
@@ -1450,20 +1485,16 @@ fun ModelSelectorWithDownloadModal(
             )
         )
 
-
-
         DropdownMenu(
             modifier = Modifier
                 .background(Color(0xFF01081a))
                 .width(with(LocalDensity.current) { mTextFieldSize.width.toDp() })
                 .padding(top = 2.dp)
-                .border(1.dp,color = Color.LightGray.copy(alpha = 0.5f)),
+                .border(1.dp, color = Color.LightGray.copy(alpha = 0.5f)),
             expanded = mExpanded,
-            onDismissRequest = {
-                mExpanded = false
-            }
+            onDismissRequest = { mExpanded = false }
         ) {
-            viewModel.allModels.forEach { model ->
+            combinedModels.forEach { model ->
                 DropdownMenuItem(
                     modifier = Modifier
                         .background(color = Color(0xFF090b1a))
@@ -1473,7 +1504,6 @@ fun ModelSelectorWithDownloadModal(
                         selectedModel = model
                         mExpanded = false
 
-                        // Convert model to Downloadable and show modal
                         val downloadable = Downloadable(
                             name = model["name"].toString(),
                             source = Uri.parse(model["source"].toString()),
@@ -1489,11 +1519,10 @@ fun ModelSelectorWithDownloadModal(
             }
         }
 
-        // Use showModal instead of switchModal
         if (viewModel.showModal && viewModel.currentDownloadable != null) {
             Dialog(onDismissRequest = {
-                viewModel.showModal = false  // Consistent with the condition
-                viewModel.currentDownloadable = null  // Optional: clear the current downloadable
+                viewModel.showModal = false
+                viewModel.currentDownloadable = null
             }) {
                 Surface(
                     shape = RoundedCornerShape(10.dp),
@@ -1519,31 +1548,24 @@ fun ModelSelectorWithDownloadModal(
                             color = Color.White
                         )
                         Spacer(modifier = Modifier.height(35.dp))
-                        // Use the current downloadable from the view model
                         viewModel.currentDownloadable?.let { downloadable ->
                             Downloadable.Button(viewModel, downloadManager, downloadable)
-                            if (downloadable.destination.exists()){
+                            if (downloadable.destination.exists()) {
                                 Spacer(modifier = Modifier.height(25.dp))
                                 Button(
                                     onClick = {
-
-                                        coroutineScope.launch {  viewModel.unload()}
-                                        // Delete the model file
+                                        coroutineScope.launch { viewModel.unload() }
                                         downloadable.destination.delete()
-                                        // Reset dialog visibility and update UI
                                         viewModel.showModal = false
                                         viewModel.currentDownloadable = null
 
                                         Toast.makeText(context, "Restarting App!!.", Toast.LENGTH_SHORT).show()
                                         val packageManager: PackageManager = context.packageManager
-                                               val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
-                                               val componentName: ComponentName = intent.component!!
-                                               val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
-                                               context.startActivity(restartIntent)
-                                               Runtime.getRuntime().exit(0)
-
-
-
+                                        val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
+                                        val componentName: ComponentName = intent.component!!
+                                        val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
+                                        context.startActivity(restartIntent)
+                                        Runtime.getRuntime().exit(0)
                                     },
                                 ) {
                                     Text(text = "Delete Model")
@@ -1557,6 +1579,7 @@ fun ModelSelectorWithDownloadModal(
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

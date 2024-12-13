@@ -3,12 +3,15 @@ package com.nervesparks.iris
 import android.app.DownloadManager
 import android.net.Uri
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,8 +29,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.database.getLongOrNull
 import androidx.core.net.toUri
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 data class Downloadable(val name: String, val source: Uri, val destination: File) {
@@ -36,10 +41,11 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
         private val tag: String? = this::class.qualifiedName
 
         sealed interface State
-        data object Ready: State
-        data class Downloading(val id: Long): State
-        data class Downloaded(val downloadable: Downloadable): State
-        data class Error(val message: String): State
+        data object Ready : State
+        data class Downloading(val id: Long, val totalSize: Long) : State
+        data class Downloaded(val downloadable: Downloadable) : State
+        data class Error(val message: String) : State
+        data object Stopped : State
 
         @JvmStatic
         @Composable
@@ -51,6 +57,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 )
             }
             var progress by remember { mutableDoubleStateOf(0.0) }
+            var totalSize by remember { mutableStateOf<Long?>(null) }
 
             val coroutineScope = rememberCoroutineScope()
 
@@ -73,18 +80,34 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     val tix = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
                     val sofar = cursor.getLongOrNull(pix) ?: 0
                     val total = cursor.getLongOrNull(tix) ?: 1
+                    totalSize = total
                     cursor.close()
 
                     if (sofar == total) {
+                        Log.d(tag, "Download complete: ${item.destination.path}")
+
+                        // Ensure model is added dynamically
+                        withContext(Dispatchers.Main) {
+                            if (!viewModel.allModels.any { it["name"] == item.name }) {
+                                val newModel = mapOf(
+                                    "name" to item.name,
+                                    "source" to item.source.toString(),
+                                    "destination" to item.destination.path
+                                )
+                                viewModel.allModels = viewModel.allModels + newModel
+                                Log.d(tag, "Model dynamically added to viewModel: $newModel")
+                            }
+                        }
+
                         viewModel.load(item.destination.path)
                         return Downloaded(item)
                     }
 
                     progress = (sofar * 1.0) / total
-
                     delay(1000L)
                 }
             }
+
 
             fun onClick() {
                 when (val s = status) {
@@ -98,6 +121,12 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                         coroutineScope.launch {
                             status = waitForDownload(s, item)
                         }
+                    }
+
+                    is Stopped -> {
+                        // Handle the paused or stopped download state.
+                        Log.i(tag, "Download has been stopped for ${item.name}")
+                        status = Ready
                     }
 
                     else -> {
@@ -117,61 +146,89 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                         )
 
                         val id = dm.enqueue(request)
-                        status = Downloading(id)
-                        onClick()
+                        status = Downloading(id, totalSize ?: -1L)
+                        coroutineScope.launch {
+                            status = waitForDownload(Downloading(id, totalSize ?: -1L), item)
+                        }
                     }
                 }
             }
 
+            fun onStop() {
+                if (status is Downloading) {
+                    dm.remove((status as Downloading).id)
+                    status = Stopped
+                }
+            }
 
-                Column (
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ){
-
-                    Button(
-                        onClick = { onClick() },
-                        enabled = status !is Downloading && !viewModel.getIsSending(),
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF141414) // Navy Blue color
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Button(
+                    onClick = { onClick() },
+                    enabled = status !is Downloading && !viewModel.getIsSending(),
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF141414) // Navy Blue color
+                    )
+                ) {
+                    when (status) {
+                        is Downloading -> Text(
+                            text = buildAnnotatedString {
+                                append("Downloading ")
+                                withStyle(style = SpanStyle(color = Color.Cyan)) {
+                                    append("${(progress * 100).toInt()}%")
+                                }
+                            },
+                            color = Color.White
                         )
-                    ) {
 
-                        when (status) {
-                            is Downloading -> Text(
-                                text = buildAnnotatedString {
-                                    append("Downloading ")
-                                    withStyle(style = SpanStyle(color = Color.Cyan)) {
-                                        append("${(progress * 100).toInt()}%")
-                                    }
-                                },
-                                color = Color.White
-                            )
+                        is Downloaded -> Text(
+                            "Load ${item.name}",
+                            color = Color.White
+                        )
 
-                            is Downloaded -> Text(
-                                "Load ${item.name}",
-                                color = Color.White
-                            )
+                        is Ready -> Text(
+                            "Download ${item.name}",
+                            color = Color.White
+                        )
 
-                            is Ready -> Text(
-                                "Download ${item.name}",
-                                color = Color.White
-                            )
+                        is Error -> Text(
+                            "Download ${item.name}",
+                            color = Color.White
+                        )
 
-                            is Error -> Text(
-                                "Download ${item.name}",
-                                color = Color.White
-                            )
-                        }
+                        is Stopped -> Text(
+                            "Stopped",
+                            color = Color.White
+                        )
                     }
-                    Spacer(Modifier.height(10.dp))
-
-
                 }
 
+                Spacer(Modifier.height(10.dp))
 
+                if (status is Downloading) {
+                    Button(
+                        onClick = { onStop() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White // Red color for stop button
+                        )
+                    ) {
+                        Text("Stop Download", color = Color.Black)
+                    }
+                }
+
+                totalSize?.let {
+                    Text(
+                        text = "File size: ${it / (1024 * 1024)} MB",
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
         }
-
     }
 }
+
+

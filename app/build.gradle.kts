@@ -88,6 +88,8 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("androidx.core:core-splashscreen:1.0.0")
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+
 
 
 }

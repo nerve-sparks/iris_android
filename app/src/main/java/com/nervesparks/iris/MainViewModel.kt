@@ -36,24 +36,23 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     var allModels by mutableStateOf(
         listOf(
             mapOf(
-                "name" to "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
+                "name" to "Llama-3.2-3B-Instruct-Q4_K_L",
                 "source" to "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true",
                 "destination" to "Llama-3.2-3B-Instruct-Q4_K_L.gguf"
             ),
             mapOf(
-                "name" to "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
+                "name" to "Llama-3.2-1B-Instruct-Q6_K_L",
                 "source" to "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true",
                 "destination" to "Llama-3.2-1B-Instruct-Q6_K_L.gguf"
             ),
             mapOf(
-                "name" to "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+                "name" to "stablelm-2-1_6b-chat.Q4_K_M.imx",
                 "source" to "https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true",
                 "destination" to "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf"
             ),
 
         )
     )
-        private set
 
     private var first by mutableStateOf(
         true
