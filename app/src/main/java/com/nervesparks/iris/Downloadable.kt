@@ -98,7 +98,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                                 Log.d(tag, "Model dynamically added to viewModel: $newModel")
                             }
                         }
-
+                        viewModel.currentDownloadable = item
                         viewModel.load(item.destination.path, userThreads = viewModel.user_thread)
                         return Downloaded(item)
                     }
