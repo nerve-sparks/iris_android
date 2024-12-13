@@ -5,7 +5,6 @@ import android.llama.cpp.LLamaAndroid
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
-import androidx.compose.material.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -14,7 +13,6 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import java.util.Locale
 import java.util.UUID
@@ -32,6 +30,8 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             listOf<Map<String, String>>(),
         )
         private set
+
+    var user_thread by mutableStateOf(0)
 
     var allModels by mutableStateOf(
         listOf(
@@ -122,6 +122,8 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             }
         }
     }
+
+
 
     fun stopTextToSpeech() {
         textToSpeech?.apply {
@@ -329,4 +331,5 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     fun stop() {
         llamaAndroid.stopTextGeneration()
     }
+
 }

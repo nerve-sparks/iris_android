@@ -126,6 +126,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Slider
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
@@ -269,7 +270,7 @@ fun MainCompose(
     val kc = LocalSoftwareKeyboardController.current
 
     val focusManager = LocalFocusManager.current
-
+    println("Thread started: ${Thread.currentThread().name}")
     val Prompts = listOf(
         "Explain the strategic turning points of the Battle of Midway during World War II",
         "Describe the innovative technologies that are transforming renewable energy production",
@@ -300,6 +301,7 @@ fun MainCompose(
     }
     var isBottomSheetVisible by remember { mutableStateOf(false) }
     var modelData by remember { mutableStateOf<List<Map<String, String>>?>(null) }
+    var selectedModel by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -402,15 +404,23 @@ fun MainCompose(
                                         )
                                     } else {
 
-                                        modelData?.forEach { model ->
-                                            model["rfilename"]?.takeIf { it.endsWith(".gguf") }?.let {
-                                                Text(
-                                                    text = it,
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    modifier = Modifier
-                                                        .padding(bottom = 8.dp)
-                                                        .fillMaxWidth()
-                                                )
+                                        modelData?.takeIf { it.isNotEmpty() }?.let { data ->
+                                            data.forEach { model ->
+                                                model["rfilename"]?.takeIf { it.endsWith(".gguf") }?.let { filename ->
+                                                    Button(
+                                                        onClick = {
+
+                                                        },
+                                                        modifier = Modifier
+                                                            .padding(bottom = 8.dp)
+                                                            .fillMaxWidth()
+                                                    ) {
+                                                        Text(
+                                                            text = filename,
+                                                            style = MaterialTheme.typography.bodyMedium
+                                                        )
+                                                    }
+                                                }
                                             }
                                         }
 
@@ -519,10 +529,41 @@ fun MainCompose(
                             )
                         }
 
+                        Spacer(modifier = Modifier.height(30.dp))
+
+                            Column (
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ){
+                                Text(
+                                    text = "Select thread for process, 0 for default",
+                                    color = Color.White,
+                                )
+                                Spacer(modifier = Modifier.height(20.dp))
+                                val context = LocalContext.current
+                                var value by remember { mutableFloatStateOf(0f) }
+                                Text(
+                                    text = "${value.toInt()}",
+                                    color = Color.White
+                                )
+                                Slider(
+                                    value = value,
+                                    onValueChange = {
+                                        value = it
+                                        viewModel.user_thread = it.toInt()
+                                    },
+                                    valueRange = 0f..8f,
+                                    steps = 7
+                                )
+                                Spacer(modifier = Modifier.height(15.dp))
+                                Text(
+                                    text = "After changing thread please reload the model!!",
+                                    color = Color.White,
+                                )
+                            }
 
                         Spacer(modifier = Modifier.weight(1f))
-
-
                         Column(
                             verticalArrangement = Arrangement.Bottom,
                             horizontalAlignment = Alignment.CenterHorizontally,
