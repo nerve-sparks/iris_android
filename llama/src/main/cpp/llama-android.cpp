@@ -616,6 +616,11 @@ Java_android_llama_cpp_LLamaAndroid_get_1eot_1str(JNIEnv *env, jobject , jlong j
     auto model = reinterpret_cast<llama_model *>(jmodel);
     const auto eot = llama_token_eot(model);
 
+    if (eot == -1){
+        std::string piece = "<|im_end|>";
+        return env->NewStringUTF(piece.c_str());
+    }
+
     std::string piece;
     piece.resize(piece.capacity());  // using string internal cache, 15 bytes + '\n'
     const int n_chars = llama_token_to_piece(model, eot, &piece[0], piece.size(), 0, true);

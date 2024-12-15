@@ -255,7 +255,7 @@ class LLamaAndroid {
         }
     }
 
-    suspend fun send_eot_str(): String {
+    fun send_eot_str(): String {
 
         return when (val state = threadLocalState.get()) {
             is State.Loaded -> {
