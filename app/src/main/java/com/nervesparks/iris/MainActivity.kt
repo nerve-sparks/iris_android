@@ -1479,6 +1479,26 @@ fun ModelSelectorWithDownloadModal(
     downloadManager: DownloadManager,
     extFileDir: File?
 ) {
+    fun loadExistingModels(directory: File, viewModel: MainViewModel) {
+        directory.listFiles { file ->
+            file.extension == "gguf"
+        }?.forEach { file ->
+            val modelName = file.nameWithoutExtension
+            if (!viewModel.allModels.any { it["name"] == modelName }) {
+                val currentName = file.toString().split("/")
+                viewModel.allModels += mapOf(
+                    "name" to modelName,
+                    "source" to "local",
+                    "destination" to currentName.last()
+                )
+            }
+        }
+    }
+    LaunchedEffect(Unit) {
+        extFileDir?.let {
+            loadExistingModels(it, viewModel)
+        }
+    }
     val context = LocalContext.current as Activity
     val coroutineScope = rememberCoroutineScope()
     val models = listOf(
@@ -1508,6 +1528,24 @@ fun ModelSelectorWithDownloadModal(
         Icons.Filled.KeyboardArrowUp
     else
         Icons.Filled.KeyboardArrowDown
+
+    // Search for local .gguf models
+    val localModels = remember(extFileDir) {
+        extFileDir?.listFiles { _, name -> name.endsWith(".gguf") }
+            ?.map { file ->
+                mapOf(
+                    "name" to file.nameWithoutExtension,
+                    "source" to file.toURI().toString(),
+                    "destination" to file.name
+                )
+            } ?: emptyList()
+    }
+    // Combine local and remote models, ensuring uniqueness
+    val combinedModels = remember(viewModel.allModels, localModels) {
+        (viewModel.allModels + localModels).distinctBy { it["name"] }
+    }
+    viewModel.allModels = combinedModels
+
 
     Column(Modifier.padding(20.dp)) {
 
