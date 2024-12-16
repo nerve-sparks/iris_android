@@ -59,6 +59,8 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
             var progress by remember { mutableDoubleStateOf(0.0) }
             var totalSize by remember { mutableStateOf<Long?>(null) }
 
+
+
             val coroutineScope = rememberCoroutineScope()
 
             suspend fun waitForDownload(result: Downloading, item: Downloadable): State {

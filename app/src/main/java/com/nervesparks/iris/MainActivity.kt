@@ -320,8 +320,8 @@ fun MainCompose(
 
 
 
-
-        val focusRequester = FocusRequester()
+    var isSettingOpen by remember { mutableStateOf(false) }
+    val focusRequester = FocusRequester()
     var isFocused by remember { mutableStateOf(false) }
     var textFieldBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
     if (allModelsExist) {
@@ -348,6 +348,7 @@ fun MainCompose(
                             .padding(5.dp)
                             .fillMaxHeight(),
                     ) {
+
                         // Top section with logo and name
                         Column {
                             Row(
@@ -367,6 +368,22 @@ fun MainCompose(
                                     color = Color.White,
                                     fontSize = 30.sp
                                 )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Image(
+                                    painter = painterResource(id = R.drawable.logo),
+                                    contentDescription = "Centered Background Logo",
+                                    modifier = Modifier
+                                        .size(35.dp)
+                                        .pointerInput(Unit) {
+                                            detectTapGestures(
+                                                onTap = {
+                                                   isSettingOpen = true
+                                                }
+                                            )
+                                        },
+                                    contentScale = ContentScale.Fit
+                                )
+
                             }
                             Row(
                                 modifier = Modifier.padding(start = 45.dp)
@@ -382,6 +399,74 @@ fun MainCompose(
 
                         // Bottom sheet content
                         val sheetState = rememberModalBottomSheetState()
+
+                        if(isSettingOpen){
+                            ModalBottomSheet(
+                                onDismissRequest = { isSettingOpen = false }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            color = Color(0xFF14161f),
+                                            shape = RoundedCornerShape(8.dp),
+                                        )
+                                        .border(
+                                            border = BorderStroke(
+                                                width = 1.dp,
+                                                color = Color.LightGray.copy(alpha = 0.5f)
+                                            ),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .padding(16.dp)
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = "Select thread for process, 0 for default",
+                                            color = Color.White,
+                                        )
+                                        Spacer(modifier = Modifier.height(20.dp))
+                                        var value by remember { mutableFloatStateOf(0f) }
+                                        Text(
+                                            text = "${value.toInt()}",
+                                            color = Color.White
+                                        )
+                                        Slider(
+                                            value = value,
+                                            onValueChange = {
+                                                value = it
+                                                viewModel.user_thread = it.toInt()
+                                            },
+                                            valueRange = 0f..8f,
+                                            steps = 7
+                                        )
+                                        Spacer(modifier = Modifier.height(15.dp))
+                                        Text(
+                                            text = "After changing thread please reload the model!!",
+                                            color = Color.White,
+                                        )
+                                        Button(
+
+                                            onClick = {
+                                                viewModel.currentDownloadable?.destination?.path?.let {
+                                                    viewModel.load(it, viewModel.user_thread)
+                                                }
+                                            },
+                                            modifier = Modifier
+                                                .padding(16.dp)
+                                                .fillMaxWidth()
+                                                .height(48.dp),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color.DarkGray,
+                                                contentColor = Color.White
+                                            ),
+                                            shape = RoundedCornerShape(8.dp) // Rounded corners
+                                        ) {
+                                            Text("Reload", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
                         if (isBottomSheetVisible) {
                             ModalBottomSheet(
@@ -451,6 +536,7 @@ fun MainCompose(
                         }
 
                        ModelSelectorWithDownloadModal(viewModel = viewModel, downloadManager = dm, extFileDir = extFileDir)
+                        var buttonState by remember { mutableStateOf(false) } // Initialize the state
                         Column (
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -477,10 +563,12 @@ fun MainCompose(
                             focusedTextColor = Color(0xFFf7f5f5),
                         )
                         )
+
                         Spacer(Modifier.height(5.dp))
                         Button(
                             onClick = {
                                 // Perform action when button is clicked
+                                buttonState = true
                                 coroutineScope.launch {
                                     isLoading = true // Show loading state
 
@@ -519,6 +607,7 @@ fun MainCompose(
                                         }
                                         Log.i("response hello", modelData.toString())
                                         isBottomSheetVisible = true
+
                                     } catch (e: Exception) {
                                         // Handle exceptions
                                         Log.e("ModelFetch", "Failed to fetch model", e)
@@ -556,66 +645,7 @@ fun MainCompose(
                                     )
                                 }
                             Spacer(modifier = Modifier.height(30.dp))
-                            Box(
-                                modifier = Modifier
-                                    .background(
-                                        color = Color(0xFF14161f),
-                                        shape = RoundedCornerShape(8.dp),
-                                    )
-                                    .border(
-                                        border = BorderStroke(
-                                            width = 1.dp,
-                                            color = Color.LightGray.copy(alpha = 0.5f)
-                                        ),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(16.dp)
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "Select thread for process, 0 for default",
-                                        color = Color.White,
-                                    )
-                                    Spacer(modifier = Modifier.height(20.dp))
-                                    var value by remember { mutableFloatStateOf(0f) }
-                                    Text(
-                                        text = "${value.toInt()}",
-                                        color = Color.White
-                                    )
-                                    Slider(
-                                        value = value,
-                                        onValueChange = {
-                                            value = it
-                                            viewModel.user_thread = it.toInt()
-                                        },
-                                        valueRange = 0f..8f,
-                                        steps = 7
-                                    )
-                                    Spacer(modifier = Modifier.height(15.dp))
-                                    Text(
-                                        text = "After changing thread please reload the model!!",
-                                        color = Color.White,
-                                    )
-                                    Button(
-                                        onClick = {
-                                            viewModel.currentDownloadable?.destination?.path?.let {
-                                                viewModel.load(it, viewModel.user_thread)
-                                            }
-                                        },
-                                        modifier = Modifier
-                                            .padding(16.dp)
-                                            .fillMaxWidth()
-                                            .height(48.dp),
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color.DarkGray,
-                                            contentColor = Color.White
-                                        ),
-                                        shape = RoundedCornerShape(8.dp) // Rounded corners
-                                    ) {
-                                        Text("Reload", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                }
-                            }
+
 
                         }
 
