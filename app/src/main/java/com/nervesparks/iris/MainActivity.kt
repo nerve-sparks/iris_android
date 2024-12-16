@@ -596,14 +596,23 @@ fun MainCompose(
                                         text = "After changing thread please reload the model!!",
                                         color = Color.White,
                                     )
-                                    Button(onClick = {
-                                        viewModel.currentDownloadable?.destination?.path?.let {
-                                            viewModel.load(
-                                                it, viewModel.user_thread)
-                                        }
-                                    }) {
-
-                                        Text("Reload")
+                                    Button(
+                                        onClick = {
+                                            viewModel.currentDownloadable?.destination?.path?.let {
+                                                viewModel.load(it, viewModel.user_thread)
+                                            }
+                                        },
+                                        modifier = Modifier
+                                            .padding(16.dp)
+                                            .fillMaxWidth()
+                                            .height(48.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color.DarkGray,
+                                            contentColor = Color.White
+                                        ),
+                                        shape = RoundedCornerShape(8.dp) // Rounded corners
+                                    ) {
+                                        Text("Reload", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -1674,17 +1683,6 @@ fun ModelSelectorWithDownloadModal(
                                         // Reset dialog visibility and update UI
                                         viewModel.showModal = false
                                         viewModel.currentDownloadable = null
-
-                                        Toast.makeText(context, "Restarting App!!.", Toast.LENGTH_SHORT).show()
-                                        val packageManager: PackageManager = context.packageManager
-                                               val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
-                                               val componentName: ComponentName = intent.component!!
-                                               val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
-                                               context.startActivity(restartIntent)
-                                               Runtime.getRuntime().exit(0)
-
-
-
                                     },
                                 ) {
                                     Text(text = "Delete Model")
