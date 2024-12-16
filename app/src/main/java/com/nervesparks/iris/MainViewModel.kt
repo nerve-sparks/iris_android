@@ -249,6 +249,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 var modelName = pathToModel.split("/")
                 loadedModelName.value = modelName.last()
                 showAlert = true
+                showModal = false
                 llamaAndroid.load(pathToModel, userThreads)
                 showAlert = false
 
