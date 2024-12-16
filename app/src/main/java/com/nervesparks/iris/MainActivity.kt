@@ -480,6 +480,7 @@ fun MainCompose(
                         Spacer(Modifier.height(5.dp))
                         Button(
                             onClick = {
+                                viewModel.SearchedName = viewModel.userGivenModel
                                 // Perform action when button is clicked
                                 coroutineScope.launch {
                                     isLoading = true // Show loading state
@@ -487,18 +488,26 @@ fun MainCompose(
                                     try {
                                         val response = withContext(Dispatchers.IO) {
                                             // Perform network request
-                                            val url = URL("https://huggingface.co/api/models/${viewModel.userGivenModel}")
-                                            val connection = url.openConnection() as HttpURLConnection
+                                            val url =
+                                                URL("https://huggingface.co/api/models/${viewModel.userGivenModel}")
+                                            val connection =
+                                                url.openConnection() as HttpURLConnection
                                             connection.requestMethod = "GET"
-                                            connection.setRequestProperty("Accept", "application/json")
+                                            connection.setRequestProperty(
+                                                "Accept",
+                                                "application/json"
+                                            )
                                             connection.connectTimeout = 10000
                                             connection.readTimeout = 10000
 
                                             val responseCode = connection.responseCode
                                             if (responseCode == HttpURLConnection.HTTP_OK) {
-                                                connection.inputStream.bufferedReader().use { it.readText() }
+                                                connection.inputStream.bufferedReader()
+                                                    .use { it.readText() }
                                             } else {
-                                                val errorStream = connection.errorStream?.bufferedReader()?.use { it.readText() }
+                                                val errorStream =
+                                                    connection.errorStream?.bufferedReader()
+                                                        ?.use { it.readText() }
                                                 throw Exception("HTTP error code: $responseCode - ${errorStream ?: "No additional error details"}")
                                             }
                                         }
@@ -507,16 +516,17 @@ fun MainCompose(
                                         Log.i("response", response)
                                         val jsonResponse = JSONObject(response)
                                         val siblingsArray = jsonResponse.getJSONArray("siblings")
-                                        modelData = (0 until siblingsArray.length()).mapNotNull { index ->
-                                            val jsonObject = siblingsArray.getJSONObject(index)
-                                            val filename = jsonObject.optString("rfilename", "")
+                                        modelData =
+                                            (0 until siblingsArray.length()).mapNotNull { index ->
+                                                val jsonObject = siblingsArray.getJSONObject(index)
+                                                val filename = jsonObject.optString("rfilename", "")
 
-                                            if (filename.isNotEmpty()) {
-                                                mapOf("rfilename" to filename)
-                                            } else {
-                                                null
+                                                if (filename.isNotEmpty()) {
+                                                    mapOf("rfilename" to filename)
+                                                } else {
+                                                    null
+                                                }
                                             }
-                                        }
                                         Log.i("response hello", modelData.toString())
                                         isBottomSheetVisible = true
                                     } catch (e: Exception) {
@@ -533,7 +543,10 @@ fun MainCompose(
                                     }
                                 }
 
-                                    },
+                                      },
+
+
+
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(50.dp),
