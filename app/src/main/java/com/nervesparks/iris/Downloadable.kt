@@ -164,7 +164,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
             fun onStop() {
                 if (status is Downloading) {
                     dm.remove((status as Downloading).id)
-                    status = Stopped
+                    status = Ready
                 }
             }
 
