@@ -3,6 +3,10 @@ package com.nervesparks.iris
 import android.content.Context
 import android.llama.cpp.LLamaAndroid
 import android.net.Uri
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
@@ -75,6 +79,8 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         private set
 
     var eot_str = ""
+
+
 
 
     fun loadExistingModels(directory: File) {

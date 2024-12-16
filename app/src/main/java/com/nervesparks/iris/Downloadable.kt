@@ -14,6 +14,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +54,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
         @JvmStatic
         @Composable
         fun Button(viewModel: MainViewModel, dm: DownloadManager, item: Downloadable) {
+
             var status: State by remember  {
                 mutableStateOf(
                     if (item.destination.exists()) Downloaded(item)
@@ -130,7 +132,11 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 }
             }
 
-
+            LaunchedEffect(status) {
+                if (status is Downloading) {
+                    status = waitForDownload(status as Downloading, item)
+                }
+            }
             fun onClick() {
                 when (val s = status) {
                     is Downloaded -> {
