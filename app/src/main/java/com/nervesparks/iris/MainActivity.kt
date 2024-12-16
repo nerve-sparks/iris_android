@@ -155,6 +155,8 @@ class MainActivity(
     private val downloadManager by lazy { downloadManager ?: getSystemService<DownloadManager>()!! }
     private val clipboardManager by lazy { clipboardManager ?: getSystemService<ClipboardManager>()!! }
 
+
+
     private val viewModel: MainViewModel by viewModels()
     private var model_name = "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)"
 
@@ -269,8 +271,6 @@ fun MainCompose(
     models: List<Downloadable>,
     extFileDir: File?
 ) {
-
-
     val kc = LocalSoftwareKeyboardController.current
 
     val focusManager = LocalFocusManager.current
@@ -303,11 +303,12 @@ fun MainCompose(
         viewModel.updateMessage(recognizedText)
 
     }
-    var isBottomSheetVisible by remember { mutableStateOf(false) }
-    var modelData by remember { mutableStateOf<List<Map<String, String>>?>(null) }
+    var isBottomSheetVisible by rememberSaveable  { mutableStateOf(false) }
+    var modelData by rememberSaveable  { mutableStateOf<List<Map<String, String>>?>(null) }
     var selectedModel by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val sheetState = rememberModalBottomSheetState()
 
     var UserGivenModel by remember {
         mutableStateOf(
@@ -381,7 +382,7 @@ fun MainCompose(
                         val coroutineScope = rememberCoroutineScope()
 
                         // Bottom sheet content
-                        val sheetState = rememberModalBottomSheetState()
+
 
                         if (isBottomSheetVisible) {
                             ModalBottomSheet(
@@ -480,8 +481,10 @@ fun MainCompose(
                         Spacer(Modifier.height(5.dp))
                         Button(
                             onClick = {
+                                if(viewModel.SearchedName != viewModel.userGivenModel) {
                                 viewModel.SearchedName = viewModel.userGivenModel
                                 // Perform action when button is clicked
+
                                 coroutineScope.launch {
                                     isLoading = true // Show loading state
 
@@ -542,6 +545,10 @@ fun MainCompose(
                                         isLoading = false // Hide loading state
                                     }
                                 }
+                            }
+                                else {
+                                    isBottomSheetVisible = true
+                                }
 
                                       },
 
@@ -563,10 +570,10 @@ fun MainCompose(
                                         pressedElevation = 3.dp
                                     )
                                 ){
-                                    Text(
-                                        text = "Search Model",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                    )
+                            Text(
+                                text = if (viewModel.SearchedName != viewModel.userGivenModel) "Search Model" else "Open",
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
                                 }
                             Spacer(modifier = Modifier.height(30.dp))
                             Box(

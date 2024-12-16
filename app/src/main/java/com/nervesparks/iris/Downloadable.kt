@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +41,12 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
         @JvmStatic
         private val tag: String? = this::class.qualifiedName
 
+        sealed class DownloadStatus {
+            object Ready : DownloadStatus()
+            data class Downloaded(val item: Downloadable) : DownloadStatus()
+        }
+
+
         sealed interface State
         data object Ready : State
         data class Downloading(val id: Long, val totalSize: Long) : State
@@ -50,14 +57,14 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
         @JvmStatic
         @Composable
         fun Button(viewModel: MainViewModel, dm: DownloadManager, item: Downloadable) {
-            var status: State by remember {
+            var status: State by remember   {
                 mutableStateOf(
                     if (item.destination.exists()) Downloaded(item)
                     else Ready
                 )
             }
-            var progress by remember { mutableDoubleStateOf(0.0) }
-            var totalSize by remember { mutableStateOf<Long?>(null) }
+            var progress by rememberSaveable  { mutableDoubleStateOf(0.0) }
+            var totalSize by rememberSaveable  { mutableStateOf<Long?>(null) }
 
             val coroutineScope = rememberCoroutineScope()
 
