@@ -63,6 +63,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         private set
 
     var userGivenModel by mutableStateOf("")
+    var SearchedName by mutableStateOf("")
 
 
     private var textToSpeech:TextToSpeech? = null
