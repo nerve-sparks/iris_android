@@ -106,7 +106,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                             }
                         }
                         viewModel.currentDownloadable = item
-                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread)
+                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread.toInt())
                         return Downloaded(item)
                     }
 
@@ -121,7 +121,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     is Downloaded -> {
                         viewModel.showModal = true
                         Log.d("item.destination.path", item.destination.path.toString())
-                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread)
+                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread.toInt())
                     }
 
                     is Downloading -> {
@@ -149,7 +149,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                         viewModel.log("Saving ${item.name} to ${item.destination.path}")
                         Log.i(
                             tag,
-                            "Saving ${item.name} to ${item.destination.path} \n Download only on Wifi. \n"
+                            "Saving ${item.name} to ${item.destination.path} \n Download only on Wifi or mobile data. \n"
                         )
 
                         val id = dm.enqueue(request)

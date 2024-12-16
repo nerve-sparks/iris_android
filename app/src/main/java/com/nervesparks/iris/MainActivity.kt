@@ -128,7 +128,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Slider
+import androidx.compose.material.SliderDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
@@ -222,7 +224,7 @@ class MainActivity(
 //            }
 //        }
         models.find { model -> model.destination.exists() }?.let { model ->
-            viewModel.load(model.destination.path, userThreads = viewModel.user_thread)
+            viewModel.load(model.destination.path, userThreads = viewModel.user_thread.toInt())
             viewModel.currentDownloadable = model
         }
 
@@ -303,6 +305,7 @@ fun MainCompose(
         viewModel.updateMessage(recognizedText)
 
     }
+    var showSettingSheet by remember { mutableStateOf(false) }
     var isBottomSheetVisible by rememberSaveable  { mutableStateOf(false) }
     var modelData by rememberSaveable  { mutableStateOf<List<Map<String, String>>?>(null) }
     var selectedModel by remember { mutableStateOf<String?>(null) }
@@ -352,7 +355,9 @@ fun MainCompose(
                         // Top section with logo and name
                         Column {
                             Row(
-                                Modifier.padding(start = 8.dp),
+                                modifier =  Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Image(
@@ -368,6 +373,25 @@ fun MainCompose(
                                     color = Color.White,
                                     fontSize = 30.sp
                                 )
+                                Spacer(Modifier.weight(1f))
+                                IconButton(
+                                    onClick = {
+                                        showSettingSheet = true;
+                                    }
+                                ){
+                                    Icon( painter = painterResource(id = R.drawable.settings_5_svgrepo_com),
+                                        contentDescription = "Centered Background Logo",
+                                        modifier = Modifier.size(35.dp),
+                                        tint = Color.White
+                                    )
+
+                                }
+                                if (showSettingSheet) {
+                                    SettingsBottomSheet(
+                                        viewModel= viewModel,
+                                        onDismiss = { showSettingSheet = false } // Control visibility from here
+                                    )
+                                }
                             }
                             Row(
                                 modifier = Modifier.padding(start = 45.dp)
@@ -378,6 +402,7 @@ fun MainCompose(
                                     fontSize = 16.sp
                                 )
                             }
+
                         }
                         val coroutineScope = rememberCoroutineScope()
 
@@ -575,58 +600,8 @@ fun MainCompose(
                                 style = MaterialTheme.typography.bodyLarge,
                             )
                                 }
-                            Spacer(modifier = Modifier.height(30.dp))
-                            Box(
-                                modifier = Modifier
-                                    .background(
-                                        color = Color(0xFF14161f),
-                                        shape = RoundedCornerShape(8.dp),
-                                    )
-                                    .border(
-                                        border = BorderStroke(
-                                            width = 1.dp,
-                                            color = Color.LightGray.copy(alpha = 0.5f)
-                                        ),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(16.dp)
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "Select thread for process, 0 for default",
-                                        color = Color.White,
-                                    )
-                                    Spacer(modifier = Modifier.height(20.dp))
-                                    var value by remember { mutableFloatStateOf(0f) }
-                                    Text(
-                                        text = "${value.toInt()}",
-                                        color = Color.White
-                                    )
-                                    Slider(
-                                        value = value,
-                                        onValueChange = {
-                                            value = it
-                                            viewModel.user_thread = it.toInt()
-                                        },
-                                        valueRange = 0f..8f,
-                                        steps = 7
-                                    )
-                                    Spacer(modifier = Modifier.height(15.dp))
-                                    Text(
-                                        text = "After changing thread please reload the model!!",
-                                        color = Color.White,
-                                    )
-                                    Button(onClick = {
-                                        viewModel.currentDownloadable?.destination?.path?.let {
-                                            viewModel.load(
-                                                it, viewModel.user_thread)
-                                        }
-                                    }) {
 
-                                        Text("Reload")
-                                    }
-                                }
-                            }
+
 
                         }
 
@@ -1412,6 +1387,101 @@ fun MainCompose(
 
 
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsBottomSheet(
+    viewModel: MainViewModel,
+    onDismiss: () -> Unit) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetScrollState = rememberLazyListState()
+    ModalBottomSheet(
+        sheetState = sheetState,
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF01081a),
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(10.dp)
+        ){
+            LazyColumn(state = sheetScrollState) {
+                item{
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = Color(0xFF14161f),
+                                shape = RoundedCornerShape(8.dp),
+                            )
+                            .border(
+                                border = BorderStroke(
+                                    width = 1.dp,
+                                    color = Color.LightGray.copy(alpha = 0.5f)
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(16.dp)
+                    ) {
+                        Column {
+                            Text(
+                                text = "Select thread for process, 0 for default",
+                                color = Color.White,
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            Text(
+                                text = "${viewModel.user_thread.toInt()}",
+                                color = Color.White
+                            )
+                            Slider(
+                                value = viewModel.user_thread,
+                                onValueChange = {
+
+                                    viewModel.user_thread = it
+                                },
+                                valueRange = 0f..8f,
+                                steps = 7,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = Color(0xFF6200EE),
+                                    activeTrackColor = Color(0xFF6200EE),
+                                    inactiveTrackColor = Color.Gray
+                                ),
+                            )
+                            Spacer(modifier = Modifier.height(15.dp))
+                            Text(
+                                text = "After changing thread please reload the model!!",
+                                color = Color.White,
+                            )
+                            Button(
+
+                                onClick = {
+                                viewModel.currentDownloadable?.destination?.path?.let {
+                                    viewModel.load(
+                                        it, viewModel.user_thread.toInt())
+                                }
+                            }
+                            ) {
+
+                                Text("Save")
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+//        Box(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .padding(20.dp)
+//                .background(color = Color(0xFF01081a)),
+//            contentAlignment = Alignment.Center
+//        ) {
+//
+//        }
+    }
+}
+
 @Composable
 fun ScrollToBottomButton(
     viewModel: MainViewModel,
@@ -1827,6 +1897,7 @@ fun MessageBottomSheet(
             }
         }
     }
+
 }
 
 

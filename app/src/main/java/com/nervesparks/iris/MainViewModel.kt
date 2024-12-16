@@ -32,7 +32,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         )
         private set
 
-    var user_thread by mutableStateOf(0)
+    var user_thread by mutableStateOf(0f)
 
     var allModels by mutableStateOf(
         listOf(
