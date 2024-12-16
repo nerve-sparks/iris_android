@@ -156,7 +156,6 @@ class MainActivity(
     private val clipboardManager by lazy { clipboardManager ?: getSystemService<ClipboardManager>()!! }
 
 
-
     private val viewModel: MainViewModel by viewModels()
     private var model_name = "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)"
 
@@ -199,7 +198,7 @@ class MainActivity(
 
         val models = listOf(
             Downloadable(
-                "Llama-3.2-1B-Instruct-Q6_K_L",
+                "Llama-3.2-3B-Instruct-Q4_K_L",
                 Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
                 File(extFilesDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
 
@@ -221,10 +220,15 @@ class MainActivity(
 //                viewModel.load(model.destination.path)
 //            }
 //        }
-        models.find { model -> model.destination.exists() }?.let { model ->
-            viewModel.load(model.destination.path, userThreads = viewModel.user_thread)
-            viewModel.currentDownloadable = model
+//        models.find { model -> model.destination.exists() }?.let { model ->
+//            viewModel.load(model.destination.path, userThreads = viewModel.user_thread)
+//            viewModel.currentDownloadable = model
+//        }
+        if (extFilesDir != null) {
+            viewModel.loadExistingModels(extFilesDir)
         }
+
+
 
         setContent {
 
@@ -240,7 +244,7 @@ class MainActivity(
                         clipboardManager,
                         downloadManager,
                         models,
-                        extFilesDir
+                        extFilesDir,
                     )
                 }
 
@@ -1499,45 +1503,10 @@ fun ModelSelectorWithDownloadModal(
     downloadManager: DownloadManager,
     extFileDir: File?
 ) {
-    fun loadExistingModels(directory: File, viewModel: MainViewModel) {
-        directory.listFiles { file ->
-            file.extension == "gguf"
-        }?.forEach { file ->
-            val modelName = file.nameWithoutExtension
-            if (!viewModel.allModels.any { it["name"] == modelName }) {
-                val currentName = file.toString().split("/")
-                viewModel.allModels += mapOf(
-                    "name" to modelName,
-                    "source" to "local",
-                    "destination" to currentName.last()
-                )
-            }
-        }
-    }
-    LaunchedEffect(Unit) {
-        extFileDir?.let {
-            loadExistingModels(it, viewModel)
-        }
-    }
+
+
     val context = LocalContext.current as Activity
     val coroutineScope = rememberCoroutineScope()
-    val models = listOf(
-        Downloadable(
-            "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
-            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
-            File(extFileDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
-        ),
-        Downloadable(
-            "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
-            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
-            File(extFileDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
-        ),
-        Downloadable(
-            "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
-            Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
-            File(extFileDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
-        )
-    )
 
     var mExpanded by remember { mutableStateOf(false) }
     var mSelectedText by remember { mutableStateOf("") }
