@@ -1,13 +1,9 @@
 package com.nervesparks.iris
 
 //import com.example.llama.ui.theme.LlamaAndroidTheme
-import android.app.Activity
 import android.app.DownloadManager
 import android.content.ClipboardManager
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
@@ -45,13 +41,10 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.runtime.*
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -62,12 +55,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -99,8 +90,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -110,30 +99,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.content.getSystemService
 import kotlinx.coroutines.launch
 import java.io.File
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Slider
-import androidx.compose.material.SliderDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SheetState
 import androidx.compose.ui.text.font.FontFamily
-import androidx.lifecycle.viewModelScope
-import androidx.compose.ui.unit.toSize
 import com.nervesparks.iris.ui.components.MessageBottomSheet
 import com.nervesparks.iris.ui.components.ModelSelectorWithDownloadModal
 import com.nervesparks.iris.ui.components.ScrollToBottomButton
@@ -302,8 +272,7 @@ fun MainCompose(
     var modelData by rememberSaveable  { mutableStateOf<List<Map<String, String>>?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val sheetState = rememberModalBottomSheetState()
-    var UserGivenModel by remember {
+    var userGivenModel by remember {
         mutableStateOf(
             TextFieldValue(
                 text = viewModel.userGivenModel,
@@ -418,9 +387,9 @@ fun MainCompose(
                             )
                             Spacer(Modifier.height(2.dp))
                         OutlinedTextField(
-                            value = UserGivenModel,
+                            value = userGivenModel,
                             onValueChange = { newValue ->
-                                UserGivenModel = newValue
+                                userGivenModel = newValue
                                 // Update ViewModel or perform other actions with the new value
                                 viewModel.userGivenModel = newValue.text
                             },
@@ -517,7 +486,7 @@ fun MainCompose(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(50.dp),
-                                    enabled = UserGivenModel.text.isNotBlank(),
+                                    enabled = userGivenModel.text.isNotBlank(),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color.Transparent, // Set the containerColor to transparent
                                         contentColor = Color.White,
@@ -962,7 +931,7 @@ fun MainCompose(
                             LazyColumn(state = scrollState) {
                                 // Track the first user and assistant messages
 
-                                var length = viewModel.messages.size
+                                val length = viewModel.messages.size
 
                                 itemsIndexed(viewModel.messages.slice(3..< length) as? List<Map<String, String>> ?: emptyList()) { index, messageMap ->
                                     val role = messageMap["role"] ?: ""
