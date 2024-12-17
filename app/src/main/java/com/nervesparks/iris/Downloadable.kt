@@ -123,7 +123,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                         Log.d(tag, "Model dynamically added to viewModel: $newModel")
 
                         viewModel.currentDownloadable = item
-                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread)
+                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread.toInt())
                         return Downloaded(item)
                     }
 
@@ -142,7 +142,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     is Downloaded -> {
                         viewModel.showModal = true
                         Log.d("item.destination.path", item.destination.path.toString())
-                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread)
+                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread.toInt())
                     }
 
                     is Downloading -> {

@@ -38,7 +38,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         )
         private set
 
-    var user_thread by mutableStateOf(0)
+    var user_thread by mutableStateOf(0f)
 
     var allModels by mutableStateOf(
         listOf(
@@ -102,7 +102,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             destinationPath.exists()
         }?.let { model ->
             val destinationPath = File(directory, model["destination"].toString())
-            load(destinationPath.path, userThreads = user_thread)
+            load(destinationPath.path, userThreads = user_thread.toInt())
             currentDownloadable = Downloadable(
                 model["name"].toString(),
                 Uri.parse(model["source"].toString()),
@@ -285,6 +285,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             try {
                 var modelName = pathToModel.split("/")
                 loadedModelName.value = modelName.last()
+                showModal= false
                 showAlert = true
                 llamaAndroid.load(pathToModel, userThreads)
                 showAlert = false
