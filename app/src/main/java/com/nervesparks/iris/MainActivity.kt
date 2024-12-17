@@ -575,7 +575,11 @@ fun MainCompose(
                                     )
                                 ){
                             Text(
-                                text = if (viewModel.SearchedName != viewModel.userGivenModel) "Search Model" else "Open",
+                                text = when {
+                                    isLoading -> "Searching..."
+                                    viewModel.SearchedName != viewModel.userGivenModel -> "Search Model"
+                                    else -> "Open"
+                                },
                                 style = MaterialTheme.typography.bodyLarge,
                             )
                                 }
@@ -1295,9 +1299,9 @@ fun MainCompose(
                                 Icon(
 //                                imageVector = Icons.Default.Send,
                                     modifier = Modifier
-                                        .size(24.dp)
+                                        .size(25.dp)
                                         .weight(1f),
-                                    painter = painterResource(id = R.drawable.mic_on_svgrepo_com),
+                                    painter = painterResource(id = R.drawable.microphone_new_svgrepo_com),
                                     contentDescription = "Mic",
                                     tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
                                 )
@@ -1384,7 +1388,7 @@ fun MainCompose(
                                 ) {
                                     Icon(
                                         modifier = Modifier
-                                            .size(28.dp)
+                                            .size(30.dp)
                                             .weight(1f),
                                         painter = painterResource(id = R.drawable.send_2_svgrepo_com),
                                         contentDescription = "Send",
@@ -1397,7 +1401,7 @@ fun MainCompose(
                                     Icon(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .size(32.dp),
+                                            .size(28.dp),
                                         painter = painterResource(id = R.drawable.square_svgrepo_com),
                                         contentDescription = "Stop",
                                         tint = Color(0xFFDDDDE4)
