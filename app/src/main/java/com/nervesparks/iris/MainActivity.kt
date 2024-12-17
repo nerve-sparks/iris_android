@@ -575,7 +575,11 @@ fun MainCompose(
                                     )
                                 ){
                             Text(
-                                text = if (viewModel.SearchedName != viewModel.userGivenModel) "Search Model" else "Open",
+                                text = when {
+                                    isLoading -> "Searching..."
+                                    viewModel.SearchedName != viewModel.userGivenModel -> "Search Model"
+                                    else -> "Open"
+                                },
                                 style = MaterialTheme.typography.bodyLarge,
                             )
                                 }
