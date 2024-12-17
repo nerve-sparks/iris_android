@@ -12,11 +12,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
-import android.provider.OpenableColumns
 import android.speech.RecognizerIntent
 import android.util.Log
 import android.widget.Toast
-
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -29,7 +27,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -137,6 +134,11 @@ import androidx.compose.material3.SheetState
 import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.viewModelScope
 import androidx.compose.ui.unit.toSize
+import com.nervesparks.iris.ui.components.MessageBottomSheet
+import com.nervesparks.iris.ui.components.ModelSelectorWithDownloadModal
+import com.nervesparks.iris.ui.components.ScrollToBottomButton
+import com.nervesparks.iris.ui.components.SearchResultBottomSheet
+import com.nervesparks.iris.ui.components.SettingsBottomSheet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -159,7 +161,7 @@ class MainActivity(
 
 
     private val viewModel: MainViewModel by viewModels()
-    private var model_name = "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)"
+
 
     // Get a MemoryInfo object for the device's current memory status.
 //    private fun availableMemory(): ActivityManager.MemoryInfo {
@@ -167,17 +169,6 @@ class MainActivity(
 //            activityManager.getMemoryInfo(memoryInfo)
 //        }
 //    }
-
-    val darkNavyBlue = Color(0xFF001F3D) // Dark navy blue color
-    val lightNavyBlue = Color(0xFF3A4C7C)
-
-
-
-    val gradientBrush = Brush.verticalGradient(
-        colors = listOf(darkNavyBlue, lightNavyBlue)
-    )
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.statusBarColor = android.graphics.Color.parseColor("#FF070915")//for status bar color
@@ -194,10 +185,7 @@ class MainActivity(
         window.decorView.rootView.setBackgroundColor(transparentColor)
 //        viewModel.log("Current memory: $free / $total")
 //        viewModel.log("Downloads directory: ${getExternalFilesDir(null)}")
-
-
         val extFilesDir = getExternalFilesDir(null)
-
         val models = listOf(
             Downloadable(
                 "Llama-3.2-3B-Instruct-Q4_K_L",
@@ -312,11 +300,9 @@ fun MainCompose(
     var showSettingSheet by remember { mutableStateOf(false) }
     var isBottomSheetVisible by rememberSaveable  { mutableStateOf(false) }
     var modelData by rememberSaveable  { mutableStateOf<List<Map<String, String>>?>(null) }
-    var selectedModel by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val sheetState = rememberModalBottomSheetState()
-
     var UserGivenModel by remember {
         mutableStateOf(
             TextFieldValue(
@@ -325,11 +311,7 @@ fun MainCompose(
             )
         )
     }
-
-
-
-
-        val focusRequester = FocusRequester()
+    val focusRequester = FocusRequester()
     var isFocused by remember { mutableStateOf(false) }
     var textFieldBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
     if (allModelsExist) {
@@ -414,69 +396,8 @@ fun MainCompose(
 
 
                         if (isBottomSheetVisible) {
-                            ModalBottomSheet(
-                                onDismissRequest = {
-                                    isBottomSheetVisible = false
-                                },
-                                sheetState = sheetState,
-                                containerColor = Color.Black,
-                            ) {
-                                // Bottom sheet content
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp)
-                                ) {
-                                    if (isLoading) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                                        )
-                                    } else if (errorMessage != null) {
-                                        Text(
-                                            text = errorMessage ?: "An error occurred",
-                                            color = MaterialTheme.colorScheme.error,
-                                            modifier = Modifier.padding(8.dp)
-                                        )
-                                    } else {
-                                        // Make the models scrollable
-                                        LazyColumn(
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            modelData?.forEach { model ->
-                                                item {
-                                                    model["rfilename"]?.takeIf { it.endsWith(".gguf") }?.let { filename ->
-                                                        val fullUrl = "https://huggingface.co/${viewModel.userGivenModel}/resolve/main/${filename}?download=true"
-                                                        Log.i("This is the url", fullUrl)
-
-                                                        Downloadable.Button(
-                                                            viewModel,
-                                                            dm,
-                                                            Downloadable(
-                                                                name = filename,
-                                                                source = Uri.parse(fullUrl),
-                                                                destination =  File(extFileDir, filename)
-                                                            )
-                                                        )
-
-//                                                        val fileSize = getRemoteFileSize(fullUrl)
-//                                                        fileSize?.let { size ->
-//                                                            Text(
-//                                                                text = size,
-//                                                                style = MaterialTheme.typography.bodyLarge,
-//                                                                fontWeight = FontWeight.Bold
-//                                                            )
-//                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                            // Customize this based on your actual ModelData structure
-
-                                            // Add more details as needed
-
-                                    }
-                                }
+                            if (extFileDir != null) {
+                                SearchResultBottomSheet(viewModel, dm, extFileDir, modelData, isInitiallyVisible = isBottomSheetVisible, onDismiss = {isBottomSheetVisible = false})
                             }
                         }
 
@@ -504,7 +425,6 @@ fun MainCompose(
                                 viewModel.userGivenModel = newValue.text
                             },
                             label = { Text("Search Models Online") },
-//                            placeholder = (Text("Example: bartowski/Llama-3.2-1B-Instruct-GGUF")),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(color = Color.Transparent),
@@ -1248,7 +1168,6 @@ fun MainCompose(
                                                 .padding(horizontal = 15.dp, vertical = 12.dp)
 //                                                .align(Alignment.Center)
                                         )
-
                                 }
                             }
                         }
@@ -1362,9 +1281,6 @@ fun MainCompose(
                                 )
                             )
 
-
-
-
                             if (!viewModel.getIsSending()) {
 
                                 IconButton(onClick = {
@@ -1394,399 +1310,7 @@ fun MainCompose(
                                     )
                                 }
                             }
-
                         }
-                    }
-
-
-                }
-            }
-        }
-    }
-
-
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SettingsBottomSheet(
-    viewModel: MainViewModel,
-    onDismiss: () -> Unit) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val sheetScrollState = rememberLazyListState()
-    ModalBottomSheet(
-        sheetState = sheetState,
-        onDismissRequest = onDismiss,
-        containerColor = Color(0xFF01081a),
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(10.dp)
-        ){
-            Text(
-                text = "Settings",
-                color = Color.White,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                textAlign = TextAlign.Center
-            )
-            LazyColumn(state = sheetScrollState) {
-                item{
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                color = Color(0xFF14161f),
-                                shape = RoundedCornerShape(8.dp),
-                            )
-                            .border(
-                                border = BorderStroke(
-                                    width = 1.dp,
-                                    color = Color.LightGray.copy(alpha = 0.5f)
-                                ),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(16.dp)
-                    ) {
-                        Column {
-                            Text(
-                                text = "Select thread for process, 0 for default",
-                                color = Color.White,
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
-
-                            Text(
-                                text = "${viewModel.user_thread.toInt()}",
-                                color = Color.White
-                            )
-                            Slider(
-                                value = viewModel.user_thread,
-                                onValueChange = {
-
-                                    viewModel.user_thread = it
-                                },
-                                valueRange = 0f..8f,
-                                steps = 7,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = Color(0xFF6200EE),
-                                    activeTrackColor = Color(0xFF6200EE),
-                                    inactiveTrackColor = Color.Gray
-                                ),
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            Text(
-                                text = "After changing thread please Save the changes!!",
-                                color = Color.White,
-                            )
-                            Spacer(modifier = Modifier.height(15.dp))
-                            Button(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.DarkGray.copy(alpha = 1.0f), // Set the containerColor to transparent
-                                    contentColor = Color.White,
-                                ),
-                                shape = RoundedCornerShape(8.dp), // Slightly more rounded corners
-                                elevation = ButtonDefaults.buttonElevation(
-                                    defaultElevation = 6.dp,
-                                    pressedElevation = 3.dp
-                                ),
-                                onClick = {
-                                viewModel.currentDownloadable?.destination?.path?.let {
-                                    viewModel.load(
-                                        it, viewModel.user_thread.toInt())
-                                }
-                            }
-                            ) {
-
-                                Text("Save")
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-
-//        Box(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(20.dp)
-//                .background(color = Color(0xFF01081a)),
-//            contentAlignment = Alignment.Center
-//        ) {
-//
-//        }
-    }
-}
-
-@Composable
-fun ScrollToBottomButton(
-    viewModel: MainViewModel,
-    scrollState: LazyListState,
-    messages: List<Any>
-) {
-    val coroutineScope = rememberCoroutineScope()
-
-    // State to track if auto-scrolling is enabled
-    var isAutoScrolling by remember { mutableStateOf(false) }
-
-    // State to control the button's visibility
-    var isButtonVisible by remember { mutableStateOf(true) }
-
-    // Determine if the user can scroll down
-    val canScrollDown by remember {
-        derivedStateOf { scrollState.canScrollForward }
-    }
-
-    // Continuously scroll to the bottom while auto-scrolling is enabled
-    LaunchedEffect(viewModel.messages.size, isAutoScrolling) {
-        if (isAutoScrolling) {
-            coroutineScope.launch {
-                scrollState.scrollToItem(viewModel.messages.size + 1)
-            }
-        }
-    }
-
-    // Stop auto-scrolling when the user scrolls manually
-    LaunchedEffect(scrollState.isScrollInProgress) {
-        if (scrollState.isScrollInProgress) {
-            isAutoScrolling = false
-            isButtonVisible = true // Show the button again if the user scrolls manually
-        }
-    }
-
-    // Continuously monitor changes in the last item's content
-    LaunchedEffect(messages.lastOrNull()) {
-        if (isAutoScrolling && messages.isNotEmpty()) {
-            coroutineScope.launch {
-                scrollState.scrollToItem(viewModel.messages.size + 1)
-            }
-        }
-    }
-
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        AnimatedVisibility(
-            visible = (canScrollDown || isAutoScrolling) && isButtonVisible, // Show button if needed
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            FloatingActionButton(
-                onClick = {
-                    isAutoScrolling = true // Enable auto-scrolling
-                    isButtonVisible = false // Hide the button on click
-                    coroutineScope.launch {
-                        scrollState.scrollToItem(viewModel.messages.size + 1)
-                    }
-                },
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .size(56.dp),
-                // Ensures a circular shape
-                shape = RoundedCornerShape(percent = 50),
-                containerColor = Color.White.copy(alpha = 0.5f),
-                contentColor = Color.Black
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.KeyboardArrowDown,
-                    contentDescription = "Scroll to bottom",
-                    tint = Color.White // White icon for better visibility
-                )
-            }
-        }
-    }
-}
-
-
-@Composable
-fun ModelSelectorWithDownloadModal(
-    viewModel: MainViewModel,
-    downloadManager: DownloadManager,
-    extFileDir: File?
-) {
-
-
-    val context = LocalContext.current as Activity
-    val coroutineScope = rememberCoroutineScope()
-
-    var mExpanded by remember { mutableStateOf(false) }
-    var mSelectedText by remember { mutableStateOf("") }
-    var mTextFieldSize by remember { mutableStateOf(Size.Zero) }
-    var selectedModel by remember { mutableStateOf<Map<String, Any>?>(null) }
-
-    val icon = if (mExpanded)
-        Icons.Filled.KeyboardArrowUp
-    else
-        Icons.Filled.KeyboardArrowDown
-
-    // Search for local .gguf models
-    val localModels = remember(extFileDir) {
-        extFileDir?.listFiles { _, name -> name.endsWith(".gguf") }
-            ?.map { file ->
-                mapOf(
-                    "name" to file.nameWithoutExtension,
-                    "source" to file.toURI().toString(),
-                    "destination" to file.name
-                )
-            } ?: emptyList()
-    }
-    // Combine local and remote models, ensuring uniqueness
-    val combinedModels = remember(viewModel.allModels, localModels) {
-        (viewModel.allModels + localModels).distinctBy { it["name"] }
-    }
-    viewModel.allModels = combinedModels
-
-
-    Column(Modifier.padding(20.dp)) {
-
-        OutlinedTextField(
-            value= viewModel.loadedModelName.value,
-            onValueChange = { mSelectedText = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .onGloballyPositioned { coordinates ->
-                    mTextFieldSize = coordinates.size.toSize()
-                }
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = {
-                            mExpanded = !mExpanded
-                        },
-                        onPress = {
-                            mExpanded = !mExpanded
-                        }
-                    )
-                }
-                .clickable {
-                    mExpanded = !mExpanded
-                },
-            label = { Text("Select Model") },
-            trailingIcon = {
-                Icon(
-                    icon,
-                    contentDescription = "Toggle dropdown",
-                    Modifier.clickable { mExpanded = !mExpanded },
-                    tint =Color(0xFFcfcfd1)
-                )
-            },
-            textStyle = TextStyle(color = Color(0xFFf5f5f5)),
-            readOnly = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color(0xFF666666),
-                focusedBorderColor = Color(0xFFcfcfd1),
-                unfocusedLabelColor = Color(0xFF666666),
-                focusedLabelColor = Color(0xFFcfcfd1),
-                unfocusedTextColor = Color(0xFFf5f5f5),
-                focusedTextColor = Color(0xFFf7f5f5),
-            )
-        )
-
-
-
-        DropdownMenu(
-            modifier = Modifier
-                .background(Color(0xFF01081a))
-                .width(with(LocalDensity.current) { mTextFieldSize.width.toDp() })
-                .padding(top = 2.dp)
-                .border(1.dp, color = Color.LightGray.copy(alpha = 0.5f)),
-            expanded = mExpanded,
-            onDismissRequest = {
-                mExpanded = false
-            }
-        ) {
-            viewModel.allModels.forEach { model ->
-                DropdownMenuItem(
-                    modifier = Modifier
-                        .background(color = Color(0xFF090b1a))
-                        .padding(horizontal = 1.dp, vertical = 0.dp),
-                    onClick = {
-                        mSelectedText = model["name"].toString()
-                        selectedModel = model
-                        mExpanded = false
-
-                        // Convert model to Downloadable and show modal
-                        val downloadable = Downloadable(
-                            name = model["name"].toString(),
-                            source = Uri.parse(model["source"].toString()),
-                            destination = File(extFileDir, model["destination"].toString())
-                        )
-
-                        viewModel.showModal = true
-                        viewModel.currentDownloadable = downloadable
-                    }
-                ) {
-                    model["name"]?.let { Text(text = it, color = Color.White) }
-                }
-            }
-        }
-
-        // Use showModal instead of switchModal
-        if (viewModel.showModal && viewModel.currentDownloadable != null) {
-            Dialog(onDismissRequest = {
-                viewModel.showModal = false  // Consistent with the condition
-                viewModel.currentDownloadable = null  // Optional: clear the current downloadable
-            }) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = Color.Black,
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .height(300.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .height(140.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Download Required",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "Don't close or minimize the app!",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(35.dp))
-                        // Use the current downloadable from the view model
-                        viewModel.currentDownloadable?.let { downloadable ->
-                            Downloadable.Button(viewModel, downloadManager, downloadable)
-                            if (downloadable.destination.exists()){
-                                Spacer(modifier = Modifier.height(25.dp))
-                                Button(
-                                    onClick = {
-
-                                        coroutineScope.launch {  viewModel.unload()}
-                                        // Delete the model file
-                                        downloadable.destination.delete()
-                                        // Reset dialog visibility and update UI
-                                        viewModel.showModal = false
-                                        viewModel.currentDownloadable = null
-
-                                        Toast.makeText(context, "Restarting App!!.", Toast.LENGTH_SHORT).show()
-                                        val packageManager: PackageManager = context.packageManager
-                                               val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
-                                               val componentName: ComponentName = intent.component!!
-                                               val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
-                                               context.startActivity(restartIntent)
-                                               Runtime.getRuntime().exit(0)
-
-
-
-                                    },
-                                ) {
-                                    Text(text = "Delete Model")
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
             }
@@ -1794,116 +1318,8 @@ fun ModelSelectorWithDownloadModal(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MessageBottomSheet(
-    message: String,
-    clipboard: ClipboardManager,
-    context: Context,
-    viewModel: MainViewModel,
-    onDismiss: () -> Unit,
-    sheetState: SheetState
-) {
 
 
-    ModalBottomSheet(
-        sheetState = sheetState,
-        containerColor = Color(0xFF01081a),
-        onDismissRequest = onDismiss
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp)
-                .background(color = Color(0xFF01081a))
-        ) {
-            var sheetScrollState = rememberLazyListState()
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp)
-
-            ) {
-                // Copy Text Button
-                TextButton(
-                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    onClick = {
-                        clipboard.setText(AnnotatedString(message))
-                        Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
-                        onDismiss()
-                    }
-                ) {
-                    Text(text = "Copy Text", color = Color(0xFFA0A0A5))
-                }
-
-                // Select Text Button
-                TextButton(
-                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    enabled = !viewModel.getIsSending(),
-                    onClick = {
-                        viewModel.toggler = !viewModel.toggler
-                    }
-                ) {
-                    Text(text = "Select Text To Copy", color = Color(0xFFA0A0A5))
-                }
-
-                // Text to Speech Button
-                TextButton(
-                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    enabled = !viewModel.getIsSending(),
-                    onClick = {
-                        if (viewModel.stateForTextToSpeech) {
-                            viewModel.textForTextToSpeech = message
-                            viewModel.textToSpeech(context)
-                        } else {
-                            viewModel.stopTextToSpeech()
-                        }
-                        onDismiss()
-                    }
-                ) {
-                    Text(
-                        text = if (viewModel.stateForTextToSpeech) "Text To Speech" else "Stop",
-                        color = Color(0xFFA0A0A5)
-                    )
-                }
-
-                // Selection Container
-                LazyColumn(state = sheetScrollState) {
-                    item {
-                        SelectionContainer {
-                            if (viewModel.toggler) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(color = Color.Black)
-                                        .padding(25.dp)
-                                ) {
-                                    Text(
-                                        text = AnnotatedString(message),
-                                        color = Color.White
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-}
 
 
 

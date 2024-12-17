@@ -4,8 +4,6 @@ import android.content.Context
 import android.llama.cpp.LLamaAndroid
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
@@ -15,11 +13,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
 import java.util.UUID
@@ -30,16 +26,15 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 //        private val NanosPerSecond = 1_000_000_000.0
     }
 
-    private val tag: String? = this::class.simpleName
+    //Variable Declaration Start
 
+    private val tag: String? = this::class.simpleName
     var messages by mutableStateOf(
 
             listOf<Map<String, String>>(),
         )
         private set
-
     var user_thread by mutableStateOf(0f)
-
     var allModels by mutableStateOf(
         listOf(
             mapOf(
@@ -60,28 +55,25 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
         )
     )
-
     private var first by mutableStateOf(
         true
     )
-    var userSpecifiedThreads by mutableIntStateOf(2)
     var message by mutableStateOf("")
         private set
-
     var userGivenModel by mutableStateOf("")
     var SearchedName by mutableStateOf("")
-
-
     private var textToSpeech:TextToSpeech? = null
-
     var textForTextToSpeech = ""
     var stateForTextToSpeech by mutableStateOf(true)
         private set
-
     var eot_str = ""
+    var toggler by mutableStateOf(false)
+    var showModal by  mutableStateOf(true)
+    var showAlert by mutableStateOf(false)
+    var currentDownloadable: Downloadable? by mutableStateOf(null)
+    var loadedModelName = mutableStateOf("");
 
-
-
+    //Variable Declaration End
 
     fun loadExistingModels(directory: File) {
         // List models in the directory that end with .gguf
@@ -110,8 +102,6 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             )
         }
     }
-
-
 
     fun textToSpeech(context: Context) {
         if (!getIsSending()) {
@@ -161,8 +151,6 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         }
     }
 
-
-
     fun stopTextToSpeech() {
         textToSpeech?.apply {
             stop()  // Stops current speech
@@ -173,14 +161,6 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         // Reset state to allow restarting
         stateForTextToSpeech = true
     }
-
-
-
-    var toggler by mutableStateOf(false)
-    var showModal by  mutableStateOf(true)
-    var showAlert by mutableStateOf(false)
-    var switchModal by mutableStateOf(false)
-    var currentDownloadable: Downloadable? by mutableStateOf(null)
 
     override fun onCleared() {
         textToSpeech?.shutdown()
@@ -245,35 +225,11 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
     }
 
-//    fun bench(pp: Int, tg: Int, pl: Int, nr: Int = 1) {
-//        viewModelScope.launch {
-//            try {
-//                val start = System.nanoTime()
-//                val warmupResult = llamaAndroid.bench(pp, tg, pl, nr)
-//                val end = System.nanoTime()
-//
-//                messages += warmupResult
-//
-//                val warmup = (end - start).toDouble() / NanosPerSecond
-//                messages += "Warm up time: $warmup seconds, please wait..."
-//
-//                if (warmup > 5.0) {
-//                    messages += "Warm up took too long, aborting benchmark"
-//                    return@launch
-//                }
-//
-//                messages += llamaAndroid.bench(512, 128, 1, 3)
-//            } catch (exc: IllegalStateException) {
-//                Log.e(tag, "bench() failed", exc)
-//                messages += exc.message!!
-//            }
-//        }
-//    }
 
     suspend fun unload(){
         llamaAndroid.unload()
     }
-    var loadedModelName = mutableStateOf("");
+
 
     fun load(pathToModel: String, userThreads: Int)  {
         viewModelScope.launch {
@@ -331,19 +287,6 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         // Replace multiple white spaces with a single space
         return input.replace("\\s+".toRegex(), " ")
     }
-
-    private fun parseTemplateJson(chatData: List<Map<String, String>> ):String{
-        var chatStr = ""
-        for (data in chatData){
-            val role = data["role"]
-            val content = data["content"]
-            if (role != "log"){
-                chatStr += "$role \n$content \n"
-            }
-
-        }
-        return chatStr
-    }
     fun updateMessage(newMessage: String) {
         message = newMessage
     }
@@ -377,6 +320,30 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
 }
 
-fun sentThreadsValue(){
 
-}
+//    fun bench(pp: Int, tg: Int, pl: Int, nr: Int = 1) {
+//        viewModelScope.launch {
+//            try {
+//                val start = System.nanoTime()
+//                val warmupResult = llamaAndroid.bench(pp, tg, pl, nr)
+//                val end = System.nanoTime()
+//
+//                messages += warmupResult
+//
+//                val warmup = (end - start).toDouble() / NanosPerSecond
+//                messages += "Warm up time: $warmup seconds, please wait..."
+//
+//                if (warmup > 5.0) {
+//                    messages += "Warm up took too long, aborting benchmark"
+//                    return@launch
+//                }
+//
+//                messages += llamaAndroid.bench(512, 128, 1, 3)
+//            } catch (exc: IllegalStateException) {
+//                Log.e(tag, "bench() failed", exc)
+//                messages += exc.message!!
+//            }
+//        }
+//    }
+
+
