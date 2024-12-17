@@ -381,7 +381,7 @@ fun MainCompose(
                                 ){
                                     Icon( painter = painterResource(id = R.drawable.settings_5_svgrepo_com),
                                         contentDescription = "Centered Background Logo",
-                                        modifier = Modifier.size(35.dp),
+                                        modifier = Modifier.size(25.dp),
                                         tint = Color.White
                                     )
 
@@ -1404,6 +1404,15 @@ fun SettingsBottomSheet(
             modifier = Modifier
                 .padding(10.dp)
         ){
+            Text(
+                text = "Settings",
+                color = Color.White,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                textAlign = TextAlign.Center
+            )
             LazyColumn(state = sheetScrollState) {
                 item{
                     Box(
@@ -1448,11 +1457,23 @@ fun SettingsBottomSheet(
                             )
                             Spacer(modifier = Modifier.height(15.dp))
                             Text(
-                                text = "After changing thread please reload the model!!",
+                                text = "After changing thread please Save the changes!!",
                                 color = Color.White,
                             )
+                            Spacer(modifier = Modifier.height(15.dp))
                             Button(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
 
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.DarkGray.copy(alpha = 1.0f), // Set the containerColor to transparent
+                                    contentColor = Color.White,
+                                ),
+                                shape = RoundedCornerShape(8.dp), // Slightly more rounded corners
+                                elevation = ButtonDefaults.buttonElevation(
+                                    defaultElevation = 6.dp,
+                                    pressedElevation = 3.dp
+                                ),
                                 onClick = {
                                 viewModel.currentDownloadable?.destination?.path?.let {
                                     viewModel.load(
