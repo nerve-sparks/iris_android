@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Iris</string>
+    <string name="settings_screen_title">Settings</string>
+    <string name="search_results_screen_title">Search</string>
+    <string name="parameters_screen_title">Parameters</string>
+    <string name="models_screen_title">Models</string>
+    <string name="back_button">BackButton</string>
 </resources>
