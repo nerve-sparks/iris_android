@@ -2,20 +2,20 @@ package com.nervesparks.iris
 
 import android.content.Context
 import android.llama.cpp.LLamaAndroid
+import android.net.Uri
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
-import androidx.compose.material.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.transform
-import kotlinx.coroutines.launch
+import java.io.File
 import java.util.Locale
 import java.util.UUID
 
@@ -25,53 +25,82 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 //        private val NanosPerSecond = 1_000_000_000.0
     }
 
-    private val tag: String? = this::class.simpleName
+    //Variable Declaration Start
 
+    private val tag: String? = this::class.simpleName
     var messages by mutableStateOf(
 
             listOf<Map<String, String>>(),
         )
         private set
-
+    var user_thread by mutableStateOf(0f)
     var allModels by mutableStateOf(
         listOf(
             mapOf(
-                "name" to "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
-                "source" to "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true",
-                "destination" to "Llama-3.2-3B-Instruct-Q4_K_L.gguf"
-            ),
-            mapOf(
-                "name" to "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
+                "name" to "Llama-3.2-1B-Instruct-Q6_K_L",
                 "source" to "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true",
                 "destination" to "Llama-3.2-1B-Instruct-Q6_K_L.gguf"
             ),
             mapOf(
-                "name" to "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
+                "name" to "Llama-3.2-3B-Instruct-Q4_K_L",
+                "source" to "https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true",
+                "destination" to "Llama-3.2-3B-Instruct-Q4_K_L.gguf"
+            ),
+            mapOf(
+                "name" to "stablelm-2-1_6b-chat.Q4_K_M.imx",
                 "source" to "https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true",
                 "destination" to "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf"
             ),
 
         )
     )
-        private set
-
     private var first by mutableStateOf(
         true
     )
-
     var message by mutableStateOf("")
         private set
-
-
+    var userGivenModel by mutableStateOf("")
+    var SearchedName by mutableStateOf("")
     private var textToSpeech:TextToSpeech? = null
-
     var textForTextToSpeech = ""
     var stateForTextToSpeech by mutableStateOf(true)
         private set
-
     var eot_str = ""
+    var toggler by mutableStateOf(false)
+    var showModal by  mutableStateOf(true)
+    var showAlert by mutableStateOf(false)
+    var currentDownloadable: Downloadable? by mutableStateOf(null)
+    var loadedModelName = mutableStateOf("");
 
+    //Variable Declaration End
 
+    fun loadExistingModels(directory: File) {
+        // List models in the directory that end with .gguf
+        directory.listFiles { file -> file.extension == "gguf" }?.forEach { file ->
+            val modelName = file.nameWithoutExtension
+            if (!allModels.any { it["name"] == modelName }) {
+                allModels += mapOf(
+                    "name" to modelName,
+                    "source" to "local",
+                    "destination" to file.name
+                )
+            }
+        }
+
+        // Attempt to find and load the first model that exists in the combined logic
+        allModels.find { model ->
+            val destinationPath = File(directory, model["destination"].toString())
+            destinationPath.exists()
+        }?.let { model ->
+            val destinationPath = File(directory, model["destination"].toString())
+            load(destinationPath.path, userThreads = user_thread.toInt())
+            currentDownloadable = Downloadable(
+                model["name"].toString(),
+                Uri.parse(model["source"].toString()),
+                destinationPath
+            )
+        }
+    }
 
     fun textToSpeech(context: Context) {
         if (!getIsSending()) {
@@ -131,14 +160,6 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         // Reset state to allow restarting
         stateForTextToSpeech = true
     }
-
-
-
-    var toggler by mutableStateOf(false)
-    var showModal by  mutableStateOf(true)
-    var showAlert by mutableStateOf(false)
-    var switchModal by mutableStateOf(false)
-    var currentDownloadable: Downloadable? by mutableStateOf(null)
 
     override fun onCleared() {
         textToSpeech?.shutdown()
@@ -203,37 +224,13 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
     }
 
-//    fun bench(pp: Int, tg: Int, pl: Int, nr: Int = 1) {
-//        viewModelScope.launch {
-//            try {
-//                val start = System.nanoTime()
-//                val warmupResult = llamaAndroid.bench(pp, tg, pl, nr)
-//                val end = System.nanoTime()
-//
-//                messages += warmupResult
-//
-//                val warmup = (end - start).toDouble() / NanosPerSecond
-//                messages += "Warm up time: $warmup seconds, please wait..."
-//
-//                if (warmup > 5.0) {
-//                    messages += "Warm up took too long, aborting benchmark"
-//                    return@launch
-//                }
-//
-//                messages += llamaAndroid.bench(512, 128, 1, 3)
-//            } catch (exc: IllegalStateException) {
-//                Log.e(tag, "bench() failed", exc)
-//                messages += exc.message!!
-//            }
-//        }
-//    }
 
     suspend fun unload(){
         llamaAndroid.unload()
     }
-    var loadedModelName = mutableStateOf("");
 
-    fun load(pathToModel: String) {
+
+    fun load(pathToModel: String, userThreads: Int)  {
         viewModelScope.launch {
             try{
                 llamaAndroid.unload()
@@ -243,8 +240,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             try {
                 var modelName = pathToModel.split("/")
                 loadedModelName.value = modelName.last()
+                showModal= false
                 showAlert = true
-                llamaAndroid.load(pathToModel)
+                llamaAndroid.load(pathToModel, userThreads)
                 showAlert = false
 
             } catch (exc: IllegalStateException) {
@@ -288,19 +286,6 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         // Replace multiple white spaces with a single space
         return input.replace("\\s+".toRegex(), " ")
     }
-
-    private fun parseTemplateJson(chatData: List<Map<String, String>> ):String{
-        var chatStr = ""
-        for (data in chatData){
-            val role = data["role"]
-            val content = data["content"]
-            if (role != "log"){
-                chatStr += "$role \n$content \n"
-            }
-
-        }
-        return chatStr
-    }
     fun updateMessage(newMessage: String) {
         message = newMessage
     }
@@ -331,4 +316,33 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     fun stop() {
         llamaAndroid.stopTextGeneration()
     }
+
 }
+
+
+//    fun bench(pp: Int, tg: Int, pl: Int, nr: Int = 1) {
+//        viewModelScope.launch {
+//            try {
+//                val start = System.nanoTime()
+//                val warmupResult = llamaAndroid.bench(pp, tg, pl, nr)
+//                val end = System.nanoTime()
+//
+//                messages += warmupResult
+//
+//                val warmup = (end - start).toDouble() / NanosPerSecond
+//                messages += "Warm up time: $warmup seconds, please wait..."
+//
+//                if (warmup > 5.0) {
+//                    messages += "Warm up took too long, aborting benchmark"
+//                    return@launch
+//                }
+//
+//                messages += llamaAndroid.bench(512, 128, 1, 3)
+//            } catch (exc: IllegalStateException) {
+//                Log.e(tag, "bench() failed", exc)
+//                messages += exc.message!!
+//            }
+//        }
+//    }
+
+
