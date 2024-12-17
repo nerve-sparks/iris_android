@@ -158,7 +158,6 @@ class MainActivity(
     private val clipboardManager by lazy { clipboardManager ?: getSystemService<ClipboardManager>()!! }
 
 
-
     private val viewModel: MainViewModel by viewModels()
     private var model_name = "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)"
 
@@ -201,7 +200,7 @@ class MainActivity(
 
         val models = listOf(
             Downloadable(
-                "Llama-3.2-1B-Instruct-Q6_K_L",
+                "Llama-3.2-3B-Instruct-Q4_K_L",
                 Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
                 File(extFilesDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
 
@@ -223,10 +222,15 @@ class MainActivity(
 //                viewModel.load(model.destination.path)
 //            }
 //        }
-        models.find { model -> model.destination.exists() }?.let { model ->
-            viewModel.load(model.destination.path, userThreads = viewModel.user_thread.toInt())
-            viewModel.currentDownloadable = model
+//        models.find { model -> model.destination.exists() }?.let { model ->
+//            viewModel.load(model.destination.path, userThreads = viewModel.user_thread)
+//            viewModel.currentDownloadable = model
+//        }
+        if (extFilesDir != null) {
+            viewModel.loadExistingModels(extFilesDir)
         }
+
+
 
         setContent {
 
@@ -242,7 +246,7 @@ class MainActivity(
                         clipboardManager,
                         downloadManager,
                         models,
-                        extFilesDir
+                        extFilesDir,
                     )
                 }
 
@@ -477,11 +481,21 @@ fun MainCompose(
                         }
 
                        ModelSelectorWithDownloadModal(viewModel = viewModel, downloadManager = dm, extFileDir = extFileDir)
+
                         Column (
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
                         ){
+                            Text(
+                                text = "Example: bartowski/Llama-3.2-1B-Instruct-GGUF",
+                                modifier = Modifier
+                                    .wrapContentSize()
+                                    .padding(4.dp),
+                                color = Color.White,
+                                fontSize = 10.sp
+                            )
+                            Spacer(Modifier.height(2.dp))
                         OutlinedTextField(
                             value = UserGivenModel,
                             onValueChange = { newValue ->
@@ -489,7 +503,8 @@ fun MainCompose(
                                 // Update ViewModel or perform other actions with the new value
                                 viewModel.userGivenModel = newValue.text
                             },
-                            label = { Text("User Given Model") },
+                            label = { Text("Search Models Online") },
+//                            placeholder = (Text("Example: bartowski/Llama-3.2-1B-Instruct-GGUF")),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(color = Color.Transparent),
@@ -503,7 +518,7 @@ fun MainCompose(
                             focusedTextColor = Color(0xFFf7f5f5),
                         )
                         )
-                        Spacer(Modifier.height(5.dp))
+                        Spacer(Modifier.height(8.dp))
                         Button(
                             onClick = {
                                 if(viewModel.SearchedName != viewModel.userGivenModel) {
@@ -596,7 +611,11 @@ fun MainCompose(
                                     )
                                 ){
                             Text(
-                                text = if (viewModel.SearchedName != viewModel.userGivenModel) "Search Model" else "Open",
+                                text = when {
+                                    isLoading -> "Searching..."
+                                    viewModel.SearchedName != viewModel.userGivenModel -> "Search Model"
+                                    else -> "Open"
+                                },
                                 style = MaterialTheme.typography.bodyLarge,
                             )
                                 }
@@ -1266,9 +1285,9 @@ fun MainCompose(
                                 Icon(
 //                                imageVector = Icons.Default.Send,
                                     modifier = Modifier
-                                        .size(24.dp)
+                                        .size(25.dp)
                                         .weight(1f),
-                                    painter = painterResource(id = R.drawable.mic_on_svgrepo_com),
+                                    painter = painterResource(id = R.drawable.microphone_new_svgrepo_com),
                                     contentDescription = "Mic",
                                     tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
                                 )
@@ -1355,7 +1374,7 @@ fun MainCompose(
                                 ) {
                                     Icon(
                                         modifier = Modifier
-                                            .size(28.dp)
+                                            .size(30.dp)
                                             .weight(1f),
                                         painter = painterResource(id = R.drawable.send_2_svgrepo_com),
                                         contentDescription = "Send",
@@ -1368,7 +1387,7 @@ fun MainCompose(
                                     Icon(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .size(32.dp),
+                                            .size(28.dp),
                                         painter = painterResource(id = R.drawable.square_svgrepo_com),
                                         contentDescription = "Stop",
                                         tint = Color(0xFFDDDDE4)
@@ -1590,45 +1609,10 @@ fun ModelSelectorWithDownloadModal(
     downloadManager: DownloadManager,
     extFileDir: File?
 ) {
-    fun loadExistingModels(directory: File, viewModel: MainViewModel) {
-        directory.listFiles { file ->
-            file.extension == "gguf"
-        }?.forEach { file ->
-            val modelName = file.nameWithoutExtension
-            if (!viewModel.allModels.any { it["name"] == modelName }) {
-                val currentName = file.toString().split("/")
-                viewModel.allModels += mapOf(
-                    "name" to modelName,
-                    "source" to "local",
-                    "destination" to currentName.last()
-                )
-            }
-        }
-    }
-    LaunchedEffect(Unit) {
-        extFileDir?.let {
-            loadExistingModels(it, viewModel)
-        }
-    }
+
+
     val context = LocalContext.current as Activity
     val coroutineScope = rememberCoroutineScope()
-    val models = listOf(
-        Downloadable(
-            "Llama 3.2 3B Instruct (Q4_K_L, 2.11 GiB)",
-            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
-            File(extFileDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
-        ),
-        Downloadable(
-            "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)",
-            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
-            File(extFileDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
-        ),
-        Downloadable(
-            "Stable LM 2 1.6B chat (Q4_K_M, 1 GiB)",
-            Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
-            File(extFileDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
-        )
-    )
 
     var mExpanded by remember { mutableStateOf(false) }
     var mSelectedText by remember { mutableStateOf("") }

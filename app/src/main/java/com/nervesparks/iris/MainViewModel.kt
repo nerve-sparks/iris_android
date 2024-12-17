@@ -2,6 +2,11 @@ package com.nervesparks.iris
 
 import android.content.Context
 import android.llama.cpp.LLamaAndroid
+import android.net.Uri
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
@@ -15,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.Locale
 import java.util.UUID
 
@@ -73,6 +79,37 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         private set
 
     var eot_str = ""
+
+
+
+
+    fun loadExistingModels(directory: File) {
+        // List models in the directory that end with .gguf
+        directory.listFiles { file -> file.extension == "gguf" }?.forEach { file ->
+            val modelName = file.nameWithoutExtension
+            if (!allModels.any { it["name"] == modelName }) {
+                allModels += mapOf(
+                    "name" to modelName,
+                    "source" to "local",
+                    "destination" to file.name
+                )
+            }
+        }
+
+        // Attempt to find and load the first model that exists in the combined logic
+        allModels.find { model ->
+            val destinationPath = File(directory, model["destination"].toString())
+            destinationPath.exists()
+        }?.let { model ->
+            val destinationPath = File(directory, model["destination"].toString())
+            load(destinationPath.path, userThreads = user_thread.toInt())
+            currentDownloadable = Downloadable(
+                model["name"].toString(),
+                Uri.parse(model["source"].toString()),
+                destinationPath
+            )
+        }
+    }
 
 
 
@@ -248,8 +285,8 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             try {
                 var modelName = pathToModel.split("/")
                 loadedModelName.value = modelName.last()
+                showModal= false
                 showAlert = true
-                showModal = false
                 llamaAndroid.load(pathToModel, userThreads)
                 showAlert = false
 

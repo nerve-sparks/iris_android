@@ -14,6 +14,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,12 +42,6 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
         @JvmStatic
         private val tag: String? = this::class.qualifiedName
 
-        sealed class DownloadStatus {
-            object Ready : DownloadStatus()
-            data class Downloaded(val item: Downloadable) : DownloadStatus()
-        }
-
-
         sealed interface State
         data object Ready : State
         data class Downloading(val id: Long, val totalSize: Long) : State
@@ -54,12 +49,26 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
         data class Error(val message: String) : State
         data object Stopped : State
 
+
+
         @JvmStatic
         @Composable
         fun Button(viewModel: MainViewModel, dm: DownloadManager, item: Downloadable) {
-            var status: State by remember   {
+
+            var status: State by remember  {
                 mutableStateOf(
                     if (item.destination.exists()) Downloaded(item)
+                    else if(isAlreadyDownloading(dm, item)){
+                        val request = DownloadManager.Request(item.source).apply {
+                            setTitle("Downloading model")
+                            setDescription("Downloading model: ${item.name}")
+                            setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
+                            setDestinationUri(item.destination.toUri())
+                        }
+
+                        val id = dm.enqueue(request)
+
+                        Downloading(id, -1L)}
                     else Ready
                 )
             }
@@ -105,6 +114,14 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                                 Log.d(tag, "Model dynamically added to viewModel: $newModel")
                             }
                         }
+                        val newModel = mapOf(
+                            "name" to item.name,
+                            "source" to item.source.toString(),
+                            "destination" to item.destination.path
+                        )
+                        viewModel.allModels = viewModel.allModels + newModel
+                        Log.d(tag, "Model dynamically added to viewModel: $newModel")
+
                         viewModel.currentDownloadable = item
                         viewModel.load(item.destination.path, userThreads = viewModel.user_thread.toInt())
                         return Downloaded(item)
@@ -115,7 +132,11 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 }
             }
 
-
+            LaunchedEffect(status) {
+                if (status is Downloading) {
+                    status = waitForDownload(status as Downloading, item)
+                }
+            }
             fun onClick() {
                 when (val s = status) {
                     is Downloaded -> {
@@ -125,20 +146,10 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     }
 
                     is Downloading -> {
-                        coroutineScope.launch {
-                            status = waitForDownload(s, item)
-                        }
-                    }
-
-                    is Stopped -> {
-                        // Handle the paused or stopped download state.
-                        Log.i(tag, "Download has been stopped for ${item.name}")
-                        status = Ready
+                        Log.d("Downloading", "Already downloading in background")
                     }
 
                     else -> {
-                        item.destination.delete()
-
                         val request = DownloadManager.Request(item.source).apply {
                             setTitle("Downloading model")
                             setDescription("Downloading model: ${item.name}")
@@ -146,25 +157,20 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                             setDestinationUri(item.destination.toUri())
                         }
 
-                        viewModel.log("Saving ${item.name} to ${item.destination.path}")
-                        Log.i(
-                            tag,
-                            "Saving ${item.name} to ${item.destination.path} \n Download only on Wifi or mobile data. \n"
-                        )
-
                         val id = dm.enqueue(request)
-                        status = Downloading(id, totalSize ?: -1L)
+                        status = Downloading(id, -1L) // Dynamically update status
                         coroutineScope.launch {
-                            status = waitForDownload(Downloading(id, totalSize ?: -1L), item)
+                            status = waitForDownload(Downloading(id, -1L), item)
                         }
                     }
                 }
             }
 
+
             fun onStop() {
                 if (status is Downloading) {
                     dm.remove((status as Downloading).id)
-                    status = Stopped
+                    status = Ready
                 }
             }
 
@@ -238,4 +244,23 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
     }
 }
 
+
+fun isAlreadyDownloading(dm: DownloadManager, item: Downloadable): Boolean {
+    val query = DownloadManager.Query()
+        .setFilterByStatus(DownloadManager.STATUS_RUNNING or DownloadManager.STATUS_PENDING)
+
+    val cursor = dm.query(query)
+
+    cursor?.use {
+        while (it.moveToNext()) {
+            val uriIndex = it.getColumnIndex(DownloadManager.COLUMN_URI)
+            val currentUri = it.getString(uriIndex)
+            if (currentUri == item.source.toString()) {
+                Log.d("CheckDownload", "Item is already downloading or pending.")
+                return true
+            }
+        }
+    }
+    return false
+}
 
