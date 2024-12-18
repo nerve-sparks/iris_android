@@ -22,6 +22,7 @@ import com.nervesparks.iris.LinearGradient
 
 @Composable
 fun SettingsScreen(
+    OnParamsScreenButtonClicked: () -> Unit,
     OnModelsScreenButtonClicked: () -> Unit,
     OnBackButtonClicked: (Int) -> Unit
 ) {
@@ -61,7 +62,7 @@ fun SettingsScreen(
             )
 
             OutlinedButton(
-                onClick = OnModelsScreenButtonClicked,
+                onClick = OnParamsScreenButtonClicked,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
                     contentColor = Color.White,

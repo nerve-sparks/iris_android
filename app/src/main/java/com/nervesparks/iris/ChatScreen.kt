@@ -34,6 +34,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.nervesparks.iris.ui.MainChatScreen
 import com.nervesparks.iris.ui.ModelsScreen
+import com.nervesparks.iris.ui.ParametersScreen
 import com.nervesparks.iris.ui.SearchResultScreen
 import com.nervesparks.iris.ui.SettingsScreen
 import java.io.File
@@ -43,7 +44,8 @@ enum class ChatScreen(@StringRes val title: Int) {
     Start(title = R.string.app_name),
     Settings(title = R.string.settings_screen_title),
     SearchResults(title = R.string.search_results_screen_title),
-    ModelsScreen(title = R.string.models_screen_title)
+    ModelsScreen(title = R.string.models_screen_title),
+    ParamsScreen(title = R.string.parameters_screen_title)
 }
 
 
@@ -162,6 +164,9 @@ fun ChatScreen(
                         OnModelsScreenButtonClicked = {
                             navController.navigate(ChatScreen.ModelsScreen.name)
                         },
+                        OnParamsScreenButtonClicked = {
+                          navController.navigate((ChatScreen.ParamsScreen.name))
+                        },
                         OnBackButtonClicked = {
                             navController.popBackStack(
                                 ChatScreen.Start.name,
@@ -179,6 +184,9 @@ fun ChatScreen(
                     ModelsScreen(viewModel,onSearchResultButtonClick = {navController.navigate(
                         ChatScreen.SearchResults.name
                     )})
+                }
+                composable(route = ChatScreen.ParamsScreen.name){
+                    ParametersScreen()
                 }
             }
         }
