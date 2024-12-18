@@ -303,6 +303,7 @@ class MainActivity(
                                             onDismiss = { showSettingSheet = false } // Control visibility from here
                                         )
                                     }
+
                                 }
                                 Row(
                                     modifier = Modifier.padding(start = 45.dp)
@@ -389,147 +390,147 @@ class MainActivity(
 
 //                            ModelSelectorWithDownloadModal(viewModel = viewModel, downloadManager = dm, extFileDir = extFileDir)
 
-                            Column (
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
-                            ){
-                                Text(
-                                    text = "Example: bartowski/Llama-3.2-1B-Instruct-GGUF",
-                                    modifier = Modifier
-                                        .wrapContentSize()
-                                        .padding(4.dp),
-                                    color = Color.White,
-                                    fontSize = 10.sp
-                                )
-                                Spacer(Modifier.height(2.dp))
-                                OutlinedTextField(
-                                    value = UserGivenModel,
-                                    onValueChange = { newValue ->
-                                        UserGivenModel = newValue
-                                        // Update ViewModel or perform other actions with the new value
-                                        viewModel.userGivenModel = newValue.text
-                                    },
-                                    label = { Text("Search Models Online") },
-//                            placeholder = (Text("Example: bartowski/Llama-3.2-1B-Instruct-GGUF")),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(color = Color.Transparent),
-                                    singleLine = true,
-                                    maxLines = 1,
-                                    colors = OutlinedTextFieldDefaults.colors(unfocusedBorderColor = Color(0xFF666666),
-                                        focusedBorderColor = Color(0xFFcfcfd1),
-                                        unfocusedLabelColor = Color(0xFF666666),
-                                        focusedLabelColor = Color(0xFFcfcfd1),
-                                        unfocusedTextColor = Color(0xFFf5f5f5),
-                                        focusedTextColor = Color(0xFFf7f5f5),
-                                    )
-                                )
-                                Spacer(Modifier.height(8.dp))
-                                Button(
-                                    onClick = {
-                                        if(viewModel.SearchedName != viewModel.userGivenModel) {
-                                            viewModel.SearchedName = viewModel.userGivenModel
-                                            // Perform action when button is clicked
-
-                                            coroutineScope.launch {
-                                                isLoading = true // Show loading state
-
-                                                try {
-                                                    val response = withContext(Dispatchers.IO) {
-                                                        // Perform network request
-                                                        val url =
-                                                            URL("https://huggingface.co/api/models/${viewModel.userGivenModel}")
-                                                        val connection =
-                                                            url.openConnection() as HttpURLConnection
-                                                        connection.requestMethod = "GET"
-                                                        connection.setRequestProperty(
-                                                            "Accept",
-                                                            "application/json"
-                                                        )
-                                                        connection.connectTimeout = 10000
-                                                        connection.readTimeout = 10000
-
-                                                        val responseCode = connection.responseCode
-                                                        if (responseCode == HttpURLConnection.HTTP_OK) {
-                                                            connection.inputStream.bufferedReader()
-                                                                .use { it.readText() }
-                                                        } else {
-                                                            val errorStream =
-                                                                connection.errorStream?.bufferedReader()
-                                                                    ?.use { it.readText() }
-                                                            throw Exception("HTTP error code: $responseCode - ${errorStream ?: "No additional error details"}")
-                                                        }
-                                                    }
-
-                                                    // Handle the response
-                                                    Log.i("response", response)
-                                                    val jsonResponse = JSONObject(response)
-                                                    val siblingsArray = jsonResponse.getJSONArray("siblings")
-                                                    modelData =
-                                                        (0 until siblingsArray.length()).mapNotNull { index ->
-                                                            val jsonObject = siblingsArray.getJSONObject(index)
-                                                            val filename = jsonObject.optString("rfilename", "")
-
-                                                            if (filename.isNotEmpty()) {
-                                                                mapOf("rfilename" to filename)
-                                                            } else {
-                                                                null
-                                                            }
-                                                        }
-                                                    Log.i("response hello", modelData.toString())
-                                                    isBottomSheetVisible = true
-                                                } catch (e: Exception) {
-                                                    // Handle exceptions
-                                                    Log.e("ModelFetch", "Failed to fetch model", e)
-                                                    isBottomSheetVisible = true
-                                                    errorMessage = when (e) {
-                                                        is UnknownHostException -> "No internet connection"
-                                                        is SocketTimeoutException -> "Connection timed out"
-                                                        else -> "Failed to fetch model: ${e.localizedMessage ?: "Unknown error"}"
-                                                    }
-                                                } finally {
-                                                    isLoading = false // Hide loading state
-                                                }
-                                            }
-                                        }
-                                        else {
-                                            isBottomSheetVisible = true
-                                        }
-
-                                    },
-
-
-
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(50.dp),
-                                    enabled = UserGivenModel.text.isNotBlank(),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color.Transparent, // Set the containerColor to transparent
-                                        contentColor = Color.White,
-                                        disabledContainerColor = Color.DarkGray.copy(alpha = 0.5f),
-                                        disabledContentColor = Color.White.copy(alpha = 0.5f)
-                                    ),
-                                    shape = RoundedCornerShape(8.dp), // Slightly more rounded corners
-                                    elevation = ButtonDefaults.buttonElevation(
-                                        defaultElevation = 6.dp,
-                                        pressedElevation = 3.dp
-                                    )
-                                ){
-                                    Text(
-                                        text = when {
-                                            isLoading -> "Searching..."
-                                            viewModel.SearchedName != viewModel.userGivenModel -> "Search Model"
-                                            else -> "Open"
-                                        },
-                                        style = MaterialTheme.typography.bodyLarge,
-                                    )
-                                }
-
-
-
-                            }
+//                            Column (
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .padding(16.dp)
+//                            ){
+//                                Text(
+//                                    text = "Example: bartowski/Llama-3.2-1B-Instruct-GGUF",
+//                                    modifier = Modifier
+//                                        .wrapContentSize()
+//                                        .padding(4.dp),
+//                                    color = Color.White,
+//                                    fontSize = 10.sp
+//                                )
+//                                Spacer(Modifier.height(2.dp))
+//                                OutlinedTextField(
+//                                    value = UserGivenModel,
+//                                    onValueChange = { newValue ->
+//                                        UserGivenModel = newValue
+//                                        // Update ViewModel or perform other actions with the new value
+//                                        viewModel.userGivenModel = newValue.text
+//                                    },
+//                                    label = { Text("Search Models Online") },
+////                            placeholder = (Text("Example: bartowski/Llama-3.2-1B-Instruct-GGUF")),
+//                                    modifier = Modifier
+//                                        .fillMaxWidth()
+//                                        .background(color = Color.Transparent),
+//                                    singleLine = true,
+//                                    maxLines = 1,
+//                                    colors = OutlinedTextFieldDefaults.colors(unfocusedBorderColor = Color(0xFF666666),
+//                                        focusedBorderColor = Color(0xFFcfcfd1),
+//                                        unfocusedLabelColor = Color(0xFF666666),
+//                                        focusedLabelColor = Color(0xFFcfcfd1),
+//                                        unfocusedTextColor = Color(0xFFf5f5f5),
+//                                        focusedTextColor = Color(0xFFf7f5f5),
+//                                    )
+//                                )
+//                                Spacer(Modifier.height(8.dp))
+//                                Button(
+//                                    onClick = {
+//                                        if(viewModel.SearchedName != viewModel.userGivenModel) {
+//                                            viewModel.SearchedName = viewModel.userGivenModel
+//                                            // Perform action when button is clicked
+//
+//                                            coroutineScope.launch {
+//                                                isLoading = true // Show loading state
+//
+//                                                try {
+//                                                    val response = withContext(Dispatchers.IO) {
+//                                                        // Perform network request
+//                                                        val url =
+//                                                            URL("https://huggingface.co/api/models/${viewModel.userGivenModel}")
+//                                                        val connection =
+//                                                            url.openConnection() as HttpURLConnection
+//                                                        connection.requestMethod = "GET"
+//                                                        connection.setRequestProperty(
+//                                                            "Accept",
+//                                                            "application/json"
+//                                                        )
+//                                                        connection.connectTimeout = 10000
+//                                                        connection.readTimeout = 10000
+//
+//                                                        val responseCode = connection.responseCode
+//                                                        if (responseCode == HttpURLConnection.HTTP_OK) {
+//                                                            connection.inputStream.bufferedReader()
+//                                                                .use { it.readText() }
+//                                                        } else {
+//                                                            val errorStream =
+//                                                                connection.errorStream?.bufferedReader()
+//                                                                    ?.use { it.readText() }
+//                                                            throw Exception("HTTP error code: $responseCode - ${errorStream ?: "No additional error details"}")
+//                                                        }
+//                                                    }
+//
+//                                                    // Handle the response
+//                                                    Log.i("response", response)
+//                                                    val jsonResponse = JSONObject(response)
+//                                                    val siblingsArray = jsonResponse.getJSONArray("siblings")
+//                                                    modelData =
+//                                                        (0 until siblingsArray.length()).mapNotNull { index ->
+//                                                            val jsonObject = siblingsArray.getJSONObject(index)
+//                                                            val filename = jsonObject.optString("rfilename", "")
+//
+//                                                            if (filename.isNotEmpty()) {
+//                                                                mapOf("rfilename" to filename)
+//                                                            } else {
+//                                                                null
+//                                                            }
+//                                                        }
+//                                                    Log.i("response hello", modelData.toString())
+//                                                    isBottomSheetVisible = true
+//                                                } catch (e: Exception) {
+//                                                    // Handle exceptions
+//                                                    Log.e("ModelFetch", "Failed to fetch model", e)
+//                                                    isBottomSheetVisible = true
+//                                                    errorMessage = when (e) {
+//                                                        is UnknownHostException -> "No internet connection"
+//                                                        is SocketTimeoutException -> "Connection timed out"
+//                                                        else -> "Failed to fetch model: ${e.localizedMessage ?: "Unknown error"}"
+//                                                    }
+//                                                } finally {
+//                                                    isLoading = false // Hide loading state
+//                                                }
+//                                            }
+//                                        }
+//                                        else {
+//                                            isBottomSheetVisible = true
+//                                        }
+//
+//                                    },
+//
+//
+//
+//                                    modifier = Modifier
+//                                        .fillMaxWidth()
+//                                        .height(50.dp),
+//                                    enabled = UserGivenModel.text.isNotBlank(),
+//                                    colors = ButtonDefaults.buttonColors(
+//                                        containerColor = Color.Transparent, // Set the containerColor to transparent
+//                                        contentColor = Color.White,
+//                                        disabledContainerColor = Color.DarkGray.copy(alpha = 0.5f),
+//                                        disabledContentColor = Color.White.copy(alpha = 0.5f)
+//                                    ),
+//                                    shape = RoundedCornerShape(8.dp), // Slightly more rounded corners
+//                                    elevation = ButtonDefaults.buttonElevation(
+//                                        defaultElevation = 6.dp,
+//                                        pressedElevation = 3.dp
+//                                    )
+//                                ){
+//                                    Text(
+//                                        text = when {
+//                                            isLoading -> "Searching..."
+//                                            viewModel.SearchedName != viewModel.userGivenModel -> "Search Model"
+//                                            else -> "Open"
+//                                        },
+//                                        style = MaterialTheme.typography.bodyLarge,
+//                                    )
+//                                }
+//
+//
+//
+//                            }
 
                             Spacer(modifier = Modifier.weight(1f))
                             Column(
