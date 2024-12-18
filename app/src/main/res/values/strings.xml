@@ -5,4 +5,5 @@
     <string name="parameters_screen_title">Parameters</string>
     <string name="models_screen_title">Models</string>
     <string name="back_button">BackButton</string>
+    <string name="setting">Setting</string>
 </resources>

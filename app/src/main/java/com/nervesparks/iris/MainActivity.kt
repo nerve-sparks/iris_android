@@ -138,6 +138,8 @@ import androidx.compose.material3.SheetState
 import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.viewModelScope
 import androidx.compose.ui.unit.toSize
+import com.nervesparks.iris.ui.ModelSelectorWithDownloadModal
+import com.nervesparks.iris.ui.SettingsBottomSheet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -179,6 +181,7 @@ class MainActivity(
     )
 
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -226,16 +229,447 @@ class MainActivity(
 
 
         setContent {
-            Surface {
-            LinearGradient()
-            ChatScreen(
-                viewModel,
-                clipboardManager,
-                downloadManager,
-                models,
-                extFilesDir,
-            )
-        }
+            var showSettingSheet by remember { mutableStateOf(false) }
+            var isBottomSheetVisible by rememberSaveable  { mutableStateOf(false) }
+            var modelData by rememberSaveable  { mutableStateOf<List<Map<String, String>>?>(null) }
+            var selectedModel by remember { mutableStateOf<String?>(null) }
+            var isLoading by remember { mutableStateOf(false) }
+            var errorMessage by remember { mutableStateOf<String?>(null) }
+            val sheetState = rememberModalBottomSheetState()
+
+            var UserGivenModel by remember {
+                mutableStateOf(
+                    TextFieldValue(
+                        text = viewModel.userGivenModel,
+                        selection = TextRange(viewModel.userGivenModel.length) // Ensure cursor starts at the end
+                    )
+                )
+            }
+            val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+            val scope = rememberCoroutineScope()
+            ModalNavigationDrawer(
+
+                drawerState = drawerState,
+                drawerContent = {
+                    ModalDrawerSheet(
+                        modifier = Modifier
+                            .width(300.dp)
+                            .fillMaxHeight(),
+                        drawerContainerColor= Color(0xFF070915),
+
+                        ) {
+                        /*Drawer content wrapper */
+                        Column(
+                            modifier = Modifier
+                                .padding(5.dp)
+                                .fillMaxHeight(),
+                        ) {
+                            // Top section with logo and name
+                            Column {
+                                Row(
+                                    modifier =  Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.logo),
+                                        contentDescription = "Centered Background Logo",
+                                        modifier = Modifier.size(35.dp),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                    Spacer(Modifier.padding(5.dp))
+                                    Text(
+                                        text = "Iris",
+                                        fontWeight = FontWeight(500),
+                                        color = Color.White,
+                                        fontSize = 30.sp
+                                    )
+                                    Spacer(Modifier.weight(1f))
+//                                    IconButton(
+//                                        onClick = onNextButtonClicked
+//
+//                                    ){
+//                                        Icon( painter = painterResource(id = R.drawable.settings_5_svgrepo_com),
+//                                            contentDescription = "Setting logo",
+//                                            modifier = Modifier.size(25.dp),
+//                                            tint = Color.White
+//                                        )
+//
+//                                    }
+                                    if (showSettingSheet) {
+                                        SettingsBottomSheet(
+                                            viewModel= viewModel,
+                                            onDismiss = { showSettingSheet = false } // Control visibility from here
+                                        )
+                                    }
+                                }
+                                Row(
+                                    modifier = Modifier.padding(start = 45.dp)
+                                ) {
+                                    Text(
+                                        text = "NerveSparks",
+                                        color = Color(0xFF636466),
+                                        fontSize = 16.sp
+                                    )
+                                }
+
+                            }
+                            val coroutineScope = rememberCoroutineScope()
+
+                            // Bottom sheet content
+
+
+                            if (isBottomSheetVisible) {
+                                ModalBottomSheet(
+                                    onDismissRequest = {
+                                        isBottomSheetVisible = false
+                                    },
+                                    sheetState = sheetState,
+                                    containerColor = Color.Black,
+                                ) {
+                                    // Bottom sheet content
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                    ) {
+                                        if (isLoading) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                            )
+                                        } else if (errorMessage != null) {
+                                            Text(
+                                                text = errorMessage ?: "An error occurred",
+                                                color = MaterialTheme.colorScheme.error,
+                                                modifier = Modifier.padding(8.dp)
+                                            )
+                                        } else {
+                                            // Make the models scrollable
+//                                            LazyColumn(
+//                                                modifier = Modifier.fillMaxWidth()
+//                                            ) {
+//                                                modelData?.forEach { model ->
+//                                                    item {
+//                                                        model["rfilename"]?.takeIf { it.endsWith(".gguf") }?.let { filename ->
+//                                                            val fullUrl = "https://huggingface.co/${viewModel.userGivenModel}/resolve/main/${filename}?download=true"
+//                                                            Log.i("This is the url", fullUrl)
+//
+//                                                            Downloadable.Button(
+//                                                                viewModel,
+//                                                                dm,
+//                                                                Downloadable(
+//                                                                    name = filename,
+//                                                                    source = Uri.parse(fullUrl),
+//                                                                    destination =  File(extFileDir, filename)
+//                                                                )
+//                                                            )
+//
+////                                                        val fileSize = getRemoteFileSize(fullUrl)
+////                                                        fileSize?.let { size ->
+////                                                            Text(
+////                                                                text = size,
+////                                                                style = MaterialTheme.typography.bodyLarge,
+////                                                                fontWeight = FontWeight.Bold
+////                                                            )
+////                                                        }
+//                                                        }
+//                                                    }
+//                                                }
+//                                            }
+
+                                            // Customize this based on your actual ModelData structure
+
+                                            // Add more details as needed
+
+                                        }
+                                    }
+                                }
+                            }
+
+//                            ModelSelectorWithDownloadModal(viewModel = viewModel, downloadManager = dm, extFileDir = extFileDir)
+
+                            Column (
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ){
+                                Text(
+                                    text = "Example: bartowski/Llama-3.2-1B-Instruct-GGUF",
+                                    modifier = Modifier
+                                        .wrapContentSize()
+                                        .padding(4.dp),
+                                    color = Color.White,
+                                    fontSize = 10.sp
+                                )
+                                Spacer(Modifier.height(2.dp))
+                                OutlinedTextField(
+                                    value = UserGivenModel,
+                                    onValueChange = { newValue ->
+                                        UserGivenModel = newValue
+                                        // Update ViewModel or perform other actions with the new value
+                                        viewModel.userGivenModel = newValue.text
+                                    },
+                                    label = { Text("Search Models Online") },
+//                            placeholder = (Text("Example: bartowski/Llama-3.2-1B-Instruct-GGUF")),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(color = Color.Transparent),
+                                    singleLine = true,
+                                    maxLines = 1,
+                                    colors = OutlinedTextFieldDefaults.colors(unfocusedBorderColor = Color(0xFF666666),
+                                        focusedBorderColor = Color(0xFFcfcfd1),
+                                        unfocusedLabelColor = Color(0xFF666666),
+                                        focusedLabelColor = Color(0xFFcfcfd1),
+                                        unfocusedTextColor = Color(0xFFf5f5f5),
+                                        focusedTextColor = Color(0xFFf7f5f5),
+                                    )
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Button(
+                                    onClick = {
+                                        if(viewModel.SearchedName != viewModel.userGivenModel) {
+                                            viewModel.SearchedName = viewModel.userGivenModel
+                                            // Perform action when button is clicked
+
+                                            coroutineScope.launch {
+                                                isLoading = true // Show loading state
+
+                                                try {
+                                                    val response = withContext(Dispatchers.IO) {
+                                                        // Perform network request
+                                                        val url =
+                                                            URL("https://huggingface.co/api/models/${viewModel.userGivenModel}")
+                                                        val connection =
+                                                            url.openConnection() as HttpURLConnection
+                                                        connection.requestMethod = "GET"
+                                                        connection.setRequestProperty(
+                                                            "Accept",
+                                                            "application/json"
+                                                        )
+                                                        connection.connectTimeout = 10000
+                                                        connection.readTimeout = 10000
+
+                                                        val responseCode = connection.responseCode
+                                                        if (responseCode == HttpURLConnection.HTTP_OK) {
+                                                            connection.inputStream.bufferedReader()
+                                                                .use { it.readText() }
+                                                        } else {
+                                                            val errorStream =
+                                                                connection.errorStream?.bufferedReader()
+                                                                    ?.use { it.readText() }
+                                                            throw Exception("HTTP error code: $responseCode - ${errorStream ?: "No additional error details"}")
+                                                        }
+                                                    }
+
+                                                    // Handle the response
+                                                    Log.i("response", response)
+                                                    val jsonResponse = JSONObject(response)
+                                                    val siblingsArray = jsonResponse.getJSONArray("siblings")
+                                                    modelData =
+                                                        (0 until siblingsArray.length()).mapNotNull { index ->
+                                                            val jsonObject = siblingsArray.getJSONObject(index)
+                                                            val filename = jsonObject.optString("rfilename", "")
+
+                                                            if (filename.isNotEmpty()) {
+                                                                mapOf("rfilename" to filename)
+                                                            } else {
+                                                                null
+                                                            }
+                                                        }
+                                                    Log.i("response hello", modelData.toString())
+                                                    isBottomSheetVisible = true
+                                                } catch (e: Exception) {
+                                                    // Handle exceptions
+                                                    Log.e("ModelFetch", "Failed to fetch model", e)
+                                                    isBottomSheetVisible = true
+                                                    errorMessage = when (e) {
+                                                        is UnknownHostException -> "No internet connection"
+                                                        is SocketTimeoutException -> "Connection timed out"
+                                                        else -> "Failed to fetch model: ${e.localizedMessage ?: "Unknown error"}"
+                                                    }
+                                                } finally {
+                                                    isLoading = false // Hide loading state
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            isBottomSheetVisible = true
+                                        }
+
+                                    },
+
+
+
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(50.dp),
+                                    enabled = UserGivenModel.text.isNotBlank(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.Transparent, // Set the containerColor to transparent
+                                        contentColor = Color.White,
+                                        disabledContainerColor = Color.DarkGray.copy(alpha = 0.5f),
+                                        disabledContentColor = Color.White.copy(alpha = 0.5f)
+                                    ),
+                                    shape = RoundedCornerShape(8.dp), // Slightly more rounded corners
+                                    elevation = ButtonDefaults.buttonElevation(
+                                        defaultElevation = 6.dp,
+                                        pressedElevation = 3.dp
+                                    )
+                                ){
+                                    Text(
+                                        text = when {
+                                            isLoading -> "Searching..."
+                                            viewModel.SearchedName != viewModel.userGivenModel -> "Search Model"
+                                            else -> "Open"
+                                        },
+                                        style = MaterialTheme.typography.bodyLarge,
+                                    )
+                                }
+
+
+
+                            }
+
+                            Spacer(modifier = Modifier.weight(1f))
+                            Column(
+                                verticalArrangement = Arrangement.Bottom,
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                // Star us button
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp)
+                                        .padding(horizontal = 16.dp)
+                                        .background(
+                                            color = Color(0xFF14161f),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .border(
+                                            border = BorderStroke(
+                                                width = 1.dp,
+                                                color = Color.LightGray.copy(alpha = 0.5f)
+                                            ),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                ) {
+                                    val context = LocalContext.current
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clickable {
+                                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                    data =
+                                                        Uri.parse("https://github.com/nerve-sparks/iris_android")
+                                                }
+                                                context.startActivity(intent)
+                                            }
+                                    ) {
+                                        Text(
+                                            text = "Star us",
+                                            color = Color(0xFF78797a),
+                                            fontSize = 14.sp
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+
+                                        Image(
+                                            modifier = Modifier
+                                                .size(24.dp),
+                                            painter = painterResource(id = R.drawable.github_svgrepo_com),
+                                            contentDescription = "Github icon"
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(5.dp))
+                                // NerveSparks button
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp)
+                                        .padding(horizontal = 16.dp)
+                                        .background(
+                                            color = Color(0xFF14161f),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .border(
+                                            border = BorderStroke(
+                                                width = 1.dp,
+                                                color = Color.LightGray.copy(alpha = 0.5f)
+                                            ),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                ) {
+                                    val context = LocalContext.current
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clickable {
+                                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                    data = Uri.parse("https://nervesparks.com")
+                                                }
+                                                context.startActivity(intent)
+                                            }
+                                    ) {
+                                        Text(
+                                            text = "NerveSparks.com",
+                                            color = Color(0xFF78797a),
+                                            fontSize = 14.sp
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+
+
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(5.dp))
+                                // Powered by section - Right-aligned
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(end = 16.dp),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "powered by",
+                                        color = Color(0xFF636466),
+                                        fontSize = 14.sp
+                                    )
+                                    val context = LocalContext.current
+                                    Text(
+                                        modifier = Modifier
+                                            .clickable {
+                                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                    data = Uri.parse("https://github.com/ggerganov/llama.cpp")
+                                                }
+                                                context.startActivity(intent)
+                                            },
+                                        text = " llama.cpp",
+                                        color = Color(0xFF78797a),
+                                        fontSize = 16.sp
+                                    )
+
+                                }
+                            }
+                        }
+
+                    }
+                },
+            ) {
+
+                ChatScreen(
+                    viewModel,
+                    clipboardManager,
+                    downloadManager,
+                    models,
+                    extFilesDir,
+                )
+            }
         }
     }
 }
