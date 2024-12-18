@@ -103,29 +103,31 @@ fun ChatScreenAppBar(
                     )
                 }
             }
-            Button(
-                onClick = {
-                    kc?.hide()
-                    viewModel.stop()
-                    viewModel.clear()
+            if(!canNavigateBack) {
+                Button(
+                    onClick = {
+                        kc?.hide()
+                        viewModel.stop()
+                        viewModel.clear()
 
 
-                },
-                modifier = Modifier
-                    .height(26.dp)
-                    .padding(0.dp),
+                    },
+                    modifier = Modifier
+                        .height(26.dp)
+                        .padding(0.dp),
 
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
 //                                    shape = RoundedCornerShape(22.dp),
-                contentPadding = PaddingValues(horizontal = 1.dp, vertical = 0.dp)
-            ) {
+                    contentPadding = PaddingValues(horizontal = 1.dp, vertical = 0.dp)
+                ) {
 
-                Icon(
+                    Icon(
 
-                    painter = painterResource(id = R.drawable.edit_3_svgrepo_com),
-                    contentDescription = "newChat",
-                    tint = Color.White
-                )
+                        painter = painterResource(id = R.drawable.edit_3_svgrepo_com),
+                        contentDescription = "newChat",
+                        tint = Color.White
+                    )
+                }
             }
         }
 
@@ -210,12 +212,15 @@ fun ChatScreen(
                     )
                 }
                 composable(route = ChatScreen.SearchResults.name) {
-                    SearchResultScreen(
-                        viewModel
-                    )
+                    if (extFileDir != null) {
+                        SearchResultScreen(
+                            viewModel,
+                            downloadManager,
+                            extFileDir)
+                    }
                 }
                 composable(route = ChatScreen.ModelsScreen.name) {
-                    ModelsScreen(viewModel,onSearchResultButtonClick = {navController.navigate(
+                    ModelsScreen(dm = downloadManager, extFileDir = extFileDir, viewModel = viewModel,onSearchResultButtonClick = {navController.navigate(
                         ChatScreen.SearchResults.name
                     )})
                 }

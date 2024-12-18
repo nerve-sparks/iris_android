@@ -1,5 +1,6 @@
 package com.nervesparks.iris.ui
 
+import android.app.DownloadManager
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,20 +14,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 //import androidx.compose.material.icons.filled.ModelTraining
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,21 +34,24 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.nervesparks.iris.MainViewModel
+import com.nervesparks.iris.ui.components.ModelCard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.UnknownHostException
 
 @Composable
-fun SearchResultScreen(viewModel: MainViewModel) {
+fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDir: File) {
     var modelData by rememberSaveable { mutableStateOf<List<Map<String, String>>?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
+
 
     var UserGivenModel by remember {
         mutableStateOf(
@@ -68,7 +65,6 @@ fun SearchResultScreen(viewModel: MainViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
             .padding(16.dp),
     ) {
         // Search Input and Button Row
@@ -95,6 +91,7 @@ fun SearchResultScreen(viewModel: MainViewModel) {
         )
 
         Spacer(Modifier.height(16.dp))
+
 
         Button(
             onClick = {
@@ -186,12 +183,15 @@ fun SearchResultScreen(viewModel: MainViewModel) {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(models) { model ->
+                val filteredModels = models.filter { model -> model["rfilename"]?.endsWith("gguf") == true }
+                items(filteredModels) { model ->
                     ModelCard(
                         modelName = model["rfilename"] ?: "Unknown Model",
-                        onSelect = {
-                            viewModel.selectedModel = model["rfilename"] ?: ""
-                        }
+                        dm = dm,
+                        viewModel = viewModel,
+                        extFilesDir = extFilesDir,
+                        downloadLink = ""
+
                     )
                 }
             }
@@ -210,46 +210,3 @@ fun SearchResultScreen(viewModel: MainViewModel) {
     }
 }
 
-@Composable
-fun ModelCard(
-    modelName: String,
-    onSelect: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1E1E1E),
-            contentColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-//            Icon(
-//                imageVector = Icons.Default.ModelTraining,
-//                contentDescription = "Model Icon",
-//                tint = Color(0xFF4CAF50)
-//            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = modelName,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = onSelect,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF2196F3),
-                    contentColor = Color.White
-                )
-            ) {
-                Text("Select Model")
-            }
-        }
-    }
-}
