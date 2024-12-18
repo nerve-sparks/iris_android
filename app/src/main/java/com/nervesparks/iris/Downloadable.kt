@@ -1,8 +1,13 @@
 package com.nervesparks.iris
 
+import android.app.Activity
 import android.app.DownloadManager
+import android.content.ComponentName
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -106,7 +112,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                         withContext(Dispatchers.Main) {
                             if (!viewModel.allModels.any { it["name"] == item.name }) {
                                 val newModel = mapOf(
-                                    "name" to item.name,
+                                    "name" to item.name + ".gguf",
                                     "source" to item.source.toString(),
                                     "destination" to item.destination.path
                                 )
@@ -115,7 +121,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                             }
                         }
                         val newModel = mapOf(
-                            "name" to item.name,
+                            "name" to item.name + ".gguf",
                             "source" to item.source.toString(),
                             "destination" to item.destination.path
                         )
@@ -180,10 +186,8 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                 Button(
                     onClick = { onClick() },
                     enabled = status !is Downloading && !viewModel.getIsSending(),
-                    modifier = Modifier
-                        .fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF141414) // Navy Blue color
+                        containerColor = Color.Blue.copy(alpha = .4f) // Navy Blue color
                     )
                 ) {
                     when (status) {
@@ -198,17 +202,17 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                         )
 
                         is Downloaded -> Text(
-                            "Load ${item.name}",
+                            "Load",
                             color = Color.White
                         )
 
                         is Ready -> Text(
-                            "Download ${item.name}",
+                            "Download",
                             color = Color.White
                         )
 
                         is Error -> Text(
-                            "Download ${item.name}",
+                            "Download}",
                             color = Color.White
                         )
 
@@ -218,6 +222,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                         )
                     }
                 }
+
 
                 Spacer(Modifier.height(10.dp))
 
