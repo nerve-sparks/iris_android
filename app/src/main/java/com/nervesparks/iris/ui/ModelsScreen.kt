@@ -2,21 +2,27 @@ package com.nervesparks.iris.ui
 
 import android.app.DownloadManager
 import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.TabRowDefaults.Divider
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -68,34 +74,49 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
         LazyColumn (modifier = Modifier.padding(horizontal = 15.dp)){
             item {
                 Column {
-                    OutlinedButton(
-                        onClick = onSearchResultButtonClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = Color.White,
-                            disabledContainerColor = Color.DarkGray.copy(alpha = 0.5f),
-                            disabledContentColor = Color.White.copy(alpha = 0.5f)
-                        ),
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
-                            .padding(10.dp)
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                            .clickable {
+                                onSearchResultButtonClick()
+                            }
                     ) {
                         Icon(
+                            modifier = Modifier.size(20.dp), // Icon size,
                             painter = painterResource(id = R.drawable.search_svgrepo_com__3_),
-                            contentDescription = "Search Logo",
-                            modifier = Modifier.size(25.dp),
-                            tint = Color.White.copy(alpha = .5f)
+                            contentDescription = "Parameters",
+                            tint = Color.White
                         )
-                        Spacer(Modifier.padding(5.dp))
-                        Text(text = "Search Models Online", color = Color.White.copy(alpha = .5f),fontSize = 18.sp)
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            text = "Search Hugging-Face Models",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            modifier = Modifier
+                                .padding(vertical = 12.dp, horizontal = 7.dp)
+                        )
+                        Spacer(Modifier.weight(1f))
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            painter = painterResource(id = R.drawable.right_arrow_svgrepo_com),
+                            contentDescription = null,
+                            tint = Color.White,
+                        )
                     }
+                    Divider(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        color = Color.DarkGray, // Set the color of the divider
+                        thickness = 1.dp
+                    )
                     Spacer(Modifier.height(25.dp))
-
                     // Suggested Models Section
-                    Text(text = "Suggested Models Online", color = Color.White.copy(alpha = .5f), modifier = Modifier.padding(5.dp),fontSize = 18.sp)
+                    Text(text = "Suggested Models", color = Color.White.copy(alpha = .5f), modifier = Modifier.padding(5.dp),fontSize = 18.sp)
                 }
             }
+
 
             // Show first three suggested models
             items(viewModel.allModels.take(3)) { model ->
@@ -106,16 +127,27 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
                             viewModel = viewModel,
                             dm = dm,
                             extFilesDir = extFileDir,
-                            downloadLink = source
+                            downloadLink = source,
+                            showDeleteButton = true
                         )
                     }
                 }
+            }
+            item {
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    color = Color.DarkGray, // Set the color of the divider
+                    thickness = 1.dp
+                )
             }
 
             item {
                 // My Models Section
                 Text(text = "My Models", color = Color.White.copy(alpha = .5f), modifier = Modifier.padding(5.dp),fontSize = 18.sp)
             }
+
+
 
             // Display all models not in Suggested Models
             items(viewModel.allModels.drop(3)) { model ->
@@ -126,7 +158,8 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
                             viewModel = viewModel,
                             dm = dm,
                             extFilesDir = extFileDir,
-                            downloadLink = source
+                            downloadLink = source,
+                            showDeleteButton = true
                         )
                     }
                 }

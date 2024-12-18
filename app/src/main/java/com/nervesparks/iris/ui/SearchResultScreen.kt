@@ -30,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -52,6 +53,7 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
+    val kc = LocalSoftwareKeyboardController.current
 
 
     var UserGivenModel by remember {
@@ -100,6 +102,7 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
 
         Button(
             onClick = {
+                kc?.hide()
                 coroutineScope.launch {
                     isLoading = true
                     errorMessage = null
@@ -155,9 +158,9 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
                 .height(50.dp),
             enabled = UserGivenModel.text.isNotBlank() && !isLoading,
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent,
+                containerColor = Color(0xFF171E24),
                 contentColor = Color.White,
-                disabledContainerColor = Color.DarkGray.copy(alpha = 0.5f),
+                disabledContainerColor = Color(0xFF171E2C),
                 disabledContentColor = Color.White.copy(alpha = 0.5f)
             ),
             shape = RoundedCornerShape(8.dp)
@@ -181,7 +184,7 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
                     .padding(vertical = 8.dp)
             )
         }
-
+        
         // Model Results
         modelData?.let { models ->
             LazyColumn(
@@ -195,8 +198,8 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
                         dm = dm,
                         viewModel = viewModel,
                         extFilesDir = extFilesDir,
-                        downloadLink = ""
-
+                        downloadLink = "",
+                        showDeleteButton = false
                     )
                 }
             }

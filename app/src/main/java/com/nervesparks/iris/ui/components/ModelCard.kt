@@ -21,6 +21,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -38,7 +40,8 @@ fun ModelCard(
     viewModel: MainViewModel,
     dm: DownloadManager,
     extFilesDir: File,
-    downloadLink: String
+    downloadLink: String,
+    showDeleteButton : Boolean
 ) {
     Card(
         modifier = Modifier
@@ -81,30 +84,32 @@ fun ModelCard(
 
                 Downloadable.Button(viewModel, dm, Downloadable(modelName,source = Uri.parse(fullUrl), destination =  File(extFilesDir, modelName)))
                 Spacer(modifier = Modifier.padding(5.dp))
-                viewModel.currentDownloadable?.let { downloadable ->
-                    if (downloadable.destination.exists()) {
-                        Button(
-                            onClick = {
-                                coroutineScope.launch { viewModel.unload() }
-                                // Delete the model file
-                                downloadable.destination.delete()
-                                // Reset dialog visibility and update UI
-                                viewModel.showModal = false
-                                viewModel.currentDownloadable = null
+                if(showDeleteButton){
+                    viewModel.currentDownloadable?.let { downloadable ->
+                        if (downloadable.destination.exists()) {
+                            Button(
+                                onClick = {
+                                    coroutineScope.launch { viewModel.unload() }
+                                    // Delete the model file
+                                    downloadable.destination.delete()
+                                    // Reset dialog visibility and update UI
+                                    viewModel.showModal = false
+                                    viewModel.currentDownloadable = null
 
-                                Toast.makeText(context, "Restarting App!!.", Toast.LENGTH_SHORT).show()
-                                val packageManager: PackageManager = context.packageManager
-                                val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
-                                val componentName: ComponentName = intent.component!!
-                                val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
-                                context.startActivity(restartIntent)
-                                Runtime.getRuntime().exit(0)
-                            },
-                            colors = ButtonDefaults.buttonColors(Color.Red), // Slight red color
-                        ) {
-                            Text(text = "Delete", color = Color.White)
+                                    Toast.makeText(context, "Restarting App!!.", Toast.LENGTH_SHORT).show()
+                                    val packageManager: PackageManager = context.packageManager
+                                    val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
+                                    val componentName: ComponentName = intent.component!!
+                                    val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
+                                    context.startActivity(restartIntent)
+                                    Runtime.getRuntime().exit(0)
+                                },
+                                colors = ButtonDefaults.buttonColors(Color(0xFFb91c1c)), // Slight red color
+                            ) {
+                                Text(text = "Delete", color = Color.White)
+                            }
+
                         }
-
                     }
                 }
             }
