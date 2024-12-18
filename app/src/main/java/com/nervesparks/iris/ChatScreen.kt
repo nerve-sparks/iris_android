@@ -34,6 +34,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.nervesparks.iris.ui.MainChatScreen
 import com.nervesparks.iris.ui.ModelsScreen
+import com.nervesparks.iris.ui.SearchResultScreen
 import com.nervesparks.iris.ui.SettingsScreen
 import java.io.File
 
@@ -169,8 +170,15 @@ fun ChatScreen(
                         }
                     )
                 }
+                composable(route = ChatScreen.SearchResults.name) {
+                    SearchResultScreen(
+                        viewModel
+                    )
+                }
                 composable(route = ChatScreen.ModelsScreen.name) {
-                    ModelsScreen(viewModel)
+                    ModelsScreen(viewModel,onSearchResultButtonClick = {navController.navigate(
+                        ChatScreen.SearchResults.name
+                    )})
                 }
             }
         }
