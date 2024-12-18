@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.nervesparks.iris.Downloadable
 import com.nervesparks.iris.MainViewModel
 import com.nervesparks.iris.R
+import com.nervesparks.iris.ui.components.LoadingModal
 import com.nervesparks.iris.ui.components.ModelCard
 import java.io.File
 
@@ -59,6 +60,11 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
 //    }
 
     Box {
+        if (viewModel.showAlert) {
+            // Modal dialog to show download options
+            LoadingModal(viewModel)
+
+        }
         LazyColumn (modifier = Modifier.padding(horizontal = 15.dp)){
             item {
                 Column {
