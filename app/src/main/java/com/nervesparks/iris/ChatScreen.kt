@@ -167,18 +167,25 @@ fun ChatScreenAppBar(
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val darkNavyBlue = Color(0xFF050a14)
     TopAppBar(
-        title = { Text(stringResource(currentScreen.title)) },
+        title = {
+            Text(stringResource(currentScreen.title),
+            color = Color.White,
+            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 35.sp)
+        )},
         colors = TopAppBarDefaults.mediumTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = Color.Transparent
         ),
-        modifier = modifier,
+        modifier = modifier.
+            background(darkNavyBlue),
         navigationIcon = {
             if (canNavigateBack) {
                 IconButton(onClick = navigateUp) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.back_button)
+                        contentDescription = stringResource(R.string.back_button),
+                        tint = Color.White
                     )
                 }
             }
@@ -205,8 +212,7 @@ fun ChatScreen(
         backStackEntry?.destination?.route ?: ChatScreen.Start.name
     )
 
-    Surface {
-   LinearGradient()
+    Surface(color = Color(0xFF121212)) {
     Scaffold(topBar = {
         ChatScreenAppBar(
             currentScreen = currentScreen,
@@ -248,7 +254,7 @@ fun ChatScreen(
                 )
             }
             composable(route = ChatScreen.ModelsScreen.name) {
-                ModelsScreen()
+                ModelsScreen(viewModel)
             }
         }
     }

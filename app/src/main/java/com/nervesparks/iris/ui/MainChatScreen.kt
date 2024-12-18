@@ -123,6 +123,7 @@ import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.Dialog
 import com.nervesparks.iris.ChatScreen
 import com.nervesparks.iris.Downloadable
+import com.nervesparks.iris.LinearGradient
 import com.nervesparks.iris.MainViewModel
 
 import com.nervesparks.iris.R
@@ -210,6 +211,7 @@ fun MainChatScreen (
         modifier = Modifier.fillMaxSize()
 
     ) {
+        LinearGradient()
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         ModalNavigationDrawer(
