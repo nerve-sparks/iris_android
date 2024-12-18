@@ -108,11 +108,11 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     if (sofar == total) {
                         Log.d(tag, "Download complete: ${item.destination.path}")
 
-                        // Ensure model is added dynamically
+//                         Ensure model is added dynamically
                         withContext(Dispatchers.Main) {
                             if (!viewModel.allModels.any { it["name"] == item.name }) {
                                 val newModel = mapOf(
-                                    "name" to item.name + ".gguf",
+                                    "name" to item.name,
                                     "source" to item.source.toString(),
                                     "destination" to item.destination.path
                                 )
@@ -120,13 +120,13 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                                 Log.d(tag, "Model dynamically added to viewModel: $newModel")
                             }
                         }
-                        val newModel = mapOf(
-                            "name" to item.name + ".gguf",
-                            "source" to item.source.toString(),
-                            "destination" to item.destination.path
-                        )
-                        viewModel.allModels = viewModel.allModels + newModel
-                        Log.d(tag, "Model dynamically added to viewModel: $newModel")
+//                        val newModel = mapOf(
+//                            "name" to item.name,
+//                            "source" to item.source.toString(),
+//                            "destination" to item.destination.path
+//                        )
+//                        viewModel.allModels = viewModel.allModels + newModel
+//                        Log.d(tag, "Model dynamically added to viewModel: $newModel")
 
                         viewModel.currentDownloadable = item
                         viewModel.load(item.destination.path, userThreads = viewModel.user_thread.toInt())

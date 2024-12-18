@@ -89,6 +89,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         // List models in the directory that end with .gguf
         directory.listFiles { file -> file.extension == "gguf" }?.forEach { file ->
             val modelName = file.name
+            Log.i("This is the modelname", modelName)
             if (!allModels.any { it["name"] == modelName }) {
                 allModels += mapOf(
                     "name" to modelName,
