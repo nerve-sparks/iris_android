@@ -16,10 +16,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -48,48 +51,63 @@ fun ParametersScreen(viewModel: MainViewModel) {
     ) {
 
         // Top column with flexible weight
-        Column(
+        androidx.compose.material3.Card(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
+                .shadow(
+                    elevation = 8.dp, // Shadow elevation
+                    shape = RoundedCornerShape(8.dp) // Shape of the shadow
+                ),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xff0f172a),
+                contentColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            if (viewModel.showAlert) {
-                // Modal dialog to show download options
-                LoadingModal(viewModel)
+            Column(
+                modifier = Modifier
+                    .padding(15.dp)
+            ) {
+                if (viewModel.showAlert) {
+                    // Modal dialog to show download options
+                    LoadingModal(viewModel)
 
-            }
-            Text(
-                text = "Select thread for process, 0 for default",
-                color = Color.White
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "${viewModel.user_thread.toInt()}",
-                color = Color.White
-            )
-
-            Slider(
-                value = viewModel.user_thread,
-                onValueChange = {
-                    viewModel.user_thread = it
-                },
-                valueRange = 0f..8f,
-                steps = 7,
-                colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF6200EE),
-                    activeTrackColor = Color(0xFF6200EE),
-                    inactiveTrackColor = Color.Gray
+                }
+                Text(
+                    text = "Select thread for process, 0 for default",
+                    color = Color.White
                 )
-            )
+                Spacer(modifier = Modifier.height(20.dp))
 
-            Spacer(modifier = Modifier.height(15.dp))
+                Text(
+                    text = "${viewModel.user_thread.toInt()}",
+                    color = Color.White
+                )
 
-            Text(
-                text = "After changing please Save the changes!!",
-                color = Color.White
-            )
+                Slider(
+                    value = viewModel.user_thread,
+                    onValueChange = {
+                        viewModel.user_thread = it
+                    },
+                    valueRange = 0f..8f,
+                    steps = 7,
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color(0xFF2563EB),
+                        activeTrackColor = Color(0xFF2563EB),
+                        inactiveTrackColor = Color.Gray
+                    )
+                )
 
-            Spacer(modifier = Modifier.height(15.dp))
+                Spacer(modifier = Modifier.height(15.dp))
+
+                Text(
+                    text = "After changing please Save the changes!!",
+                    color = Color.White
+                )
+
+                Spacer(modifier = Modifier.height(15.dp))
+            }
         }
 
         // Bottom buttons side by side
