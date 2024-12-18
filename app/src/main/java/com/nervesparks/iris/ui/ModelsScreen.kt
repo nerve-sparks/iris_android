@@ -59,7 +59,7 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
 //    }
 
     Box {
-        LazyColumn {
+        LazyColumn (modifier = Modifier.padding(horizontal = 15.dp)){
             item {
                 Column {
                     OutlinedButton(
@@ -70,7 +70,6 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
                             disabledContainerColor = Color.DarkGray.copy(alpha = 0.5f),
                             disabledContentColor = Color.White.copy(alpha = 0.5f)
                         ),
-                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
@@ -80,15 +79,15 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
                             painter = painterResource(id = R.drawable.search_svgrepo_com__3_),
                             contentDescription = "Search Logo",
                             modifier = Modifier.size(25.dp),
-                            tint = Color.White
+                            tint = Color.White.copy(alpha = .5f)
                         )
                         Spacer(Modifier.padding(5.dp))
-                        Text(text = "Search Models", color = Color.White, fontSize = 18.sp)
+                        Text(text = "Search Models Online", color = Color.White.copy(alpha = .5f),fontSize = 18.sp)
                     }
                     Spacer(Modifier.height(25.dp))
 
                     // Suggested Models Section
-                    Text(text = "Suggested Models", color = Color.White)
+                    Text(text = "Suggested Models Online", color = Color.White.copy(alpha = .5f), modifier = Modifier.padding(5.dp),fontSize = 18.sp)
                 }
             }
 
@@ -109,7 +108,7 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
 
             item {
                 // My Models Section
-                Text(text = "My Models", color = Color.White)
+                Text(text = "My Models", color = Color.White.copy(alpha = .5f), modifier = Modifier.padding(5.dp),fontSize = 18.sp)
             }
 
             // Display all models not in Suggested Models
