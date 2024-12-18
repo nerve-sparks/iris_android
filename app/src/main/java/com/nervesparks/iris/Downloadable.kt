@@ -187,8 +187,9 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     onClick = { onClick() },
                     enabled = status !is Downloading && !viewModel.getIsSending(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Blue.copy(alpha = .4f) // Navy Blue color
-                    )
+                        containerColor = Color.Blue.copy(alpha = .5f) // Navy Blue color
+                    ),
+
                 ) {
                     when (status) {
                         is Downloading -> Text(
