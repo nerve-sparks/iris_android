@@ -6,12 +6,16 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -57,8 +62,10 @@ fun ChatScreenAppBar(
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
     onSettingsClick: () -> Unit, // New parameter for settings navigation
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
 ) {
+    val kc = LocalSoftwareKeyboardController.current
     val darkNavyBlue = Color(0xFF050a14)
     TopAppBar(
         title = {
@@ -82,6 +89,7 @@ fun ChatScreenAppBar(
                     )
                 }
             }
+
         },
 
         actions = { // New actions section
@@ -95,7 +103,32 @@ fun ChatScreenAppBar(
                     )
                 }
             }
+            Button(
+                onClick = {
+                    kc?.hide()
+                    viewModel.stop()
+                    viewModel.clear()
+
+
+                },
+                modifier = Modifier
+                    .height(26.dp)
+                    .padding(0.dp),
+
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+//                                    shape = RoundedCornerShape(22.dp),
+                contentPadding = PaddingValues(horizontal = 1.dp, vertical = 0.dp)
+            ) {
+
+                Icon(
+
+                    painter = painterResource(id = R.drawable.edit_3_svgrepo_com),
+                    contentDescription = "newChat",
+                    tint = Color.White
+                )
+            }
         }
+
     )
 }
 
@@ -136,7 +169,8 @@ fun ChatScreen(
                     ),
                     canNavigateBack = navController.previousBackStackEntry != null,
                     navigateUp = { navController.navigateUp() },
-                    onSettingsClick = {navController.navigate(ChatScreen.Settings.name)}
+                    onSettingsClick = {navController.navigate(ChatScreen.Settings.name)},
+                    viewModel = viewModel,
                 )
             }
         ) { innerPadding ->
@@ -186,7 +220,7 @@ fun ChatScreen(
                     )})
                 }
                 composable(route = ChatScreen.ParamsScreen.name){
-                    ParametersScreen()
+                    ParametersScreen(viewModel)
                 }
             }
         }

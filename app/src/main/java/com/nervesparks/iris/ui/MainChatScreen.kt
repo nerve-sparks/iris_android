@@ -131,6 +131,7 @@ import com.nervesparks.iris.LinearGradient
 import com.nervesparks.iris.MainViewModel
 
 import com.nervesparks.iris.R
+import com.nervesparks.iris.ui.components.LoadingModal
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -262,50 +263,7 @@ fun MainChatScreen (
 
                 if (viewModel.showAlert) {
                     // Modal dialog to show download options
-                    Dialog(onDismissRequest = {}) {
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = Color(0xFF01081a),
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .alpha(0.9f)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .wrapContentSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ){
-                                Box(
-                                    modifier = Modifier
-                                        .padding(8.dp)
-                                        .fillMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                )
-                                {
-                                    Text(
-                                        text = "Loading Model \n" +
-                                                "Please wait...",
-                                        textAlign = TextAlign.Center,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                    )
-                                }
-                                Text(
-                                    text = viewModel.loadedModelName.value,
-                                    textAlign = TextAlign.Center,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                                LinearProgressIndicator(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 10.dp),
-                                    color = Color(0xFF17246a)
-                                )
-                            }
-                        }
-                    }
+                    LoadingModal(viewModel)
                 }
                 //Top app bar starts here.
 //                Row(
@@ -410,6 +368,7 @@ fun MainChatScreen (
                                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 2.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
+//                                item { Spacer(Modifier.height(55.dp).fillMaxWidth()) }
                                 // Header Text
                                 item {
                                     Text(
