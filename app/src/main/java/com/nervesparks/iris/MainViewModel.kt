@@ -30,6 +30,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 //        private val NanosPerSecond = 1_000_000_000.0
     }
 
+    lateinit var selectedModel: String
     private val tag: String? = this::class.simpleName
 
     var messages by mutableStateOf(
