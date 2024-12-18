@@ -47,7 +47,7 @@ fun SettingsScreen(OnModelsScreenButtonClicked: () -> Unit,
             thickness = 1.dp,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .f
+
         )
 
         OutlinedButton(

@@ -137,6 +137,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.androidgamesdk.gametextinput.Settings
 import com.nervesparks.iris.ui.MainChatScreen
 import com.nervesparks.iris.ui.ModelsScreen
 import com.nervesparks.iris.ui.SettingsScreen
@@ -165,20 +166,22 @@ fun ChatScreenAppBar(
     currentScreen: ChatScreen,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
+    onSettingsClick: () -> Unit, // New parameter for settings navigation
     modifier: Modifier = Modifier
 ) {
     val darkNavyBlue = Color(0xFF050a14)
     TopAppBar(
         title = {
-            Text(stringResource(currentScreen.title),
-            color = Color.White,
-            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 35.sp)
-        )},
+            Text(
+                stringResource(currentScreen.title),
+                color = Color.White,
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 35.sp)
+            )
+        },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = Color.Transparent
         ),
-        modifier = modifier.
-            background(darkNavyBlue),
+        modifier = modifier.background(darkNavyBlue),
         navigationIcon = {
             if (canNavigateBack) {
                 IconButton(onClick = navigateUp) {
@@ -188,6 +191,16 @@ fun ChatScreenAppBar(
                         tint = Color.White
                     )
                 }
+            }
+        },
+        actions = { // New actions section
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    painter = painterResource(id = R.drawable.settings_5_svgrepo_com), // Make sure to import this
+                    contentDescription = stringResource(R.string.setting),
+                    tint = Color.White,
+                    modifier = Modifier.size(25.dp)
+                )
             }
         }
     )
@@ -205,60 +218,72 @@ fun ChatScreen(
     extFileDir: File?,
     navController: NavHostController = rememberNavController()
 ) {
-    // Get current back stack entry
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    // Get the name of the current screen
-    val currentScreen = ChatScreen.valueOf(
-        backStackEntry?.destination?.route ?: ChatScreen.Start.name
+    // Define gradient colors
+    val darkNavyBlue = Color(0xFF050a14)
+    val lightNavyBlue = Color(0xFF051633)
+
+    // Create gradient brush
+    val gradientBrush = Brush.verticalGradient(
+        colors = listOf(darkNavyBlue, lightNavyBlue)
     )
 
-    Surface(color = Color(0xFF121212)) {
-    Scaffold(topBar = {
-        ChatScreenAppBar(
-            currentScreen = currentScreen,
-            canNavigateBack = navController.previousBackStackEntry != null,
-            navigateUp = { navController.navigateUp() }
-        )
-    }) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = ChatScreen.Start.name,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-
-            composable(route = ChatScreen.Start.name) {
-                MainChatScreen(
-                    onNextButtonClicked = {
-                        navController.navigate(ChatScreen.Settings.name)
-
-                    },
-                    viewModel = viewModel,
-                    dm = downloadManager,
-                    clipboard = clipboardManager,
-                    models = models,
-                    extFileDir = extFileDir,
+    // Wrap the entire Scaffold with a Box that has the gradient background
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(gradientBrush)
+    ) {
+        Scaffold(
+            backgroundColor = Color.Transparent, // Make Scaffold background transparent
+            topBar = {
+                ChatScreenAppBar(
+                    currentScreen = ChatScreen.valueOf(
+                        navController.currentBackStackEntryAsState().value?.destination?.route
+                            ?: ChatScreen.Start.name
+                    ),
+                    canNavigateBack = navController.previousBackStackEntry != null,
+                    navigateUp = { navController.navigateUp() },
+                    onSettingsClick = {navController.navigate(ChatScreen.Settings.name)}
                 )
             }
-            composable(route = ChatScreen.Settings.name) {
-                SettingsScreen(
-                    OnModelsScreenButtonClicked = { navController.navigate(ChatScreen.ModelsScreen.name) },
-                    OnBackButtonClicked = {
-                        navController.popBackStack(
-                            ChatScreen.Start.name,
-                            inclusive = false
-                        )
-                    }
-
-                )
-            }
-            composable(route = ChatScreen.ModelsScreen.name) {
-                ModelsScreen(viewModel)
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = ChatScreen.Start.name,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                composable(route = ChatScreen.Start.name) {
+                    MainChatScreen(
+                        onNextButtonClicked = {
+                            navController.navigate(ChatScreen.Settings.name)
+                        },
+                        viewModel = viewModel,
+                        dm = downloadManager,
+                        clipboard = clipboardManager,
+                        models = models,
+                        extFileDir = extFileDir,
+                    )
+                }
+                composable(route = ChatScreen.Settings.name) {
+                    SettingsScreen(
+                        OnModelsScreenButtonClicked = {
+                            navController.navigate(ChatScreen.ModelsScreen.name)
+                        },
+                        OnBackButtonClicked = {
+                            navController.popBackStack(
+                                ChatScreen.Start.name,
+                                inclusive = false
+                            )
+                        }
+                    )
+                }
+                composable(route = ChatScreen.ModelsScreen.name) {
+                    ModelsScreen(viewModel)
+                }
             }
         }
     }
-}
-
 }
 
