@@ -216,47 +216,72 @@ fun MainChatScreen (
                     Dialog(onDismissRequest = {}) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color.Black,
+                            color = Color(0xFF1f2021),
                             modifier = Modifier
                                 .padding(10.dp)
-                                .height(230.dp)
+                                .height(300.dp)
+                                .fillMaxWidth()
                         ) {
-                            LazyColumn(
+                            Column(
                                 modifier = Modifier
-                                    .padding(16.dp)
-                                    .height(140.dp)
-                                ,
+                                    .background(color = Color(0xFF1f2021))
+                                    .padding(top= 8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
-
                             ) {
-                                item {  Text(
+                                Text(
                                     text = "Download Required",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+
+                                )
+                                Text(
+                                    text = "Don't close or minimize the app!",
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
                                 )
+
+
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+
+                                ) {
+                                    item{
+                                        models.forEach { model ->
+                                        if (!model.destination.exists()) {
+                                            Card(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 4.dp),
+                                                colors = CardDefaults.cardColors(
+                                                    containerColor = Color(0xFF343636),
+                                                    contentColor = Color.White
+                                                ),
+                                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                                            ){
+                                                Column(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(8.dp),
+                                                    horizontalAlignment = Alignment.CenterHorizontally
+                                                ) {
+                                                    Text(
+                                                        text = model.name,
+                                                        color = Color(0xFFbbbdbf)
+                                                    )
+                                                    Spacer(modifier = Modifier.height(8.dp))
+                                                    Downloadable.Button(viewModel, dm, model)
+                                                }
+                                            }
+
+                                        }
+                                    }}
                                 }
-                                item {
-                                    Text(
-                                        text = "Don't close or minimize the app!",
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                }
-                                item { Spacer(modifier = Modifier.height(35.dp)) }
-
-                                item{ models.forEach { model ->
-                                    if (!model.destination.exists()) {
-//                                        Text(text = model.name, modifier = Modifier.padding(9.dp))
-                                        Downloadable.Button(viewModel, dm, model)
-                                    }
-                                }}
-
-
-                                item { Spacer(modifier = Modifier.height(20.dp)) }
-
-
 
                             }
+
                         }
                     }
                 }
