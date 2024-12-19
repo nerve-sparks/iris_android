@@ -1157,71 +1157,7 @@ fun ModelSelectorWithDownloadModal(
         }
 
         // Use showModal instead of switchModal
-        if (viewModel.showModal && viewModel.currentDownloadable != null) {
-            Dialog(onDismissRequest = {
-                viewModel.showModal = false  // Consistent with the condition
-                viewModel.currentDownloadable = null  // Optional: clear the current downloadable
-            }) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = Color.Black,
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .height(300.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .height(140.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Download Required",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "Don't close or minimize the app!",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(35.dp))
-                        // Use the current downloadable from the view model
-                        viewModel.currentDownloadable?.let { downloadable ->
-                            Downloadable.Button(viewModel, downloadManager, downloadable)
-                            if (downloadable.destination.exists()){
-                                Spacer(modifier = Modifier.height(25.dp))
-                                Button(
-                                    onClick = {
 
-                                        coroutineScope.launch {  viewModel.unload()}
-                                        // Delete the model file
-                                        downloadable.destination.delete()
-                                        // Reset dialog visibility and update UI
-                                        viewModel.showModal = false
-                                        viewModel.currentDownloadable = null
-
-                                        Toast.makeText(context, "Restarting App!!.", Toast.LENGTH_SHORT).show()
-                                        val packageManager: PackageManager = context.packageManager
-                                        val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
-                                        val componentName: ComponentName = intent.component!!
-                                        val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
-                                        context.startActivity(restartIntent)
-                                        Runtime.getRuntime().exit(0)
-
-
-
-                                    },
-                                ) {
-                                    Text(text = "Delete Model")
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
-                }
-            }
-        }
     }
 }
 

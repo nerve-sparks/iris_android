@@ -164,6 +164,11 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
                     }
                 }
             }
+            item {
+                if (viewModel.allModels.drop(3).size == 0) {
+                    Text(text = "No models to show", color = Color.White, modifier = Modifier.padding(top = 8.dp, start = 2.dp))
+                }
+            }
         }
     }
 }

@@ -73,7 +73,6 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     var userGivenModel by mutableStateOf("")
     var SearchedName by mutableStateOf("")
 
-
     private var textToSpeech:TextToSpeech? = null
 
     var textForTextToSpeech = ""
@@ -276,6 +275,27 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     suspend fun unload(){
         llamaAndroid.unload()
     }
+
+    fun myCustomBenchmark() {
+        viewModelScope.launch {
+            try {
+                // Collect the flow emitted by myCustomBenchmark and process the emitted data
+                llamaAndroid.myCustomBenchmark()
+                    .collect { emittedString ->
+                        // Handle the emitted string here
+                        Log.d(tag, "Emitted: $emittedString")
+                    }
+            } catch (exc: IllegalStateException) {
+                Log.e(tag, "myCustomBenchmark() failed", exc)
+            } catch (exc: kotlinx.coroutines.TimeoutCancellationException) {
+                Log.e(tag, "myCustomBenchmark() timed out", exc)
+            } catch (exc: Exception) {
+                Log.e(tag, "Unexpected error during myCustomBenchmark()", exc)
+            }
+        }
+    }
+
+
     var loadedModelName = mutableStateOf("");
 
     fun load(pathToModel: String, userThreads: Int)  {
