@@ -1,6 +1,7 @@
 package com.nervesparks.iris.ui
 
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -9,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nervesparks.iris.MainViewModel
@@ -61,10 +63,17 @@ fun BenchMarkScreen(viewModel: MainViewModel) {
                 }
             }
         }
-
+        val context = LocalContext.current
         // Benchmark Button
         Button(
-            onClick = {  state = state.copy(showConfirmDialog = true) },
+            onClick = {
+
+                if(viewModel.loadedModelName.value == ""){
+
+                    Toast.makeText(context, "Load A Model First", Toast.LENGTH_SHORT).show()
+                }
+                else{
+                state = state.copy(showConfirmDialog = true) }},
             enabled = !state.isRunning,
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
