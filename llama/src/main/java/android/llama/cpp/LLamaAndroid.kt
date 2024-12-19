@@ -12,6 +12,10 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.Dispatchers
+import kotlin.time.Duration.Companion.minutes
 
 class LLamaAndroid {
     private val tag: String? = this::class.simpleName
@@ -233,6 +237,47 @@ class LLamaAndroid {
         }
         _isSending.value = false
     }.flowOn(runLoop)
+
+
+
+    suspend fun myCustomBenchmark(): Flow<String> = flow {
+        try {
+            withTimeout(1.minutes) { // Set timeout to 2 minutes
+                when (val state = threadLocalState.get()) {
+                    is State.Loaded -> {
+                        val ncur = IntVar(completion_init(state.context, state.batch, "Write an article on global warming in 1000 words", nlen))
+                        while (ncur.value <= nlen) {
+                            val str = completion_loop(state.context, state.batch, state.sampler, nlen, ncur)
+                            if (str == null) {
+                                _isSending.value = false
+                                _isCompleteEOT.value = true
+                                break
+                            }
+                            if (stopGeneration) {
+                                break
+                            }
+                            emit(str)
+                        }
+                        kv_cache_clear(state.context)
+                    }
+                    else -> {
+                        _isSending.value = false
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Handle timeout or any other exceptions if necessary
+            if (e is kotlinx.coroutines.TimeoutCancellationException) {
+                println("Benchmark timed out after 2 minutes.")
+            }
+        } finally {
+            _isSending.value = false
+        }
+    }.flowOn(runLoop)
+
+
+
+
 
     /**
      * Unloads the model and frees resources.
