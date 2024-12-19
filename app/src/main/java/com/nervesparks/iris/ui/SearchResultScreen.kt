@@ -2,22 +2,29 @@ package com.nervesparks.iris.ui
 
 import android.app.DownloadManager
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 //import androidx.compose.material.icons.filled.ModelTraining
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -29,14 +36,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nervesparks.iris.MainViewModel
+import com.nervesparks.iris.R
 import com.nervesparks.iris.ui.components.LoadingModal
 import com.nervesparks.iris.ui.components.ModelCard
 import kotlinx.coroutines.Dispatchers
@@ -56,8 +69,8 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
     val kc = LocalSoftwareKeyboardController.current
-
-
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
     var UserGivenModel by remember {
         mutableStateOf(
             TextFieldValue(
@@ -77,14 +90,33 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
             .padding(16.dp),
     ) {
         // Search Input and Button Row
-        Text(
-            text = "Example: bartowski/Llama-3.2-1B-Instruct-GGUF",
-            modifier = Modifier
-                .wrapContentSize()
-                .padding(4.dp),
-            color = Color.White,
-            fontSize = 10.sp
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start,
+            modifier = Modifier.wrapContentSize()
+        ) {
+            Text(
+                text = "Example: bartowski/Llama-3.2-1B-Instruct-GGUF",
+                modifier = Modifier.padding(4.dp),
+                color = Color.White,
+                fontSize = 10.sp
+            )
+
+            IconButton(
+                onClick = {
+                    clipboardManager.setText(AnnotatedString("bartowski/Llama-3.2-1B-Instruct-GGUF"))
+                    Toast.makeText(context, "Text copied", Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.size(16.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.copy1),
+                    contentDescription = "Copy text",
+                    tint = Color.White.copy(alpha = 0.7f),
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        }
         Spacer(Modifier.height(2.dp))
         OutlinedTextField(
             value = UserGivenModel,
