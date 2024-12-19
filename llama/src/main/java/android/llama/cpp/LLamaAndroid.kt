@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.Dispatchers
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 class LLamaAndroid {
     private val tag: String? = this::class.simpleName
@@ -242,7 +243,7 @@ class LLamaAndroid {
 
     suspend fun myCustomBenchmark(): Flow<String> = flow {
         try {
-            withTimeout(1.minutes) { // Set timeout to 2 minutes
+            withTimeout(30.seconds) { // Set timeout to 2 minutes
                 when (val state = threadLocalState.get()) {
                     is State.Loaded -> {
                         val ncur = IntVar(completion_init(state.context, state.batch, "Write an article on global warming in 1000 words", nlen))

@@ -37,41 +37,21 @@ import java.io.File
 
 @Composable
 fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButtonClick: () -> Unit, dm: DownloadManager) {
-//    val models = listOf(
-//        Downloadable(
-//            "Llama-3.2-3B-Instruct-Q4_K_L",
-//            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
-//            File(extFileDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
-//        ),
-//        Downloadable(
-//            "Llama-3.2-1B-Instruct-Q6_K_L",
-//            Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
-//            File(extFileDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
-//        ),
-//        Downloadable(
-//            "stablelm-2-1_6b-chat.Q4_K_M.imx",
-//            Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
-//            File(extFileDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
-//        )
-//    )
-//
-//    if (extFileDir != null) {
-//        viewModel.loadExistingModels(extFileDir)
-//    }
-//
-//    val allModelsExist = models.all { model -> model.destination.exists() }
-//
-//    if (allModelsExist) {
-//        viewModel.showModal = false
-//    }
+    // Observe viewModel.refresh to trigger recomposition
+    val refresh = viewModel.refresh
+
+    // Reset refresh to false after the screen is recomposed
+    if (refresh) {
+        viewModel.refresh = false
+    }
 
     Box {
         if (viewModel.showAlert) {
             // Modal dialog to show download options
             LoadingModal(viewModel)
-
         }
-        LazyColumn (modifier = Modifier.padding(horizontal = 15.dp)){
+
+        LazyColumn(modifier = Modifier.padding(horizontal = 15.dp)) {
             item {
                 Column {
                     Row(
@@ -84,7 +64,7 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
                             }
                     ) {
                         Icon(
-                            modifier = Modifier.size(20.dp), // Icon size,
+                            modifier = Modifier.size(20.dp), // Icon size
                             painter = painterResource(id = R.drawable.search_svgrepo_com__3_),
                             contentDescription = "Parameters",
                             tint = Color.White
@@ -113,10 +93,14 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
                     )
                     Spacer(Modifier.height(25.dp))
                     // Suggested Models Section
-                    Text(text = "Suggested Models", color = Color.White.copy(alpha = .5f), modifier = Modifier.padding(5.dp),fontSize = 18.sp)
+                    Text(
+                        text = "Suggested Models",
+                        color = Color.White.copy(alpha = .5f),
+                        modifier = Modifier.padding(5.dp),
+                        fontSize = 18.sp
+                    )
                 }
             }
-
 
             // Show first three suggested models
             items(viewModel.allModels.take(3)) { model ->
@@ -144,10 +128,13 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
 
             item {
                 // My Models Section
-                Text(text = "My Models", color = Color.White.copy(alpha = .5f), modifier = Modifier.padding(5.dp),fontSize = 18.sp)
+                Text(
+                    text = "My Models",
+                    color = Color.White.copy(alpha = .5f),
+                    modifier = Modifier.padding(5.dp),
+                    fontSize = 18.sp
+                )
             }
-
-
 
             // Display all models not in Suggested Models
             items(viewModel.allModels.drop(3)) { model ->
@@ -165,8 +152,12 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
                 }
             }
             item {
-                if (viewModel.allModels.drop(3).size == 0) {
-                    Text(text = "No models to show", color = Color.White, modifier = Modifier.padding(top = 8.dp, start = 2.dp))
+                if (viewModel.allModels.drop(3).isEmpty()) {
+                    Text(
+                        text = "No models to show",
+                        color = Color.White,
+                        modifier = Modifier.padding(top = 8.dp, start = 2.dp)
+                    )
                 }
             }
         }

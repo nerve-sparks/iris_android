@@ -200,8 +200,7 @@ fun MainChatScreen (
     }
     Box(
         modifier = Modifier.fillMaxSize()
-            .windowInsetsPadding(WindowInsets.navigationBars)
-            .imePadding()
+
 
     ) {
         LinearGradient()
@@ -801,10 +800,17 @@ fun MainChatScreen (
 
 
                             if (!viewModel.getIsSending()) {
+                                val context = LocalContext.current
 
                                 IconButton(onClick = {
-                                    viewModel.send()
-                                    focusManager.clearFocus()
+                                    if(viewModel.loadedModelName.value == ""){
+                                        focusManager.clearFocus()
+                                        Toast.makeText(context, "Load A Model First", Toast.LENGTH_SHORT).show()
+                                    }
+                                    else {
+                                        viewModel.send()
+                                        focusManager.clearFocus()
+                                    }
                                 }
                                 ) {
                                     Icon(

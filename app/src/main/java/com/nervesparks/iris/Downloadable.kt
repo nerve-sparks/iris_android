@@ -111,6 +111,8 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
 //                         Ensure model is added dynamically
                         withContext(Dispatchers.Main) {
                             if (!viewModel.allModels.any { it["name"] == item.name }) {
+                                println("testing")
+                                println(item.source.toString())
                                 val newModel = mapOf(
                                     "name" to item.name,
                                     "source" to item.source.toString(),
@@ -148,6 +150,7 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
                     is Downloaded -> {
                         viewModel.showModal = true
                         Log.d("item.destination.path", item.destination.path.toString())
+                        viewModel.currentDownloadable = item
                         viewModel.load(item.destination.path, userThreads = viewModel.user_thread.toInt())
                     }
 

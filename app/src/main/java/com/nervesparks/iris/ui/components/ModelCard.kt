@@ -31,8 +31,21 @@ fun ModelCard(
     downloadLink: String,
     showDeleteButton: Boolean
 ) {
-    // State for showing the confirmation dialog
+    // State for showing the confirmation dialog and whether the model is deleted
     var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var isDeleted by remember { mutableStateOf(false) } // Track deletion status
+    var showDeletedMessage by remember { mutableStateOf(false) } // Track showing deleted message
+
+    // Recompose Downloadable.Button after 1 second delay
+    LaunchedEffect(isDeleted) {
+        if (isDeleted) {
+            showDeletedMessage = true
+            // Wait for 1 second before showing the button again
+            kotlinx.coroutines.delay(1000)
+            showDeletedMessage = false
+            isDeleted = false
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -53,7 +66,7 @@ fun ModelCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            if(modelName == viewModel.loadedModelName.value) {
+            if (modelName == viewModel.loadedModelName.value) {
                 Text(color = Color.Green, text = "Currently Active", fontSize = 12.sp)
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -74,20 +87,24 @@ fun ModelCard(
                     "https://huggingface.co/${viewModel.userGivenModel}/resolve/main/${modelName}?download=true"
                 }
 
-                Downloadable.Button(
-                    viewModel,
-                    dm,
-                    Downloadable(
-                        modelName,
-                        source = Uri.parse(fullUrl),
-                        destination = File(extFilesDir, modelName)
+                // If model is not deleted, show Downloadable.Button
+                if (!showDeletedMessage) {
+                    Downloadable.Button(
+                        viewModel,
+                        dm,
+                        Downloadable(
+                            modelName,
+                            source = Uri.parse(fullUrl),
+                            destination = File(extFilesDir, modelName)
+                        )
                     )
-                )
+                }
+
                 Spacer(modifier = Modifier.padding(5.dp))
 
                 if (showDeleteButton) {
-                    viewModel.currentDownloadable?.let { downloadable ->
-                        if (downloadable.destination.exists()) {
+                    File(extFilesDir, modelName).let { downloadable ->
+                        if (downloadable.exists()) {
                             Button(
                                 onClick = { showDeleteConfirmation = true },
                                 colors = ButtonDefaults.buttonColors(Color(0xFFb91c1c)),
@@ -109,17 +126,18 @@ fun ModelCard(
                                         Button(
                                             onClick = {
                                                 coroutineScope.launch { viewModel.unload() }
-                                                downloadable.destination.delete()
+                                                File(extFilesDir, modelName).delete()
                                                 viewModel.showModal = false
-                                                viewModel.currentDownloadable = null
-
-                                                Toast.makeText(context, "Restarting App!", Toast.LENGTH_SHORT).show()
-                                                val packageManager: PackageManager = context.packageManager
-                                                val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
-                                                val componentName: ComponentName = intent.component!!
-                                                val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
-                                                context.startActivity(restartIntent)
-                                                Runtime.getRuntime().exit(0)
+                                                if (modelName == viewModel.loadedModelName.value) {
+                                                    viewModel.newShowModal = true
+                                                    showDeleteConfirmation = false
+                                                }
+                                                if (modelName == viewModel.loadedModelName.value) {
+                                                    viewModel.loadedModelName.value = ""
+                                                }
+                                                // Mark model as deleted to show the updated state
+                                                isDeleted = true // Update deletion state
+                                                viewModel.refresh = true
                                             },
                                             colors = ButtonDefaults.buttonColors(Color(0xFFb91c1c))
                                         ) {
@@ -141,16 +159,28 @@ fun ModelCard(
                 }
             }
 
+            // Show "Model Deleted" message for 1 second after deletion
+            if (showDeletedMessage) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Model Deleted",
+                    color = Color.Red,
+                    fontSize = 15.sp
+                )
+            }
+
             // Add file size information if model exists
             File(extFilesDir, modelName).let {
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = if(formatFileSize(File(extFilesDir, modelName).length())!= "0 Bytes"){"Size: ${formatFileSize(File(extFilesDir, modelName).length())}"}else {"Not Downloaded"},
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
-
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = if (formatFileSize(File(extFilesDir, modelName).length()) != "0 Bytes") {
+                        "Size: ${formatFileSize(File(extFilesDir, modelName).length())}"
+                    } else {
+                        "Not Downloaded"
+                    },
+                    color = Color.Gray,
+                    fontSize = 12.sp
+                )
             }
         }
     }
@@ -168,3 +198,5 @@ private fun formatFileSize(size: Long): String {
         else -> String.format("%d Bytes", size)
     }
 }
+
+

@@ -7,10 +7,14 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -154,6 +158,8 @@ fun ChatScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(gradientBrush)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .imePadding()
     ) {
         Scaffold(
             backgroundColor = Color.Transparent, // Make Scaffold background transparent

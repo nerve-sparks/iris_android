@@ -17,8 +17,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import java.io.File
@@ -39,6 +41,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             listOf<Map<String, String>>(),
         )
         private set
+    var newShowModal by mutableStateOf(false)
 
     var user_thread by mutableStateOf(0f)
 
@@ -82,7 +85,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     var eot_str = ""
 
 
-
+    var refresh by mutableStateOf(false)
 
     fun loadExistingModels(directory: File) {
         // List models in the directory that end with .gguf
@@ -276,14 +279,35 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         llamaAndroid.unload()
     }
 
+    var tokensList = mutableListOf<String>() // Store emitted tokens
+    var benchmarkStartTime: Long = 0L // Track the benchmark start time
+    var tokensPerSecondsFinal: Double by mutableStateOf(0.0) // Track tokens per second and trigger UI updates
+    var isBenchmarkingComplete by mutableStateOf(false) // Flag to track if benchmarking is complete
+
     fun myCustomBenchmark() {
         viewModelScope.launch {
             try {
-                // Collect the flow emitted by myCustomBenchmark and process the emitted data
+                tokensList.clear() // Reset the token list before benchmarking
+                benchmarkStartTime = System.currentTimeMillis() // Record the start time
+                isBenchmarkingComplete = false // Reset benchmarking flag
+
+                // Launch a coroutine to update the tokens per second every second
+                launch {
+                    while (!isBenchmarkingComplete) {
+                        delay(1000L) // Delay 1 second
+                        val elapsedTime = System.currentTimeMillis() - benchmarkStartTime
+                        if (elapsedTime > 0) {
+                            tokensPerSecondsFinal = tokensList.size.toDouble() / (elapsedTime / 1000.0)
+                        }
+                    }
+                }
+
                 llamaAndroid.myCustomBenchmark()
                     .collect { emittedString ->
-                        // Handle the emitted string here
-                        Log.d(tag, "Emitted: $emittedString")
+                        if (emittedString != null) {
+                            tokensList.add(emittedString) // Add each token to the list
+                            Log.d(tag, "Token collected: $emittedString")
+                        }
                     }
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "myCustomBenchmark() failed", exc)
@@ -291,9 +315,25 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 Log.e(tag, "myCustomBenchmark() timed out", exc)
             } catch (exc: Exception) {
                 Log.e(tag, "Unexpected error during myCustomBenchmark()", exc)
+            } finally {
+                // Benchmark complete, log the final tokens per second value
+                val elapsedTime = System.currentTimeMillis() - benchmarkStartTime
+                val finalTokensPerSecond = if (elapsedTime > 0) {
+                    tokensList.size.toDouble() / (elapsedTime / 1000.0)
+                } else {
+                    0.0
+                }
+                Log.d(tag, "Benchmark complete. Tokens/sec: $finalTokensPerSecond")
+
+                // Update the final tokens per second and stop updating the value
+                tokensPerSecondsFinal = finalTokensPerSecond
+                isBenchmarkingComplete = true // Mark benchmarking as complete
             }
         }
     }
+
+
+
 
 
     var loadedModelName = mutableStateOf("");
@@ -308,6 +348,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             try {
                 var modelName = pathToModel.split("/")
                 loadedModelName.value = modelName.last()
+                newShowModal = false
                 showModal= false
                 showAlert = true
                 llamaAndroid.load(pathToModel, userThreads)
