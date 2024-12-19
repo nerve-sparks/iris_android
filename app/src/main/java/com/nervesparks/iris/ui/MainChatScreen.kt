@@ -216,7 +216,7 @@ fun MainChatScreen (
                     Dialog(onDismissRequest = {}) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFF1f2021),
+                            color = Color(0xFF233340),
                             modifier = Modifier
                                 .padding(10.dp)
                                 .height(300.dp)
@@ -224,7 +224,7 @@ fun MainChatScreen (
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .background(color = Color(0xFF1f2021))
+                                    .background(color = Color(0xFF233340))
                                     .padding(top= 8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -256,7 +256,7 @@ fun MainChatScreen (
                                                     .fillMaxWidth()
                                                     .padding(vertical = 4.dp),
                                                 colors = CardDefaults.cardColors(
-                                                    containerColor = Color(0xFF343636),
+                                                    containerColor = Color(0xff0f172a),
                                                     contentColor = Color.White
                                                 ),
                                                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
