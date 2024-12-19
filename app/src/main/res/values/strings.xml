@@ -6,4 +6,6 @@
     <string name="models_screen_title">Models</string>
     <string name="back_button">BackButton</string>
     <string name="setting">Setting</string>
+    <string name="about_screen_title">About</string>
+    <string name="benchmark_screen_title">BenchMark</string>
 </resources>

@@ -397,7 +397,7 @@ fun MainChatScreen (
                                 // Header Text
                                 item {
                                     Text(
-                                        text = "Hello, Ask me " + "Anything..",
+                                        text = "Hello, Ask me " + "Anything",
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             color = Color.White,
                                             fontWeight = FontWeight.W300,
@@ -690,13 +690,13 @@ fun MainChatScreen (
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color(0xFF050B16))
-                            .imePadding()
+
 
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 5.dp, top = 8.dp, bottom = 8.dp, end = 5.dp),
+                                .padding(start = 5.dp, top = 8.dp, bottom = 12.dp, end = 5.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
 

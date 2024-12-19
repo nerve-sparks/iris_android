@@ -35,9 +35,11 @@ import com.nervesparks.iris.R
 
 @Composable
 fun SettingsScreen(
-    OnParamsScreenButtonClicked: () -> Unit,
-    OnModelsScreenButtonClicked: () -> Unit,
-    OnBackButtonClicked: (Int) -> Unit
+    OnParamsScreenButtonClicked:    () -> Unit,
+    OnModelsScreenButtonClicked:    () -> Unit,
+    OnAboutScreenButtonClicked:     () -> Unit,
+    OnBenchMarkScreenButtonClicked: () -> Unit,
+    OnBackButtonClicked:         (Int) -> Unit
 ) {
 
     Box(
@@ -116,6 +118,83 @@ fun SettingsScreen(
                             Spacer(Modifier.width(10.dp))
                             Text(
                                 text = "Change Parameters",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                modifier = Modifier
+                                    .padding(vertical = 12.dp, horizontal = 7.dp)
+                            )
+                            Spacer(Modifier.weight(1f))
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                painter = painterResource(id = R.drawable.right_arrow_svgrepo_com),
+                                contentDescription = null,
+                                tint = Color.White,
+                            )
+                        }
+
+                        Divider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp), // Optional: Adjust horizontal padding if needed
+                            color = Color.DarkGray, // Set the color of the divider
+                            thickness = 1.dp
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp, vertical = 5.dp)
+                                .clickable {
+                                    OnBenchMarkScreenButtonClicked()
+                                }
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(21.dp), // Icon size,
+                                painter = painterResource(id = R.drawable.bench_mark_icon),
+                                contentDescription = "Parameters",
+                                tint = Color.White
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                text = "BenchMark",
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                modifier = Modifier
+                                    .padding(vertical = 12.dp, horizontal = 7.dp)
+                            )
+                            Spacer(Modifier.weight(1f))
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                painter = painterResource(id = R.drawable.right_arrow_svgrepo_com),
+                                contentDescription = null,
+                                tint = Color.White,
+                            )
+                        }
+                        Divider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp), // Optional: Adjust horizontal padding if needed
+                            color = Color.DarkGray, // Set the color of the divider
+                            thickness = 1.dp
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp, vertical = 5.dp)
+                                .clickable {
+                                    OnAboutScreenButtonClicked()
+                                }
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(21.dp), // Icon size,
+                                painter = painterResource(id = R.drawable.information_outline_svgrepo_com),
+                                contentDescription = "Parameters",
+                                tint = Color.White
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                text = "About",
                                 color = Color.White,
                                 fontSize = 18.sp,
                                 modifier = Modifier
