@@ -37,6 +37,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.nervesparks.iris.ui.AboutScreen
+import com.nervesparks.iris.ui.BenchMarkScreen
 import com.nervesparks.iris.ui.MainChatScreen
 import com.nervesparks.iris.ui.ModelsScreen
 import com.nervesparks.iris.ui.ParametersScreen
@@ -50,7 +52,9 @@ enum class ChatScreen(@StringRes val title: Int) {
     Settings(title = R.string.settings_screen_title),
     SearchResults(title = R.string.search_results_screen_title),
     ModelsScreen(title = R.string.models_screen_title),
-    ParamsScreen(title = R.string.parameters_screen_title)
+    ParamsScreen(title = R.string.parameters_screen_title),
+    AboutScreen(title = R.string.about_screen_title),
+    BenchMarkScreen(title = R.string.benchmark_screen_title),
 }
 
 
@@ -72,7 +76,7 @@ fun ChatScreenAppBar(
             Text(
                 stringResource(currentScreen.title),
                 color = Color.White,
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 35.sp)
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 28.sp)
             )
         },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
@@ -96,7 +100,7 @@ fun ChatScreenAppBar(
             if(!canNavigateBack) {
                 IconButton(onClick = onSettingsClick) {
                     Icon(
-                        painter = painterResource(id = R.drawable.settings_5_svgrepo_com), // Make sure to import this
+                        painter = painterResource(id = R.drawable.settings_gear_rounded), // Make sure to import this
                         contentDescription = stringResource(R.string.setting),
                         tint = Color.White,
                         modifier = Modifier.size(25.dp)
@@ -104,25 +108,15 @@ fun ChatScreenAppBar(
                 }
             }
             if(!canNavigateBack) {
-                Button(
+                IconButton(
                     onClick = {
                         kc?.hide()
                         viewModel.stop()
                         viewModel.clear()
-
-
-                    },
-                    modifier = Modifier
-                        .height(26.dp)
-                        .padding(0.dp),
-
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-//                                    shape = RoundedCornerShape(22.dp),
-                    contentPadding = PaddingValues(horizontal = 1.dp, vertical = 0.dp)
-                ) {
-
+                    }
+                ){
                     Icon(
-
+                        modifier = Modifier.size(25.dp),
                         painter = painterResource(id = R.drawable.edit_3_svgrepo_com),
                         contentDescription = "newChat",
                         tint = Color.White
@@ -203,6 +197,12 @@ fun ChatScreen(
                         OnParamsScreenButtonClicked = {
                           navController.navigate((ChatScreen.ParamsScreen.name))
                         },
+                        OnAboutScreenButtonClicked = {
+                            navController.navigate((ChatScreen.AboutScreen.name))
+                        },
+                        OnBenchMarkScreenButtonClicked = {
+                            navController.navigate((ChatScreen.BenchMarkScreen.name))
+                        },
                         OnBackButtonClicked = {
                             navController.popBackStack(
                                 ChatScreen.Start.name,
@@ -226,6 +226,12 @@ fun ChatScreen(
                 }
                 composable(route = ChatScreen.ParamsScreen.name){
                     ParametersScreen(viewModel)
+                }
+                composable(route = ChatScreen.AboutScreen.name){
+                    AboutScreen()
+                }
+                composable(route = ChatScreen.BenchMarkScreen.name){
+                    BenchMarkScreen(viewModel)
                 }
             }
         }

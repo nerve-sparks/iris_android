@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +35,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.nervesparks.iris.MainViewModel
 import com.nervesparks.iris.ui.components.LoadingModal
 import com.nervesparks.iris.ui.components.ModelCard
@@ -75,6 +77,15 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
             .padding(16.dp),
     ) {
         // Search Input and Button Row
+        Text(
+            text = "Example: bartowski/Llama-3.2-1B-Instruct-GGUF",
+            modifier = Modifier
+                .wrapContentSize()
+                .padding(4.dp),
+            color = Color.White,
+            fontSize = 10.sp
+        )
+        Spacer(Modifier.height(2.dp))
         OutlinedTextField(
             value = UserGivenModel,
             onValueChange = { newValue ->
