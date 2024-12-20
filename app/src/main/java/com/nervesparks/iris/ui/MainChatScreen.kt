@@ -428,6 +428,12 @@ fun MainChatScreen (
                                                 }
                                             }
                                         } else {
+                                            val context = LocalContext.current
+                                            val interactionSource = remember { MutableInteractionSource() }
+                                            val sheetState = rememberModalBottomSheetState()
+                                            var isSheetOpen by rememberSaveable {
+                                                mutableStateOf(false)
+                                            }
                                             // Code block rendering remains the same
                                             Box(
                                                 modifier = Modifier
@@ -438,7 +444,39 @@ fun MainChatScreen (
                                                     )
                                                     .fillMaxWidth()
                                             ) {
-                                                Column {
+                                                if(isSheetOpen){
+                                                    MessageBottomSheet(
+                                                        message = trimmedMessage,
+                                                        clipboard = clipboard,
+                                                        context = context,
+                                                        viewModel = viewModel,
+                                                        onDismiss = {
+                                                            isSheetOpen = false
+                                                            viewModel.toggler = false
+                                                        },
+                                                        sheetState = sheetState
+                                                    )
+                                                }
+                                                Column(modifier = Modifier.combinedClickable(
+                                                        interactionSource = interactionSource,
+                                                indication = ripple(color = Color.Gray),
+                                                onLongClick = {
+                                                    if (viewModel.getIsSending()) {
+                                                        Toast
+                                                            .makeText(
+                                                                context,
+                                                                " Wait till generation is done! ",
+                                                                Toast.LENGTH_SHORT
+                                                            )
+                                                            .show()
+                                                    } else {
+                                                        isSheetOpen = true
+                                                    }
+                                                },
+                                                onClick = {
+                                                    kc?.hide()
+                                                }
+                                                )) {
                                                     Row(
                                                         horizontalArrangement = Arrangement.End,
                                                         modifier = Modifier
