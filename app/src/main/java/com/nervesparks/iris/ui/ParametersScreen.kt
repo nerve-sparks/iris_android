@@ -89,7 +89,7 @@ fun ParametersScreen(viewModel: MainViewModel) {
                 Spacer(modifier = Modifier.height(15.dp))
 
                 Text(
-                    text = "After changing please Save the changes!!",
+                    text = "After changing please Save the changes",
                     color = Color.White
                 )
 

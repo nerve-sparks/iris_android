@@ -4,8 +4,10 @@ import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,9 +67,19 @@ fun BenchMarkScreen(viewModel: MainViewModel) {
         }
         val context = LocalContext.current
         // Benchmark Button
-        Button(
-            onClick = {
 
+        androidx.compose.material3.Button(
+            modifier =Modifier.padding(vertical = 8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2563EB).copy(alpha = 1.0f),
+                contentColor = Color.White
+            ),
+            shape = RoundedCornerShape(8.dp),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 6.dp,
+                pressedElevation = 3.dp
+            ),
+            onClick = {
                 if(viewModel.loadedModelName.value == ""){
 
                     Toast.makeText(context, "Load A Model First", Toast.LENGTH_SHORT).show()
@@ -75,9 +87,9 @@ fun BenchMarkScreen(viewModel: MainViewModel) {
                 else{
                 state = state.copy(showConfirmDialog = true) }},
             enabled = !state.isRunning,
-            modifier = Modifier.padding(vertical = 8.dp)
-        ) {
-            Text(if (state.isRunning) "Benchmarking..." else "Start Benchmark")
+        )
+        {
+            Text(if (state.isRunning) "Benchmarking..." else "Start Benchmark", color = Color.White)
         }
 
         // Progress Indicator

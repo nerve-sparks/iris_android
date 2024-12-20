@@ -459,7 +459,7 @@ fun MainChatScreen (
                                                 }
                                                 Column(modifier = Modifier.combinedClickable(
                                                         interactionSource = interactionSource,
-                                                indication = ripple(color = Color.Gray),
+                                                indication = ripple(color = Color.LightGray),
                                                 onLongClick = {
                                                     if (viewModel.getIsSending()) {
                                                         Toast
