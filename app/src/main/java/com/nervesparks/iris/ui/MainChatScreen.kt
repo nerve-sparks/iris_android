@@ -226,7 +226,7 @@ fun MainChatScreen (
                             Column(
                                 modifier = Modifier
                                     .background(color = Color(0xFF233340))
-                                    .padding(top= 8.dp),
+                                    .padding(top = 8.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
@@ -384,7 +384,6 @@ fun MainChatScreen (
 
                                 )
                         }) {
-//
 
                         if (viewModel.messages.isEmpty() && !viewModel.showModal && !viewModel.showAlert) {
                             LazyColumn(

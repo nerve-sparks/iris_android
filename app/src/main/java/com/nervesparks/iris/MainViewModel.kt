@@ -350,9 +350,10 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
             } catch (exc: IllegalStateException) {
                 Log.e(tag, "load() failed", exc)
-                addMessage("error", exc.message ?: "")
+//                addMessage("error", exc.message ?: "")
             }
             showModal = false
+            showAlert = false
             eot_str = llamaAndroid.send_eot_str()
         }
     }
