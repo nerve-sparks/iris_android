@@ -3,6 +3,7 @@ package com.nervesparks.iris.ui.components
 import android.app.DownloadManager
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -114,8 +115,11 @@ fun ModelCard(
 
                             if (showDeleteConfirmation) {
                                 AlertDialog(
+                                    textContentColor = Color.LightGray,
+                                    containerColor =  Color(0xFF233340),
+                                    modifier = Modifier.background(shape = RoundedCornerShape(8.dp), color = Color(0xFF233340)),
                                     onDismissRequest = { showDeleteConfirmation = false },
-                                    title = { Text("Confirm Deletion") },
+                                    title = { Text("Confirm Deletion", color = Color.White) },
                                     text = { Text("Are you sure you want to delete this model? The app will restart after deletion.") },
                                     confirmButton = {
                                         Button(
@@ -143,7 +147,7 @@ fun ModelCard(
                                     },
                                     dismissButton = {
                                         Button(
-                                            colors = ButtonDefaults.buttonColors(Color.DarkGray),
+                                            colors = ButtonDefaults.buttonColors(Color.Black),
                                             onClick = { showDeleteConfirmation = false }
                                         ) {
                                             Text("Cancel")
