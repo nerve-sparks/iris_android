@@ -307,7 +307,173 @@ fun MainChatScreen (
                         }
                         else {
 
-                            ChatMessageList(viewModel = viewModel, scrollState= scrollState)
+                            LazyColumn(state = scrollState) {
+                                // Track the first user and assistant messages
+
+                                var length = viewModel.messages.size
+
+                                itemsIndexed(viewModel.messages.slice(3..< length) as? List<Map<String, String>> ?: emptyList()) { index, messageMap ->
+                                    val role = messageMap["role"] ?: ""
+                                    val content = messageMap["content"] ?: ""
+                                    val trimmedMessage = if (content.endsWith("\n")) {
+                                        content.substring(startIndex = 0, endIndex = content.length - 1)
+                                    } else {
+                                        content
+                                    }
+
+                                    // Skip rendering first user and first assistant messages
+
+                                    if (role != "system") {
+                                        if (role != "codeBlock") {
+                                            Box {
+                                                val context = LocalContext.current
+                                                val interactionSource = remember { MutableInteractionSource() }
+                                                val sheetState = rememberModalBottomSheetState()
+                                                var isSheetOpen by rememberSaveable {
+                                                    mutableStateOf(false)
+                                                }
+                                                if(isSheetOpen){
+                                                    MessageBottomSheet(
+                                                        message = trimmedMessage,
+                                                        clipboard = clipboard,
+                                                        context = context,
+                                                        viewModel = viewModel,
+                                                        onDismiss = {
+                                                            isSheetOpen = false
+                                                            viewModel.toggler = false
+                                                        },
+                                                        sheetState = sheetState
+                                                    )
+                                                }
+                                                Row(
+                                                    horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(
+                                                            start = 8.dp,
+                                                            top = 8.dp,
+                                                            end = 8.dp,
+                                                            bottom = 0.dp
+                                                        ),
+                                                ) {
+                                                    if(role == "assistant") {
+                                                        Image(
+                                                            painter = painterResource(
+                                                                id = R.drawable.logo
+                                                            ),
+                                                            contentDescription =  "Bot Icon",
+                                                            modifier = Modifier.size(20.dp)
+                                                        )
+                                                    }
+                                                    Box(modifier = Modifier
+                                                        .padding(horizontal = 2.dp)
+                                                        .background(
+                                                            color = if (role == "user") Color(
+                                                                0xFF171E2C
+                                                            ) else Color.Transparent,
+                                                            shape = RoundedCornerShape(12.dp),
+                                                        )
+                                                        .combinedClickable(
+                                                            interactionSource = interactionSource,
+                                                            indication = ripple(color = Color.Gray),
+                                                            onLongClick = {
+                                                                if (viewModel.getIsSending()) {
+                                                                    Toast
+                                                                        .makeText(
+                                                                            context,
+                                                                            " Wait till generation is done! ",
+                                                                            Toast.LENGTH_SHORT
+                                                                        )
+                                                                        .show()
+                                                                } else {
+                                                                    isSheetOpen = true
+                                                                }
+                                                            },
+                                                            onClick = {
+                                                                kc?.hide()
+                                                            }
+                                                        )
+                                                    ) {
+                                                        Row(
+                                                            modifier = Modifier
+                                                                .padding(5.dp)
+                                                        ) {
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .widthIn(max = 300.dp)
+                                                                    .padding(3.dp)
+                                                            ){
+                                                                Text(
+                                                                    text = if (trimmedMessage.startsWith("```")) {
+                                                                        trimmedMessage.substring(3)
+                                                                    } else {
+                                                                        trimmedMessage
+                                                                    },
+                                                                    style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
+                                                                    modifier = Modifier
+                                                                        .padding(start = 1.dp, end = 1.dp)
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                    if(role == "user") {
+                                                        Image(
+                                                            painter = painterResource(
+                                                                id = R.drawable.user_icon
+                                                            ),
+                                                            contentDescription = "Human Icon",
+                                                            modifier = Modifier.size(20.dp)
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            // Code block rendering remains the same
+                                            Box(
+                                                modifier = Modifier
+                                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                                                    .background(
+                                                        Color.Black,
+                                                        shape = RoundedCornerShape(8.dp)
+                                                    )
+                                                    .fillMaxWidth()
+                                            ) {
+                                                Column {
+                                                    Row(
+                                                        horizontalArrangement = Arrangement.End,
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .padding(
+                                                                top = 8.dp,
+                                                                bottom = 8.dp,
+                                                                start = 6.dp,
+                                                                end = 6.dp
+                                                            )
+                                                    ) {
+                                                        // Previous content here
+                                                    }
+                                                    Text(
+                                                        text = if (trimmedMessage.startsWith("```")) {
+                                                            trimmedMessage.substring(3)
+                                                        } else {
+                                                            trimmedMessage
+                                                        },
+                                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                                            color = Color(0xFFA0A0A5)
+                                                        ),
+                                                        modifier = Modifier.padding(16.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                item {
+                                    Spacer(modifier = Modifier
+                                        .height(1.dp)
+                                        .fillMaxWidth())
+                                }
+                            }
 
                             ScrollToBottomButton(
                                 scrollState = scrollState,
@@ -828,3 +994,113 @@ fun ModelSelectorWithDownloadModal(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MessageBottomSheet(
+    message: String,
+    clipboard: ClipboardManager,
+    context: Context,
+    viewModel: MainViewModel,
+    onDismiss: () -> Unit,
+    sheetState: SheetState
+) {
+
+
+    ModalBottomSheet(
+        sheetState = sheetState,
+        containerColor = Color(0xFF01081a),
+        onDismissRequest = onDismiss
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp)
+                .background(color = Color(0xFF01081a))
+        ) {
+            var sheetScrollState = rememberLazyListState()
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
+
+            ) {
+                // Copy Text Button
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    onClick = {
+                        clipboard.setText(AnnotatedString(message))
+                        Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
+                        onDismiss()
+                    }
+                ) {
+                    Text(text = "Copy Text", color = Color(0xFFA0A0A5))
+                }
+
+                // Select Text Button
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    enabled = !viewModel.getIsSending(),
+                    onClick = {
+                        viewModel.toggler = !viewModel.toggler
+                    }
+                ) {
+                    Text(text = "Select Text To Copy", color = Color(0xFFA0A0A5))
+                }
+
+                // Text to Speech Button
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    enabled = !viewModel.getIsSending(),
+                    onClick = {
+                        if (viewModel.stateForTextToSpeech) {
+                            viewModel.textForTextToSpeech = message
+                            viewModel.textToSpeech(context)
+                        } else {
+                            viewModel.stopTextToSpeech()
+                        }
+                        onDismiss()
+                    }
+                ) {
+                    Text(
+                        text = if (viewModel.stateForTextToSpeech) "Text To Speech" else "Stop",
+                        color = Color(0xFFA0A0A5)
+                    )
+                }
+
+                // Selection Container
+                LazyColumn(state = sheetScrollState) {
+                    item {
+                        SelectionContainer {
+                            if (viewModel.toggler) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(color = Color.Black)
+                                        .padding(25.dp)
+                                ) {
+                                    Text(
+                                        text = AnnotatedString(message),
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
