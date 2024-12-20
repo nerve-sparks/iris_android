@@ -193,16 +193,16 @@ fun ChatScreen(
                 }
                 composable(route = ChatScreen.Settings.name) {
                     SettingsScreen(
-                        OnModelsScreenButtonClicked = {
+                        onModelsScreenButtonClicked = {
                             navController.navigate(ChatScreen.ModelsScreen.name)
                         },
-                        OnParamsScreenButtonClicked = {
+                        onParamsScreenButtonClicked = {
                           navController.navigate((ChatScreen.ParamsScreen.name))
                         },
-                        OnAboutScreenButtonClicked = {
+                        onAboutScreenButtonClicked = {
                             navController.navigate((ChatScreen.AboutScreen.name))
                         },
-                        OnBenchMarkScreenButtonClicked = {
+                        onBenchMarkScreenButtonClicked = {
                             navController.navigate((ChatScreen.BenchMarkScreen.name))
                         }
 
