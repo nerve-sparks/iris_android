@@ -153,10 +153,13 @@ fun ParametersScreen(viewModel: MainViewModel) {
                     pressedElevation = 3.dp
                 ),
                 onClick = {
+                    if(viewModel.loadedModelName.value == ""){
+                        Toast.makeText(context, "Load A Model First", Toast.LENGTH_SHORT).show()
+                    }else{
                     viewModel.currentDownloadable?.destination?.path?.let {
                         viewModel.load(it, viewModel.user_thread.toInt())
                         Toast.makeText(context, "Changes have been saved", Toast.LENGTH_SHORT).show()
-                    }
+                    }}
                 }
             ) {
                 Text("Save")
