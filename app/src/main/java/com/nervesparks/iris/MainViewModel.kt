@@ -8,11 +8,13 @@ import kotlinx.coroutines.launch
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.nervesparks.iris.data.UserPreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -21,10 +23,26 @@ import java.io.File
 import java.util.Locale
 import java.util.UUID
 
-class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instance()): ViewModel() {
+class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instance(), private val userPreferencesRepository: UserPreferencesRepository): ViewModel() {
     companion object {
 //        @JvmStatic
 //        private val NanosPerSecond = 1_000_000_000.0
+    }
+
+
+    private val _defaultModelName = mutableStateOf("")
+    val defaultModelName: State<String> = _defaultModelName
+
+    init {
+        loadDefaultModelName()
+    }
+    private fun loadDefaultModelName(){
+        _defaultModelName.value = userPreferencesRepository.getDefaultModelName()
+    }
+
+    fun setDefaultModelName(modelName: String){
+        userPreferencesRepository.setDefaultModelName(modelName)
+        _defaultModelName.value = modelName
     }
 
     lateinit var selectedModel: String
@@ -95,19 +113,49 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
             }
         }
 
+        if (defaultModelName.value.isNotEmpty()) {
+            val loadedDefaultModel = allModels.find { model -> model["name"] == defaultModelName.value }
+
+            if (loadedDefaultModel != null) {
+                val destinationPath = File(directory, loadedDefaultModel["destination"].toString())
+                load(destinationPath.path, userThreads = user_thread.toInt())
+
+                currentDownloadable = Downloadable(
+                    loadedDefaultModel["name"].toString(),
+                    Uri.parse(loadedDefaultModel["source"].toString()),
+                    destinationPath
+                )
+            } else {
+                // Handle case where the model is not found
+                allModels.find { model ->
+                    val destinationPath = File(directory, model["destination"].toString())
+                    destinationPath.exists()
+                }?.let { model ->
+                    val destinationPath = File(directory, model["destination"].toString())
+                    load(destinationPath.path, userThreads = user_thread.toInt())
+                    currentDownloadable = Downloadable(
+                        model["name"].toString(),
+                        Uri.parse(model["source"].toString()),
+                        destinationPath
+                    )
+                }
+            }
+        } else{
+            allModels.find { model ->
+                val destinationPath = File(directory, model["destination"].toString())
+                destinationPath.exists()
+            }?.let { model ->
+                val destinationPath = File(directory, model["destination"].toString())
+                load(destinationPath.path, userThreads = user_thread.toInt())
+                currentDownloadable = Downloadable(
+                    model["name"].toString(),
+                    Uri.parse(model["source"].toString()),
+                    destinationPath
+                )
+            }
         // Attempt to find and load the first model that exists in the combined logic
-        allModels.find { model ->
-            val destinationPath = File(directory, model["destination"].toString())
-            destinationPath.exists()
-        }?.let { model ->
-            val destinationPath = File(directory, model["destination"].toString())
-            load(destinationPath.path, userThreads = user_thread.toInt())
-            currentDownloadable = Downloadable(
-                model["name"].toString(),
-                Uri.parse(model["source"].toString()),
-                destinationPath
-            )
-        }
+
+         }
     }
 
 

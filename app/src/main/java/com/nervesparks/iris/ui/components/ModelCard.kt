@@ -1,22 +1,19 @@
 package com.nervesparks.iris.ui.components
 
 import android.app.DownloadManager
-import android.content.ComponentName
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
 import com.nervesparks.iris.Downloadable
 import com.nervesparks.iris.MainViewModel
 import kotlinx.coroutines.launch
@@ -31,16 +28,14 @@ fun ModelCard(
     downloadLink: String,
     showDeleteButton: Boolean
 ) {
-    // State for showing the confirmation dialog and whether the model is deleted
     var showDeleteConfirmation by remember { mutableStateOf(false) }
-    var isDeleted by remember { mutableStateOf(false) } // Track deletion status
-    var showDeletedMessage by remember { mutableStateOf(false) } // Track showing deleted message
+    var isDeleted by remember { mutableStateOf(false) }
+    var showDeletedMessage by remember { mutableStateOf(false) }
+    var isDefaultModel by remember { mutableStateOf(viewModel.defaultModelName.value == modelName) }
 
-    // Recompose Downloadable.Button after 1 second delay
     LaunchedEffect(isDeleted) {
         if (isDeleted) {
             showDeletedMessage = true
-            // Wait for 1 second before showing the button again
             kotlinx.coroutines.delay(1000)
             showDeletedMessage = false
             isDeleted = false
@@ -66,9 +61,15 @@ fun ModelCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            if (modelName == viewModel.loadedModelName.value) {
-                Text(color = Color.Green, text = "Currently Active", fontSize = 12.sp)
+            Row (horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()){
+                if (modelName == viewModel.loadedModelName.value) {
+                    Text(color = Color.Green, text = "Active Model", fontSize = 12.sp)
+                }
+                if(modelName == viewModel.defaultModelName.value){
+                    Text(color = Color.LightGray, text = "Default", fontSize = 12.sp)
+                }
             }
+
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = modelName,
@@ -87,7 +88,6 @@ fun ModelCard(
                     "https://huggingface.co/${viewModel.userGivenModel}/resolve/main/${modelName}?download=true"
                 }
 
-                // If model is not deleted, show Downloadable.Button
                 if (!showDeletedMessage) {
                     Downloadable.Button(
                         viewModel,
@@ -112,19 +112,17 @@ fun ModelCard(
                                 Text(text = "Delete", color = Color.White)
                             }
 
-                            // Confirmation Dialog
                             if (showDeleteConfirmation) {
                                 AlertDialog(
-                                    textContentColor = Color.White,
-                                    shape = RoundedCornerShape(8.dp),
-                                    titleContentColor = Color.White,
-                                    containerColor = Color(0xFF233340),
                                     onDismissRequest = { showDeleteConfirmation = false },
                                     title = { Text("Confirm Deletion") },
                                     text = { Text("Are you sure you want to delete this model? The app will restart after deletion.") },
                                     confirmButton = {
                                         Button(
                                             onClick = {
+                                                if (modelName == viewModel.loadedModelName.value) {
+                                                    viewModel.setDefaultModelName("")
+                                                }
                                                 coroutineScope.launch { viewModel.unload() }
                                                 File(extFilesDir, modelName).delete()
                                                 viewModel.showModal = false
@@ -135,8 +133,7 @@ fun ModelCard(
                                                 if (modelName == viewModel.loadedModelName.value) {
                                                     viewModel.loadedModelName.value = ""
                                                 }
-                                                // Mark model as deleted to show the updated state
-                                                isDeleted = true // Update deletion state
+                                                isDeleted = true
                                                 viewModel.refresh = true
                                             },
                                             colors = ButtonDefaults.buttonColors(Color(0xFFb91c1c))
@@ -159,7 +156,6 @@ fun ModelCard(
                 }
             }
 
-            // Show "Model Deleted" message for 1 second after deletion
             if (showDeletedMessage) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -169,7 +165,34 @@ fun ModelCard(
                 )
             }
 
-            // Add file size information if model exists
+            Spacer(modifier = Modifier.height(8.dp))
+            if (modelName == viewModel.loadedModelName.value){
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val context = LocalContext.current
+                    RadioButton(
+                        selected = (modelName==viewModel.defaultModelName.value),
+                        onClick = {
+                            viewModel.setDefaultModelName(modelName)
+                            Toast.makeText(
+                                context,
+                                "$modelName set as default model",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = Color.Green,
+                            unselectedColor = Color.Gray
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Set as Default Model",
+                        color = Color.White,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+
             File(extFilesDir, modelName).let {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -198,5 +221,3 @@ private fun formatFileSize(size: Long): String {
         else -> String.format("%d Bytes", size)
     }
 }
-
-
