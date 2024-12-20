@@ -8,6 +8,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.llama.cpp.LLamaAndroid
 import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
@@ -138,6 +139,12 @@ import androidx.compose.material3.SheetState
 import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.viewModelScope
 import androidx.compose.ui.unit.toSize
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.nervesparks.iris.data.UserPreferencesRepository
 import com.nervesparks.iris.ui.ModelSelectorWithDownloadModal
 import com.nervesparks.iris.ui.SettingsBottomSheet
 import kotlinx.coroutines.Dispatchers
@@ -147,6 +154,21 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.net.UnknownHostException
+import java.util.prefs.Preferences
+
+class MainViewModelFactory(
+    private val llamaAndroid: LLamaAndroid,
+    private val userPreferencesRepository: UserPreferencesRepository
+) : ViewModelProvider.Factory {
+
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return MainViewModel(llamaAndroid, userPreferencesRepository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
+    }
+}
 
 
 class MainActivity(
@@ -160,8 +182,8 @@ class MainActivity(
     private val downloadManager by lazy { downloadManager ?: getSystemService<DownloadManager>()!! }
     private val clipboardManager by lazy { clipboardManager ?: getSystemService<ClipboardManager>()!! }
 
+    private lateinit var viewModel: MainViewModel
 
-    private val viewModel: MainViewModel by viewModels()
     private var model_name = "Llama 3.2 1B Instruct (Q6_K_L, 1.09 GiB)"
 
     // Get a MemoryInfo object for the device's current memory status.
@@ -192,6 +214,12 @@ class MainActivity(
                 .detectLeakedClosableObjects()
                 .build()
         )
+        val userPrefsRepo = UserPreferencesRepository.getInstance(applicationContext)
+
+        val lLamaAndroid = LLamaAndroid.instance()
+        val viewModelFactory = MainViewModelFactory(lLamaAndroid, userPrefsRepo)
+        viewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
+
 
 //        val free = Formatter.formatFileSize(this, availableMemory().availMem)
 //        val total = Formatter.formatFileSize(this, availableMemory().totalMem)
@@ -229,6 +257,8 @@ class MainActivity(
 
 
         setContent {
+
+
             var showSettingSheet by remember { mutableStateOf(false) }
             var isBottomSheetVisible by rememberSaveable  { mutableStateOf(false) }
             var modelData by rememberSaveable  { mutableStateOf<List<Map<String, String>>?>(null) }
