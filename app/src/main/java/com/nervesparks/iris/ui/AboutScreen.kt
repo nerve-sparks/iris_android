@@ -44,8 +44,11 @@ fun AboutScreen() {
             .padding(16.dp)
     ) {
         item {
+            SectionHeader(text = "Welcome to Iris")
+        }
+        item {
             Text(
-                text = "Welcome to Iris! This repository hosts an offline Android chat application based on the llama.cpp framework. It's designed to operate entirely offline, ensuring privacy and independence from external servers. Whether you're a developer looking to explore AI applications or a privacy-conscious user, this app provides a seamless and secure way to experience conversational AI.",
+                text = "Iris is an offline Android chat application powered by the llama.cpp framework. Designed to operate entirely offline, it ensures privacy and independence from external servers. Whether you're a developer exploring AI applications or a privacy-conscious user, this app provides a seamless and secure way to experience conversational AI. Please note that the app may occasionally generate inaccurate results.",
                 fontSize = 16.sp,
                 color = Color.White,
                 lineHeight = 24.sp
@@ -172,9 +175,20 @@ private val features = listOf(
 
 private val faqs = listOf(
     "What is llama.cpp?" to "llama.cpp is an open-source project that enables running large language models (LLMs) on edge devices such as smartphones and laptops.",
-    "Do I need an internet connection to use this app?" to "No, the app is entirely offline. All operations are performed locally on your device.",
-    "Which AI models are supported?" to "The app supports models compatible with llama.cpp. You can download and integrate them as needed.",
+    "Do I need an internet connection to use this app?" to "Yes, but only to download models to your device. After that, the app operates entirely offline. All operations are performed locally on your device.",
+    "Which AI models are supported?" to "The app supports GGUF models. You can download and integrate them as needed.",
     "Is my data safe while using this app?" to "Yes, since the app works offline, no data is transmitted to external servers, ensuring complete privacy.",
-    "How do I change parameters?" to "Go to Settings > Change Parameters > Modify the parameters and save the changes.",
-    "How do I download models online?" to "You can download models online by providing the model name. Go to Settings > Models > Search Hugging Face models > Enter the model name > Click the search button. A list will be displayed, and you can select the model you want to download."
+    "How do I change parameters?" to "You can adjust thread parameters to modify the text generation speed by navigating to:\n" +
+            "Settings > Change Parameters > Modify the parameters > Save changes.",
+    "How do I download models online?" to "You can download models from Hugging Face by providing the gguf model names:\n" +
+            "\n" +
+            "Go to Settings > Models.\n" +
+            "Click on Search Hugging Face Models.\n" +
+            "Enter the model name and click the search button.\n" +
+            "A list of matching models will appear. Select the model you want to download.",
+    "How do I delete a model?" to "To free up device storage, you can delete downloaded models:\n" +
+            "\n" +
+            "Go to Settings > Models.\n" +
+            "Select the model you want to delete.\n" +
+            "Click the Delete button."
 )
