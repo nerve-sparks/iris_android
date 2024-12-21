@@ -12,6 +12,11 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.Dispatchers
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 class LLamaAndroid {
     private val tag: String? = this::class.simpleName
@@ -72,11 +77,12 @@ class LLamaAndroid {
     }.asCoroutineDispatcher()
 
     private val nlen: Int = 1024
+    private val context_size: Int = 4096
 
     private external fun log_to_android()
     private external fun load_model(filename: String): Long
     private external fun free_model(model: Long)
-    private external fun new_context(model: Long): Long
+    private external fun new_context(model: Long, userThreads: Int): Long
     private external fun free_context(context: Long)
     private external fun backend_init(numa: Boolean)
     private external fun backend_free()
@@ -135,17 +141,17 @@ class LLamaAndroid {
         }
     }
 
-    suspend fun load(pathToModel: String) {
+    suspend fun load(pathToModel: String, userThreads: Int){
         withContext(runLoop) {
             when (threadLocalState.get()) {
                 is State.Idle -> {
                     val model = load_model(pathToModel)
                     if (model == 0L)  throw IllegalStateException("load_model() failed")
 
-                    val context = new_context(model)
+                    val context = new_context(model, userThreads)
                     if (context == 0L) throw IllegalStateException("new_context() failed")
 
-                    val batch = new_batch(512, 0, 1)
+                    val batch = new_batch(4096, 0, 1)
                     if (batch == 0L) throw IllegalStateException("new_batch() failed")
 
                     val sampler = new_sampler()
@@ -190,9 +196,11 @@ class LLamaAndroid {
             is State.Loaded -> {
                 val ncur = IntVar(completion_init(state.context, state.batch, message, nlen))
                 var end_token_store = ""
-                while (ncur.value <= nlen && !stopGeneration) {
+                var chat_len = 0
+                while (chat_len <= nlen && ncur.value < context_size && !stopGeneration) {
                     _isSending.value = true
                     val str = completion_loop(state.context, state.batch, state.sampler, nlen, ncur)
+                    chat_len += 1
                     if (str == "```" || str == "``") {
                         _isMarked.value = !_isMarked.value
                     }
@@ -234,6 +242,47 @@ class LLamaAndroid {
         _isSending.value = false
     }.flowOn(runLoop)
 
+
+
+    suspend fun myCustomBenchmark(): Flow<String> = flow {
+        try {
+            withTimeout(30.seconds) { // Set timeout to 2 minutes
+                when (val state = threadLocalState.get()) {
+                    is State.Loaded -> {
+                        val ncur = IntVar(completion_init(state.context, state.batch, "Write an article on global warming in 1000 words", nlen))
+                        while (ncur.value <= nlen) {
+                            val str = completion_loop(state.context, state.batch, state.sampler, nlen, ncur)
+                            if (str == null) {
+                                _isSending.value = false
+                                _isCompleteEOT.value = true
+                                break
+                            }
+                            if (stopGeneration) {
+                                break
+                            }
+                            emit(str)
+                        }
+                        kv_cache_clear(state.context)
+                    }
+                    else -> {
+                        _isSending.value = false
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Handle timeout or any other exceptions if necessary
+            if (e is kotlinx.coroutines.TimeoutCancellationException) {
+                println("Benchmark timed out after 2 minutes.")
+            }
+        } finally {
+            _isSending.value = false
+        }
+    }.flowOn(runLoop)
+
+
+
+
+
     /**
      * Unloads the model and frees resources.
      *
@@ -255,7 +304,7 @@ class LLamaAndroid {
         }
     }
 
-    suspend fun send_eot_str(): String {
+    fun send_eot_str(): String {
 
         return when (val state = threadLocalState.get()) {
             is State.Loaded -> {
