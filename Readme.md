@@ -1,53 +1,72 @@
-
 # Iris
 
-
-Project Description
--------------
+## Project Description
 
 - This repository contains llama.cpp based offline android chat application cloned from llama.cpp android example. Install, download model and run completely offline privately.
 - The app supports downloading GGUF models from Hugging Face and offers customizable parameters for flexible use.
 - Being open-source, it allows for easy modifications and improvements, providing a secure, private, and fully offline experience.
 
-Images
--------------
-<div style ="display: flex; gap: 15px;"> 
-<img src="./images/main_screen.png" alt="main_screen Screenshot" width="200">
-<img src="./images/chat_screen.png" alt="chat_screen Screenshot" width="200">
-<img src="./images/settings_screen.png" alt="main_screen Screenshot" width="200">
-<img src="./images/models_screen.png" alt="models_screen Screenshot" width="200">
-<img src="./images/parameters_screen.png" alt="parameters_screen Screenshot" width="200">
+## Images
+
+<div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+  <div style="text-align: center; width: 200px;">
+    <img src="./images/main_screen.png" alt="Main Screen Screenshot" width="200">
+    <p><strong>Main Screen</strong></p>
+    <p>This is the main interface of the app where users can access all core functionalities.</p>
+  </div>
+  <div style="text-align: center; width: 200px;">
+    <img src="./images/chat_screen.png" alt="Chat Screen Screenshot" width="200">
+    <p><strong>Chat Screen</strong></p>
+    <p>The chat feature allows users to interact in real-time and access AI-driven responses.</p>
+  </div>
+  <div style="text-align: center; width: 200px;">
+    <img src="./images/settings_screen.png" alt="Settings Screen Screenshot" width="200">
+    <p><strong>Settings Screen</strong></p>
+    <p>Users can customize app preferences and configure their account settings here.</p>
+  </div>
+  <div style="text-align: center; width: 200px;">
+    <img src="./images/models_screen.png" alt="Models Screen Screenshot" width="200">
+    <p><strong>Models Screen</strong></p>
+    <p>This screen displays available AI models and allows users to manage them efficiently.</p>
+  </div>
+  <div style="text-align: center; width: 200px;">
+    <img src="./images/parameters_screen.png" alt="Parameters Screen Screenshot" width="200">
+    <p><strong>Parameters Screen</strong></p>
+    <p>Users can adjust parameters to fine-tune the app's AI performance based on their needs.</p>
+  </div>
 </div>
 
+## Run
 
-Run
--------------
 - Go to releases : https://github.com/nerve-sparks/iris_android/releases
 - Download app
 - Install app
 
-Features
-------------
+## Features
 
 - Works Offline: Access all features without needing an internet connection.
 - Privacy-Focused: All data is processed securely on your device.
-- Expandable Models: Download external GGUF models from Hugging Face for added functionality.
+- Expandable Models: Download external GGUF models from Hugging Face.
 - Open Source: Fully transparent development.
-- Customizable Parameters: Adjust settings to match your specific requirements.
+- Customizable Parameters: n_threads can be adjusted to optimize performance based on device capabilities.
+- Text To Speech: Support for Text-to-Speech functionality.
+- Speech To Text: Support for Speech-to-Text functionality.
+- Default Model Selection: Set a default model to load automatically on startup.
 
-Build
--------------
+## Build
+
 - Download Android studio
 - Clone this repository and import into Android Studio
 
 ```bash
  git clone https://github.com/nerve-sparks/iris_android.git
- ```
+```
+
 - Clone the llama.cpp repository in the same folder as iris_android
 
 ```bash
  git clone https://github.com/ggerganov/llama.cpp
- ```
+```
 
 - Open developer options on the Android mobile phone.
 - Enable developer options.
@@ -57,34 +76,26 @@ Build
 - Click on wireless debugging on Android phone. Select 'Pair device with QR code'. Scan the code. (Make sure both devices are on the same Wi-fi)
 - You can use Usb Debugging also to connect your phone.
 - Once the phone is connected, select the device name in the drop down menu and click on play button.
-- In the app, click on 'Download Stable LM'. The model will download and load automatically.
+- In the app, download at least one model from the given options.
 - Now you can run the app offline. (In airplane mode as well)
 
+## Contributing
 
-Maintained by Nerve Sparks 
--------------
-- Visit www.nervesparks.com to contact us.
-
-Your "Contributing" section looks good, but here's a slightly refined version for clarity and consistency:
-
----
-
-### Contributing  
-1. **Fork the repository.**  
-2. **Create a new feature branch:**  
+1. **Fork the repository.**
+2. **Create a new feature branch:**
    ```bash
    git checkout -b my-new-feature
    ```
-3. **Commit your changes:**  
+3. **Commit your changes:**
    ```bash
    git commit -m 'Add some feature'
    ```
-4. **Push your branch to the remote repository:**  
+4. **Push your branch to the remote repository:**
    ```bash
    git push origin my-new-feature
    ```
 5. **Open a Pull Request.**
 
----
+## Maintained by Nerve Sparks
 
-This version keeps the steps concise while ensuring that each command is clear.
+- Visit www.nervesparks.com to contact us.
