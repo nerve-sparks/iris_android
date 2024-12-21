@@ -77,6 +77,7 @@ class LLamaAndroid {
     }.asCoroutineDispatcher()
 
     private val nlen: Int = 1024
+    private val context_size: Int = 4096
 
     private external fun log_to_android()
     private external fun load_model(filename: String): Long
@@ -150,7 +151,7 @@ class LLamaAndroid {
                     val context = new_context(model, userThreads)
                     if (context == 0L) throw IllegalStateException("new_context() failed")
 
-                    val batch = new_batch(512, 0, 1)
+                    val batch = new_batch(4096, 0, 1)
                     if (batch == 0L) throw IllegalStateException("new_batch() failed")
 
                     val sampler = new_sampler()
@@ -195,9 +196,11 @@ class LLamaAndroid {
             is State.Loaded -> {
                 val ncur = IntVar(completion_init(state.context, state.batch, message, nlen))
                 var end_token_store = ""
-                while (ncur.value <= nlen && !stopGeneration) {
+                var chat_len = 0
+                while (chat_len <= nlen && ncur.value < context_size && !stopGeneration) {
                     _isSending.value = true
                     val str = completion_loop(state.context, state.batch, state.sampler, nlen, ncur)
+                    chat_len += 1
                     if (str == "```" || str == "``") {
                         _isMarked.value = !_isMarked.value
                     }
