@@ -120,7 +120,23 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
 //                        Log.d(tag, "Model dynamically added to viewModel: $newModel")
 
                         viewModel.currentDownloadable = item
-                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread.toInt())
+                        if(viewModel.loadedModelName.value == "") {
+                            viewModel.load(
+                                item.destination.path,
+                                userThreads = viewModel.user_thread.toInt()
+                            )
+                        }
+
+                        println(viewModel.allModels.any {it["name"] == item.name})
+                        if (!viewModel.allModels.any { it["name"] == item.name }) {
+                            val newModel = mapOf(
+                                "name" to item.name,
+                                "source" to item.source.toString(),
+                                "destination" to item.destination.path
+                            )
+                            viewModel.allModels += newModel
+                            Log.d(tag, "Outer : Model dynamically added to viewModel: $newModel")
+                        }
                         return Downloaded(item)
                     }
 
