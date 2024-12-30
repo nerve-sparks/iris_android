@@ -118,8 +118,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
 
             if (loadedDefaultModel != null) {
                 val destinationPath = File(directory, loadedDefaultModel["destination"].toString())
-                load(destinationPath.path, userThreads = user_thread.toInt())
-
+                if(loadedModelName.value == "") {
+                    load(destinationPath.path, userThreads = user_thread.toInt())
+                }
                 currentDownloadable = Downloadable(
                     loadedDefaultModel["name"].toString(),
                     Uri.parse(loadedDefaultModel["source"].toString()),
@@ -132,7 +133,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                     destinationPath.exists()
                 }?.let { model ->
                     val destinationPath = File(directory, model["destination"].toString())
-                    load(destinationPath.path, userThreads = user_thread.toInt())
+                    if(loadedModelName.value == "") {
+                        load(destinationPath.path, userThreads = user_thread.toInt())
+                    }
                     currentDownloadable = Downloadable(
                         model["name"].toString(),
                         Uri.parse(model["source"].toString()),
@@ -146,7 +149,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 destinationPath.exists()
             }?.let { model ->
                 val destinationPath = File(directory, model["destination"].toString())
-                load(destinationPath.path, userThreads = user_thread.toInt())
+                if(loadedModelName.value == "") {
+                    load(destinationPath.path, userThreads = user_thread.toInt())
+                }
                 currentDownloadable = Downloadable(
                     model["name"].toString(),
                     Uri.parse(model["source"].toString()),
