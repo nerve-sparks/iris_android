@@ -9,6 +9,9 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -31,9 +34,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -74,7 +82,7 @@ fun ChatScreenAppBar(
     currentScreen: ChatScreen,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
-    onSettingsClick: () -> Unit, // New parameter for settings navigation
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MainViewModel,
 ) {
@@ -92,9 +100,10 @@ fun ChatScreenAppBar(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 vibrator.vibrate(
                     VibrationEffect.createOneShot(
-                    200, // Duration in milliseconds
-                    VibrationEffect.DEFAULT_AMPLITUDE
-                ))
+                        200, // Duration in milliseconds
+                        VibrationEffect.DEFAULT_AMPLITUDE
+                    )
+                )
             } else {
                 @Suppress("DEPRECATION")
                 vibrator.vibrate(200) // For older devices
@@ -105,6 +114,16 @@ fun ChatScreenAppBar(
     val kc = LocalSoftwareKeyboardController.current
     val darkNavyBlue = Color(0xFF050a14)
     val context = LocalContext.current
+
+    // State to keep track of the current rotation angle
+    var rotationAngle by remember { mutableStateOf(0f) }
+
+    // Animation for smooth rotation
+    val animatedRotationAngle by animateFloatAsState(
+        targetValue = rotationAngle,
+        animationSpec = tween(durationMillis = 600, easing = LinearEasing)
+    )
+
     TopAppBar(
         title = {
             Text(
@@ -127,28 +146,26 @@ fun ChatScreenAppBar(
                     )
                 }
             }
-
         },
-
-        actions = { // New actions section
-            if(!canNavigateBack) {
+        actions = {
+            if (!canNavigateBack) {
                 IconButton(onClick = onSettingsClick) {
                     Icon(
-                        painter = painterResource(id = R.drawable.settings_gear_rounded), // Make sure to import this
+                        painter = painterResource(id = R.drawable.settings_gear_rounded),
                         contentDescription = stringResource(R.string.setting),
                         tint = Color.White,
                         modifier = Modifier.size(25.dp)
                     )
                 }
             }
-            if(!canNavigateBack) {
+            if (!canNavigateBack) {
                 IconButton(
                     onClick = {
                         kc?.hide()
                         viewModel.stop()
                         viewModel.clear()
                     }
-                ){
+                ) {
                     Icon(
                         modifier = Modifier.size(25.dp),
                         painter = painterResource(id = R.drawable.edit_3_svgrepo_com),
@@ -160,7 +177,7 @@ fun ChatScreenAppBar(
             if (currentScreen == ChatScreen.ModelsScreen) {
                 IconButton(
                     onClick = {
-                        // Logic for refreshing models
+                        rotationAngle += 360f // Increment rotation angle
                         if (extFileDir != null) {
                             viewModel.loadExistingModels(extFileDir)
                             provideHapticFeedback(context)
@@ -168,7 +185,9 @@ fun ChatScreenAppBar(
                     }
                 ) {
                     Icon(
-                        modifier = Modifier.size(25.dp),
+                        modifier = Modifier
+                            .size(25.dp)
+                            .graphicsLayer { rotationZ = animatedRotationAngle },
                         imageVector = Icons.Default.Refresh,
                         contentDescription = stringResource(R.string.refresh_button),
                         tint = Color.White
@@ -176,7 +195,6 @@ fun ChatScreenAppBar(
                 }
             }
         }
-
     )
 }
 
