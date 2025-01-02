@@ -54,19 +54,17 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
 
             var status: State by remember  {
                 mutableStateOf(
-                    if (item.destination.exists()) Downloaded(item)
-                    else if(isAlreadyDownloading(dm, item)){
-                        val request = DownloadManager.Request(item.source).apply {
-                            setTitle("Downloading model")
-                            setDescription("Downloading model: ${item.name}")
-                            setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
-                            setDestinationUri(item.destination.toUri())
+                    when (val downloadId = getActiveDownloadId(dm, item)) {
+                        null -> {
+
+                            if (item.destination.exists() && item.destination.length() > 0 && !isPartialDownload(item.destination)) {
+                                Downloaded(item)
+                            } else {
+                                Ready
+                            }
                         }
-
-                        val id = dm.enqueue(request)
-
-                        Downloading(id, -1L)}
-                    else Ready
+                        else -> Downloading(downloadId, -1L)
+                    }
                 )
             }
             var progress by rememberSaveable  { mutableDoubleStateOf(0.0) }
@@ -122,7 +120,23 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
 //                        Log.d(tag, "Model dynamically added to viewModel: $newModel")
 
                         viewModel.currentDownloadable = item
-                        viewModel.load(item.destination.path, userThreads = viewModel.user_thread.toInt())
+                        if(viewModel.loadedModelName.value == "") {
+                            viewModel.load(
+                                item.destination.path,
+                                userThreads = viewModel.user_thread.toInt()
+                            )
+                        }
+
+                        println(viewModel.allModels.any {it["name"] == item.name})
+                        if (!viewModel.allModels.any { it["name"] == item.name }) {
+                            val newModel = mapOf(
+                                "name" to item.name,
+                                "source" to item.source.toString(),
+                                "destination" to item.destination.path
+                            )
+                            viewModel.allModels += newModel
+                            Log.d(tag, "Outer : Model dynamically added to viewModel: $newModel")
+                        }
                         return Downloaded(item)
                     }
 
@@ -264,3 +278,33 @@ fun isAlreadyDownloading(dm: DownloadManager, item: Downloadable): Boolean {
     return false
 }
 
+private fun isPartialDownload(file: File): Boolean {
+
+    return file.name.endsWith(".partial") ||
+            file.name.endsWith(".download") ||
+            file.name.endsWith(".tmp") ||
+
+            file.name.contains(".part")
+}
+
+fun getActiveDownloadId(dm: DownloadManager, item: Downloadable): Long? {
+    val query = DownloadManager.Query()
+        .setFilterByStatus(
+            DownloadManager.STATUS_RUNNING or
+                    DownloadManager.STATUS_PENDING or
+                    DownloadManager.STATUS_PAUSED
+        )
+
+    dm.query(query)?.use { cursor ->
+        val uriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_URI)
+        val idIndex = cursor.getColumnIndex(DownloadManager.COLUMN_ID)
+
+        while (cursor.moveToNext()) {
+            val currentUri = cursor.getString(uriIndex)
+            if (currentUri == item.source.toString()) {
+                return cursor.getLong(idIndex)
+            }
+        }
+    }
+    return null
+}

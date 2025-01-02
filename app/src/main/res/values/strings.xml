@@ -8,4 +8,5 @@
     <string name="setting">Setting</string>
     <string name="about_screen_title">About</string>
     <string name="benchmark_screen_title">BenchMark</string>
+    <string name="refresh_button">Refresh</string>
 </resources>
