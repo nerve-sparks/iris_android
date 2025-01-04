@@ -32,7 +32,7 @@
   <div style="text-align: center; width: 200px;">
     <img src="./images/parameters_screen.png" alt="Parameters Screen Screenshot" width="200">
     <p><strong>Parameters Screen</strong></p>
-    <p>Users can adjust parameters to fine-tune the app's AI performance based on their needs.</p>
+    <p>Users can adjust parameters to fine-tune the app's performance based on their needs.</p>
   </div>
 </div>
 
@@ -48,7 +48,7 @@
 - Privacy-Focused: All data is processed securely on your device.
 - Expandable Models: Download external GGUF models from Hugging Face.
 - Open Source: Fully transparent development.
-- Customizable Parameters: n_threads can be adjusted to optimize performance based on device capabilities.
+- Customizable Parameters: n_threads, top_k, top_p, and temperature can be adjusted to optimize performance and behavior based on device capabilities and desired output.
 - Text To Speech: Support for Text-to-Speech functionality.
 - Speech To Text: Support for Speech-to-Text functionality.
 - Default Model Selection: Set a default model to load automatically on startup.
