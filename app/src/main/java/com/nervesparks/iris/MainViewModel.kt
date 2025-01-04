@@ -56,6 +56,9 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     var newShowModal by mutableStateOf(false)
 
     var user_thread by mutableStateOf(0f)
+    var topP by mutableStateOf(0f)
+    var topK by mutableStateOf(0)
+    var temp by mutableStateOf(0f)
 
     var allModels by mutableStateOf(
         listOf(
@@ -398,7 +401,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                 newShowModal = false
                 showModal= false
                 showAlert = true
-                llamaAndroid.load(pathToModel, userThreads)
+                llamaAndroid.load(pathToModel, userThreads = userThreads, topK = topK, topP = topP, temp = temp)
                 showAlert = false
 
             } catch (exc: IllegalStateException) {

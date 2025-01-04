@@ -415,11 +415,38 @@ Java_android_llama_cpp_LLamaAndroid_free_1batch(JNIEnv *, jobject, jlong batch_p
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_android_llama_cpp_LLamaAndroid_new_1sampler(JNIEnv *, jobject) {
+Java_android_llama_cpp_LLamaAndroid_new_1sampler(JNIEnv *, jobject, jfloat top_p, jint top_k, jfloat temp) {
+    LOGi("my params temp=%.1f, top_p=%.1f, top_k=%d", temp, top_p, top_k);
     auto sparams = llama_sampler_chain_default_params();
     sparams.no_perf = true;
-    llama_sampler * smpl = llama_sampler_chain_init(sparams);
+    llama_sampler *smpl = llama_sampler_chain_init(sparams);
     llama_sampler_chain_add(smpl, llama_sampler_init_greedy());
+
+    // Top K handling
+    if (top_k == 0) {
+        llama_sampler_chain_add(smpl, llama_sampler_init_top_k(40)); // Default value
+    } else {
+        llama_sampler_chain_add(smpl, llama_sampler_init_top_k(top_k));
+    }
+
+    // Top P handling
+    if (top_p == 0.0f) {
+        llama_sampler_chain_add(smpl, llama_sampler_init_top_p(0.9f, 1)); // Default value
+    } else {
+        float adjusted_top_p = roundf(top_p * 10) / 10;
+        llama_sampler_chain_add(smpl, llama_sampler_init_top_p(adjusted_top_p, 1));
+    }
+
+    // Temperature handling
+    if (temp == 0.0f) {
+        llama_sampler_chain_add(smpl, llama_sampler_init_temp(0.4f)); // Default value
+    } else {
+        float adjusted_temp = roundf(temp * 10) / 10;
+        llama_sampler_chain_add(smpl, llama_sampler_init_temp(adjusted_temp));
+    }
+
+    // Always add dist sampler
+    llama_sampler_chain_add(smpl, llama_sampler_init_dist(1234));
 
     return reinterpret_cast<jlong>(smpl);
 }

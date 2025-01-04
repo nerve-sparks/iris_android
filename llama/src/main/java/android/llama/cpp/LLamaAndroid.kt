@@ -88,7 +88,7 @@ class LLamaAndroid {
     private external fun backend_free()
     private external fun new_batch(nTokens: Int, embd: Int, nSeqMax: Int): Long
     private external fun free_batch(batch: Long)
-    private external fun new_sampler(): Long
+    private external fun new_sampler(top_p: Float, top_k: Int, temp: Float): Long
     private external fun free_sampler(sampler: Long)
     private external fun bench_model(
         context: Long,
@@ -141,7 +141,7 @@ class LLamaAndroid {
         }
     }
 
-    suspend fun load(pathToModel: String, userThreads: Int){
+    suspend fun load(pathToModel: String, userThreads: Int, topK: Int, topP: Float, temp: Float){
         withContext(runLoop) {
             when (threadLocalState.get()) {
                 is State.Idle -> {
@@ -154,8 +154,9 @@ class LLamaAndroid {
                     val batch = new_batch(4096, 0, 1)
                     if (batch == 0L) throw IllegalStateException("new_batch() failed")
 
-                    val sampler = new_sampler()
+                    val sampler = new_sampler(top_k = topK, top_p = topP, temp = temp)
                     if (sampler == 0L) throw IllegalStateException("new_sampler() failed")
+
 
                     val modelEotStr = get_eot_str(model)
                     if (modelEotStr == "") throw IllegalStateException("eot_fetch() failed")
