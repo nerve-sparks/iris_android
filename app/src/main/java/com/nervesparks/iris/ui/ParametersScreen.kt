@@ -196,13 +196,18 @@ fun ParametersScreen(viewModel: MainViewModel) {
                     pressedElevation = 3.dp
                 ),
                 onClick = {
-                    viewModel.user_thread = 0f
-                    viewModel.temp = 0f
-                    viewModel.topK = 0
-                    viewModel.topP = 0f
-                    viewModel.currentDownloadable?.destination?.path?.let {
-                        viewModel.load(it, viewModel.user_thread.toInt())
-                        Toast.makeText(context, "Settings reset to default", Toast.LENGTH_SHORT).show()
+                    if(viewModel.loadedModelName.value == "") {
+                        Toast.makeText(context, "Load A Model First", Toast.LENGTH_SHORT).show()
+                    }else {
+                        viewModel.user_thread = 0f
+                        viewModel.temp = 0f
+                        viewModel.topK = 0
+                        viewModel.topP = 0f
+                        viewModel.currentDownloadable?.destination?.path?.let {
+                            viewModel.load(it, viewModel.user_thread.toInt())
+                            Toast.makeText(context, "Settings reset to default", Toast.LENGTH_SHORT)
+                                .show()
+                        }
                     }
                 }
             ) {
