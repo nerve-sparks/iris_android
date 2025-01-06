@@ -66,18 +66,14 @@ fun ParametersScreen(viewModel: MainViewModel) {
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
+            if (viewModel.showAlert) {
+                LoadingModal(viewModel)
+            }
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize() // Fill the card's space
                     .padding(15.dp)
             ) {
-                item {
-                    if (viewModel.showAlert) {
-                        LoadingModal(viewModel)
-                    }
-                }
-
-
                 item {
                     SettingSection(
                         title = "Thread Selection",
