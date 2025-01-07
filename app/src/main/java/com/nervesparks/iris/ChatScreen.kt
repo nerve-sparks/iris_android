@@ -194,6 +194,22 @@ fun ChatScreenAppBar(
                     )
                 }
             }
+            if (currentScreen == ChatScreen.SearchResults) {
+                IconButton(
+                    onClick = {
+                        viewModel.showDownloadInfoModal = true
+                    }
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .size(25.dp)
+                            .graphicsLayer { rotationZ = animatedRotationAngle },
+                        painter = painterResource(id = R.drawable.question_small_svgrepo_com),
+                        contentDescription = "question_svg" ,
+                        tint = Color.White
+                    )
+                }
+            }
         }
     )
 }

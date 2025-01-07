@@ -54,7 +54,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         )
         private set
     var newShowModal by mutableStateOf(false)
-
+    var showDownloadInfoModal by mutableStateOf(false)
     var user_thread by mutableStateOf(0f)
     var topP by mutableStateOf(0f)
     var topK by mutableStateOf(0)
