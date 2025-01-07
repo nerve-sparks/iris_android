@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nervesparks.iris.MainViewModel
 import com.nervesparks.iris.R
+import com.nervesparks.iris.ui.components.InfoModal
 import com.nervesparks.iris.ui.components.LoadingModal
 import com.nervesparks.iris.ui.components.ModelCard
 import kotlinx.coroutines.Dispatchers
@@ -86,6 +87,10 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
             .fillMaxSize()
             .padding(16.dp),
     ) {
+        InfoModal(
+            showDialog = viewModel.showDownloadInfoModal,
+            onDismiss = { viewModel.showDownloadInfoModal = false }
+        )
         // Search Input and Button Row
         Row(
             verticalAlignment = Alignment.CenterVertically,
