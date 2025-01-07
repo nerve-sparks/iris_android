@@ -53,6 +53,28 @@
 - Speech To Text: Support for Speech-to-Text functionality.
 - Default Model Selection: Set a default model to load automatically on startup.
 
+## Optimizing Your Experience with Iris
+
+The performance of Iris is directly influenced by the size, speed, and compute requirements of the models you use. These factors also impact the overall user experience. For a faster and smoother experience, consider downloading smaller models.
+
+**Example Recommendation:**  
+On opening the app, users can download suggested models to optimize performance based on their preferences and device capabilities.
+
+---
+
+#### Note:
+
+- Smaller models are ideal for quicker interactions but may compromise slightly on response quality.
+- Larger models offer more comprehensive responses but require higher compute power and may result in slower speeds.
+- Choose a model that best balances speed and quality for your specific use case.
+
+---
+
+#### Disclaimer:
+
+- Iris may produce **inaccurate results** depending on the complexity of queries and model limitations.
+- Performance and accuracy are influenced by the size and type of model selected.
+
 ## Build
 
 - Download Android studio
