@@ -1,4 +1,4 @@
-package com.nervesparks.iris
+package com.nervesparks.irisGPT
 
 import android.app.DownloadManager
 import android.content.ClipboardManager
@@ -62,8 +62,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.nervesparks.iris.data.UserPreferencesRepository
-import com.nervesparks.iris.ui.SettingsBottomSheet
+import com.nervesparks.irisGPT.data.UserPreferencesRepository
+import com.nervesparks.irisGPT.ui.SettingsBottomSheet
 
 
 class MainViewModelFactory(

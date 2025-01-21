@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui.components
+package com.nervesparks.irisGPT.ui.components
 
 import android.content.ClipboardManager
 import android.content.Context
@@ -28,8 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.nervesparks.iris.MainViewModel
-import com.nervesparks.iris.R
+import com.nervesparks.irisGPT.MainViewModel
+import com.nervesparks.irisGPT.R
 
 
 @Composable

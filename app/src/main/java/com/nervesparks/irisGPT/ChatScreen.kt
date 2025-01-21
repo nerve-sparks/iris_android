@@ -1,4 +1,4 @@
-package com.nervesparks.iris
+package com.nervesparks.irisGPT
 
 import android.annotation.SuppressLint
 import android.app.DownloadManager
@@ -53,13 +53,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.nervesparks.iris.ui.AboutScreen
-import com.nervesparks.iris.ui.BenchMarkScreen
-import com.nervesparks.iris.ui.MainChatScreen
-import com.nervesparks.iris.ui.ModelsScreen
-import com.nervesparks.iris.ui.ParametersScreen
-import com.nervesparks.iris.ui.SearchResultScreen
-import com.nervesparks.iris.ui.SettingsScreen
+import com.nervesparks.irisGPT.ui.AboutScreen
+import com.nervesparks.irisGPT.ui.BenchMarkScreen
+import com.nervesparks.irisGPT.ui.MainChatScreen
+import com.nervesparks.irisGPT.ui.ModelsScreen
+import com.nervesparks.irisGPT.ui.ParametersScreen
+import com.nervesparks.irisGPT.ui.SearchResultScreen
+import com.nervesparks.irisGPT.ui.SettingsScreen
 import java.io.File
 
 

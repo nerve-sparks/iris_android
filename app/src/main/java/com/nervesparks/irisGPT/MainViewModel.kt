@@ -1,4 +1,4 @@
-package com.nervesparks.iris
+package com.nervesparks.irisGPT
 
 import android.content.Context
 import android.llama.cpp.LLamaAndroid
@@ -14,7 +14,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.nervesparks.iris.data.UserPreferencesRepository
+import com.nervesparks.irisGPT.data.UserPreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

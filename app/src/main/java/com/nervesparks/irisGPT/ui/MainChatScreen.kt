@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui
+package com.nervesparks.irisGPT.ui
 
 import android.app.Activity
 import android.app.DownloadManager
@@ -108,14 +108,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.Dialog
-import com.nervesparks.iris.Downloadable
-import com.nervesparks.iris.LinearGradient
-import com.nervesparks.iris.MainViewModel
+import com.nervesparks.irisGPT.Downloadable
+import com.nervesparks.irisGPT.LinearGradient
+import com.nervesparks.irisGPT.MainViewModel
 
-import com.nervesparks.iris.R
-import com.nervesparks.iris.ui.components.ChatMessageList
-import com.nervesparks.iris.ui.components.DownloadModal
-import com.nervesparks.iris.ui.components.LoadingModal
+import com.nervesparks.irisGPT.R
+import com.nervesparks.irisGPT.ui.components.ChatMessageList
+import com.nervesparks.irisGPT.ui.components.DownloadModal
+import com.nervesparks.irisGPT.ui.components.LoadingModal
 
 import kotlinx.coroutines.launch
 import java.io.File

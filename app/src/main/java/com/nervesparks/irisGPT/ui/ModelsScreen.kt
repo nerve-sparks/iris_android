@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui
+package com.nervesparks.irisGPT.ui
 
 import android.app.DownloadManager
 import androidx.compose.foundation.clickable
@@ -23,10 +23,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nervesparks.iris.MainViewModel
-import com.nervesparks.iris.R
-import com.nervesparks.iris.ui.components.LoadingModal
-import com.nervesparks.iris.ui.components.ModelCard
+import com.nervesparks.irisGPT.MainViewModel
+import com.nervesparks.irisGPT.R
+import com.nervesparks.irisGPT.ui.components.LoadingModal
+import com.nervesparks.irisGPT.ui.components.ModelCard
 import java.io.File
 
 @Composable

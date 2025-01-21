@@ -4,13 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "com.nervesparks.iris"
+    namespace = "com.nervesparks.irisGPT"
     compileSdk = 35
 
     ndkVersion = "26.1.10909125"
 
     defaultConfig {
-        applicationId = "com.nervesparks.iris"
+        applicationId = "com.nervesparks.irisGPT"
         minSdk = 28
         targetSdk = 34
         versionCode = 1

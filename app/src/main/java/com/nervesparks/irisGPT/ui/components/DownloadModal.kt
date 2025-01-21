@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui.components
+package com.nervesparks.irisGPT.ui.components
 
 import android.app.DownloadManager
 import androidx.compose.foundation.layout.*
@@ -13,8 +13,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.nervesparks.iris.Downloadable
-import com.nervesparks.iris.MainViewModel
+import com.nervesparks.irisGPT.Downloadable
+import com.nervesparks.irisGPT.MainViewModel
 
 @Composable
 fun DownloadModal(viewModel: MainViewModel, dm: DownloadManager, models: List<Downloadable>) {

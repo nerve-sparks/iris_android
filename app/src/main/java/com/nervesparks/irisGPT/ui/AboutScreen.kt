@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui
+package com.nervesparks.irisGPT.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

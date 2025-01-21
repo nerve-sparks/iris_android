@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui
+package com.nervesparks.irisGPT.ui
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
@@ -28,8 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.nervesparks.iris.MainViewModel
-import com.nervesparks.iris.ui.components.LoadingModal
+import com.nervesparks.irisGPT.MainViewModel
+import com.nervesparks.irisGPT.ui.components.LoadingModal
 
 
 @Composable
