@@ -1,13 +1,17 @@
 package com.nervesparks.irisGPT.ui
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.speech.RecognizerIntent
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.ReportDrawn
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -66,7 +70,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -107,17 +110,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
-import androidx.compose.ui.window.Dialog
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 import com.nervesparks.irisGPT.Downloadable
 import com.nervesparks.irisGPT.LinearGradient
 import com.nervesparks.irisGPT.MainViewModel
-
 import com.nervesparks.irisGPT.R
-import com.nervesparks.irisGPT.ui.components.ChatMessageList
 import com.nervesparks.irisGPT.ui.components.DownloadModal
 import com.nervesparks.irisGPT.ui.components.LoadingModal
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.io.File
 
 
@@ -1062,7 +1068,6 @@ fun MessageBottomSheet(
                     .fillMaxWidth()
                     .fillMaxWidth()
                     .padding(vertical = 5.dp)
-
             ) {
                 // Copy Text Button
                 TextButton(
@@ -1116,6 +1121,46 @@ fun MessageBottomSheet(
                     )
                 }
 
+                // Report Content Button
+//                TextButton(
+//                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(vertical = 8.dp),
+//                    onClick = {
+//                        val deviceName = Build.MODEL
+//
+//                        // Create report data
+//                        val reportData = ReportContent(
+//                            message = message,
+//                            modelName = viewModel.loadedModelName.value,
+//                            deviceName = deviceName,
+//                            topP = viewModel.topP,
+//                            topK = viewModel.topK,
+//                            temperature = viewModel.temp,
+//                            chatHistory = viewModel.messages,
+//                            timestamp = System.currentTimeMillis()
+//                        )
+//
+//                        // Send to MongoDB
+//                        CoroutineScope(Dispatchers.IO).launch {
+//                            try {
+//                                sendReportToFirebase(reportData)
+//                                withContext(Dispatchers.Main) {
+//                                    Toast.makeText(context, "Report submitted successfully", Toast.LENGTH_SHORT).show()
+//                                }
+//                            } catch (e: Exception) {
+//                                withContext(Dispatchers.Main) {
+//                                    Toast.makeText(context, "Failed to submit report", Toast.LENGTH_SHORT).show()
+//                                }
+//                            }
+//                        }
+//                        onDismiss()
+//                    }
+//                ) {
+//                    Text(text = "Report Content", color = Color(0xFFA0A0A5))
+//                }
+
                 // Selection Container
                 LazyColumn(state = sheetScrollState) {
                     item {
@@ -1142,3 +1187,36 @@ fun MessageBottomSheet(
     }
 
 }
+
+//data class ReportContent(
+//    val message: String,
+//    val modelName: String,
+//    val deviceName: String,
+//    val topP: Float,
+//    val topK: Int,
+//    val temperature: Float,
+//    val chatHistory: List<Map<String, String>>,
+//    val timestamp: Long
+//)
+//
+//
+//// Function to send report to MongoDB
+//suspend fun sendReportToFirebase(reportContent: ReportContent) {
+//    try {
+//        // Initialize Firestore
+//        val db = Firebase.firestore
+//
+//        // Add the ReportContent object to the "reports" collection in Firestore
+//        db.collection("reports")
+//            .add(reportContent)
+//            .addOnSuccessListener { documentReference ->
+//                Log.d("Firebase", "DocumentSnapshot added with ID: ${documentReference.id}")
+//            }
+//            .addOnFailureListener { e ->
+//                Log.w("Firebase", "Error adding document", e)
+//            }
+//    } catch (e: Exception) {
+//        e.printStackTrace()
+//        Log.e("Firebase", "Failed to send report to Firebase Firestore: ${e.message}")
+//    }
+//}
