@@ -1,6 +1,5 @@
 package com.nervesparks.irisGPT.ui
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.ClipboardManager
@@ -11,10 +10,14 @@ import android.os.Build
 import android.speech.RecognizerIntent
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.ReportDrawn
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
@@ -37,6 +40,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -122,7 +126,6 @@ import com.nervesparks.irisGPT.ui.components.LoadingModal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.File
 
@@ -158,8 +161,9 @@ fun MainChatScreen (
     val allModelsExist = models.all { model -> model.destination.exists() }
     val Prompts_Home = listOf(
         "Explains complex topics simply.",
-        "Remembers previous inputs.",
-        "May sometimes be inaccurate."
+        "May sometimes be inaccurate.",
+        "Long Press on messages to report.",
+
     )
     var recognizedText by remember { mutableStateOf("") }
     val speechRecognizerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
@@ -511,6 +515,12 @@ fun MainChatScreen (
                                             }
                                         }
                                     }
+                                }
+                                item {
+                                    Box (modifier = Modifier.padding(start = 10.dp)) { if(viewModel.showLoader){
+                                        DotsTyping()
+                                    } }
+
                                 }
                                 item {
                                     Spacer(modifier = Modifier
@@ -1122,44 +1132,44 @@ fun MessageBottomSheet(
                 }
 
                 // Report Content Button
-//                TextButton(
-//                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(vertical = 8.dp),
-//                    onClick = {
-//                        val deviceName = Build.MODEL
-//
-//                        // Create report data
-//                        val reportData = ReportContent(
-//                            message = message,
-//                            modelName = viewModel.loadedModelName.value,
-//                            deviceName = deviceName,
-//                            topP = viewModel.topP,
-//                            topK = viewModel.topK,
-//                            temperature = viewModel.temp,
-//                            chatHistory = viewModel.messages,
-//                            timestamp = System.currentTimeMillis()
-//                        )
-//
-//                        // Send to MongoDB
-//                        CoroutineScope(Dispatchers.IO).launch {
-//                            try {
-//                                sendReportToFirebase(reportData)
-//                                withContext(Dispatchers.Main) {
-//                                    Toast.makeText(context, "Report submitted successfully", Toast.LENGTH_SHORT).show()
-//                                }
-//                            } catch (e: Exception) {
-//                                withContext(Dispatchers.Main) {
-//                                    Toast.makeText(context, "Failed to submit report", Toast.LENGTH_SHORT).show()
-//                                }
-//                            }
-//                        }
-//                        onDismiss()
-//                    }
-//                ) {
-//                    Text(text = "Report Content", color = Color(0xFFA0A0A5))
-//                }
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    onClick = {
+                        val deviceName = Build.MODEL
+
+                        // Create report data
+                        val reportData = ReportContent(
+                            message = message,
+                            modelName = viewModel.loadedModelName.value,
+                            deviceName = deviceName,
+                            topP = viewModel.topP,
+                            topK = viewModel.topK,
+                            temperature = viewModel.temp,
+                            chatHistory = viewModel.messages,
+                            timestamp = System.currentTimeMillis()
+                        )
+
+                        // Send to MongoDB
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                sendReportToFirebase(reportData)
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, "Report submitted successfully", Toast.LENGTH_SHORT).show()
+                                }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, "Failed to submit report", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                        onDismiss()
+                    }
+                ) {
+                    Text(text = "Report Content", color = Color(0xFFA0A0A5))
+                }
 
                 // Selection Container
                 LazyColumn(state = sheetScrollState) {
@@ -1188,35 +1198,89 @@ fun MessageBottomSheet(
 
 }
 
-//data class ReportContent(
-//    val message: String,
-//    val modelName: String,
-//    val deviceName: String,
-//    val topP: Float,
-//    val topK: Int,
-//    val temperature: Float,
-//    val chatHistory: List<Map<String, String>>,
-//    val timestamp: Long
-//)
-//
-//
-//// Function to send report to MongoDB
-//suspend fun sendReportToFirebase(reportContent: ReportContent) {
-//    try {
-//        // Initialize Firestore
-//        val db = Firebase.firestore
-//
-//        // Add the ReportContent object to the "reports" collection in Firestore
-//        db.collection("reports")
-//            .add(reportContent)
-//            .addOnSuccessListener { documentReference ->
-//                Log.d("Firebase", "DocumentSnapshot added with ID: ${documentReference.id}")
-//            }
-//            .addOnFailureListener { e ->
-//                Log.w("Firebase", "Error adding document", e)
-//            }
-//    } catch (e: Exception) {
-//        e.printStackTrace()
-//        Log.e("Firebase", "Failed to send report to Firebase Firestore: ${e.message}")
-//    }
-//}
+data class ReportContent(
+    val message: String,
+    val modelName: String,
+    val deviceName: String,
+    val topP: Float,
+    val topK: Int,
+    val temperature: Float,
+    val chatHistory: List<Map<String, String>>,
+    val timestamp: Long
+)
+
+
+// Function to send report to MongoDB
+suspend fun sendReportToFirebase(reportContent: ReportContent) {
+    try {
+        // Initialize Firestore
+        val db = Firebase.firestore
+
+        // Add the ReportContent object to the "reports" collection in Firestore
+        db.collection("reports")
+            .add(reportContent)
+            .addOnSuccessListener { documentReference ->
+                Log.d("Firebase", "DocumentSnapshot added with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firebase", "Error adding document", e)
+            }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        Log.e("Firebase", "Failed to send report to Firebase Firestore: ${e.message}")
+    }
+}
+
+@Composable
+fun DotsTyping() {
+    val dotSize = 8.dp // made it bigger for demo
+    val delayUnit = 300 // you can change delay to change animation speed
+    val maxOffset = 10f
+
+    @Composable
+    fun Dot(
+        offset: Float
+    ) = Spacer(
+        Modifier
+            .size(dotSize)
+            .offset(y = -offset.dp)
+            .background(
+                color = Color.LightGray,
+                shape = CircleShape
+            )
+    )
+
+    val infiniteTransition = rememberInfiniteTransition()
+
+    @Composable
+    fun animateOffsetWithDelay(delay: Int) = infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = keyframes {
+                durationMillis = delayUnit * 4
+                0f at delay with LinearEasing
+                maxOffset at delay + delayUnit with LinearEasing
+                0f at delay + delayUnit * 2
+            }
+        )
+    )
+
+    val offset1 by animateOffsetWithDelay(0)
+    val offset2 by animateOffsetWithDelay(delayUnit)
+    val offset3 by animateOffsetWithDelay(delayUnit * 2)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.padding(top = maxOffset.dp)
+    ) {
+        val spaceSize = 2.dp
+
+        Dot(offset1)
+        Spacer(Modifier.width(spaceSize))
+        Dot(offset2)
+        Spacer(Modifier.width(spaceSize))
+        Dot(offset3)
+    }
+}

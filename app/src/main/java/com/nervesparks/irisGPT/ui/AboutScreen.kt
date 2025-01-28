@@ -182,5 +182,13 @@ private val faqs = listOf(
             "\n" +
             "Go to Settings > Models.\n" +
             "Select the model you want to delete.\n" +
-            "Click the Delete button."
+            "Click the Delete button.",
+    "How do I report inappropriate content?" to "Models sometimes may generate inappropriate content, If you encounter content that seems inappropriate or concerning, you can report it in a few simple steps:\n" +
+            "\n" +
+            "Ensure your device is connected to the internet\n"+
+            "Press and hold (long press) on the message or generated content you want to report\n"+
+            "When the menu appears, select the 'Report Content' button\n"+
+    "\n \nOur team reviews all reports to help maintain a safe environment for all users. Thank you for helping us improve our service."
 )
+
+
