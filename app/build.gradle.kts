@@ -15,7 +15,7 @@ android {
         applicationId = "com.nervesparks.irisGPT"
         minSdk = 28
         targetSdk = 34
-        versionCode = 2
+        versionCode = 3
         versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

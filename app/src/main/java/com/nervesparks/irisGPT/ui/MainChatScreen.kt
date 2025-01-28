@@ -5,6 +5,8 @@ import android.app.DownloadManager
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.speech.RecognizerIntent
@@ -128,6 +130,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -1137,7 +1141,12 @@ fun MessageBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
-                    onClick = {
+                    onClick =  onClick@{
+                        if (!isInternetAvailableMain(context)) {
+                            Toast.makeText(context, "Internet connection required", Toast.LENGTH_LONG).show()
+                            return@onClick
+                        }
+
                         val deviceName = Build.MODEL
 
                         // Create report data
@@ -1152,20 +1161,23 @@ fun MessageBottomSheet(
                             timestamp = System.currentTimeMillis()
                         )
 
-                        // Send to MongoDB
                         CoroutineScope(Dispatchers.IO).launch {
                             try {
-                                sendReportToFirebase(reportData)
+                                val success = sendReportToFirebase(reportData)
                                 withContext(Dispatchers.Main) {
-                                    Toast.makeText(context, "Report submitted successfully", Toast.LENGTH_SHORT).show()
+                                    if (success) {
+                                        Toast.makeText(context, "Report submitted successfully", Toast.LENGTH_SHORT).show()
+                                        onDismiss()
+                                    } else {
+                                        Toast.makeText(context, "Failed to submit report", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             } catch (e: Exception) {
                                 withContext(Dispatchers.Main) {
-                                    Toast.makeText(context, "Failed to submit report", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Failed to submit report: ${e.message}", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
-                        onDismiss()
                     }
                 ) {
                     Text(text = "Report Content", color = Color(0xFFA0A0A5))
@@ -1211,23 +1223,24 @@ data class ReportContent(
 
 
 // Function to send report to MongoDB
-suspend fun sendReportToFirebase(reportContent: ReportContent) {
+suspend fun sendReportToFirebase(reportContent: ReportContent): Boolean = suspendCoroutine { continuation ->
     try {
-        // Initialize Firestore
         val db = Firebase.firestore
 
-        // Add the ReportContent object to the "reports" collection in Firestore
         db.collection("reports")
             .add(reportContent)
             .addOnSuccessListener { documentReference ->
                 Log.d("Firebase", "DocumentSnapshot added with ID: ${documentReference.id}")
+                continuation.resume(true)
             }
             .addOnFailureListener { e ->
                 Log.w("Firebase", "Error adding document", e)
+                continuation.resume(false)
             }
     } catch (e: Exception) {
         e.printStackTrace()
         Log.e("Firebase", "Failed to send report to Firebase Firestore: ${e.message}")
+        continuation.resume(false)
     }
 }
 
@@ -1282,5 +1295,16 @@ fun DotsTyping() {
         Dot(offset2)
         Spacer(Modifier.width(spaceSize))
         Dot(offset3)
+    }
+}
+fun isInternetAvailableMain(context: Context): Boolean {
+    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    } else {
+        val networkInfo = connectivityManager.activeNetworkInfo ?: return false
+        return networkInfo.isConnected
     }
 }

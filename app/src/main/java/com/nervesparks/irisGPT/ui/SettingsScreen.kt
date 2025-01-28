@@ -23,6 +23,7 @@ fun SettingsScreen(
     onModelsScreenButtonClicked: () -> Unit,
     onAboutScreenButtonClicked: () -> Unit,
     onBenchMarkScreenButtonClicked: () -> Unit,
+    onReportScreenButtonClicked: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -67,6 +68,13 @@ fun SettingsScreen(
                         text = "About",
                         iconRes = R.drawable.information_outline_svgrepo_com,
                         onClick = onAboutScreenButtonClicked
+                    )
+                    SettingsDivider()
+
+                    SettingsRow(
+                        text = "Report",
+                        iconRes = R.drawable.report_svgrepo_com,
+                        onClick = onReportScreenButtonClicked
                     )
                 }
             }
