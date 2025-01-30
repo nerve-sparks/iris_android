@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Iris</string>
+    <string name="app_name">EdgePLM</string>
     <string name="settings_screen_title">Settings</string>
     <string name="search_results_screen_title">Search</string>
     <string name="parameters_screen_title">Parameters</string>

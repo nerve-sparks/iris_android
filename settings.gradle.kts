@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Iris"
+rootProject.name = "EdgePLM"
 include(":app")
 include(":llama")

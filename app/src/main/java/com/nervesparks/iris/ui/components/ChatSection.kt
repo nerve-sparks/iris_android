@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nervesparks.iris.MainViewModel
 import com.nervesparks.iris.R
+import com.nervesparks.iris.ui.theme.*
 
 
 @Composable
@@ -38,7 +39,7 @@ fun ChatMessageList(viewModel: MainViewModel, scrollState: LazyListState) {
     val context = LocalContext.current
 
     LazyColumn(state = scrollState) {
-        itemsIndexed(messages.drop(3)) { index, messageMap ->
+        itemsIndexed(messages.drop(3)) { _, messageMap ->
             val role = messageMap["role"] ?: ""
             val content = (messageMap["content"] ?: "").trimEnd()
 
@@ -63,26 +64,34 @@ fun ChatMessageList(viewModel: MainViewModel, scrollState: LazyListState) {
                 }
             }
         }
-        item { Spacer(modifier = Modifier.height(1.dp).fillMaxWidth()) }
+        item {
+            Spacer(modifier = Modifier.height(1.dp).fillMaxWidth())
+        }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun UserOrAssistantMessage(role: String, message: String, onLongClick: () -> Unit) {
+private fun UserOrAssistantMessage(
+    role: String,
+    message: String,
+    onLongClick: () -> Unit
+) {
     Row(
         horizontalArrangement = if (role == "user") Arrangement.End else Arrangement.Start,
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        if (role == "assistant") MessageIcon(iconRes = R.drawable.logo, description = "Bot Icon")
+        if (role == "assistant") {
+            MessageIcon(iconRes = R.drawable.logo, description = "Bot Icon")
+        }
 
         Box(
             modifier = Modifier
                 .padding(horizontal = 2.dp)
                 .background(
-                    color = if (role == "user") Color(0xFF171E2C) else Color.Transparent,
+                    color = if (role == "user") ChatGPTSurface else Color.Transparent,
                     shape = RoundedCornerShape(12.dp)
                 )
                 .combinedClickable(
@@ -93,13 +102,15 @@ private fun UserOrAssistantMessage(role: String, message: String, onLongClick: (
         ) {
             Text(
                 text = message.removePrefix("```"),
-                style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
+                style = MaterialTheme.typography.bodyLarge.copy(color = ChatGPTOnBackground),
                 maxLines = 10,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
-        if (role == "user") MessageIcon(iconRes = R.drawable.user_icon, description = "User Icon")
+        if (role == "user") {
+            MessageIcon(iconRes = R.drawable.user_icon, description = "User Icon")
+        }
     }
 }
 
@@ -108,12 +119,12 @@ private fun CodeBlockMessage(content: String) {
     Box(
         modifier = Modifier
             .padding(horizontal = 10.dp, vertical = 4.dp)
-            .background(Color.Black, shape = RoundedCornerShape(8.dp))
+            .background(ChatGPTSurface, shape = RoundedCornerShape(8.dp))
             .fillMaxWidth()
     ) {
         Text(
             text = content.removePrefix("```"),
-            style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
+            style = MaterialTheme.typography.bodyLarge.copy(color = ChatGPTOnBackground),
             modifier = Modifier.padding(16.dp)
         )
     }

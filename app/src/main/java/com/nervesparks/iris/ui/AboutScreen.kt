@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nervesparks.iris.ui.theme.*
 
 
 @Composable
@@ -36,13 +37,13 @@ fun AboutScreen() {
             .padding(16.dp)
     ) {
         item {
-            SectionHeader(text = "Welcome to Iris")
+            SectionHeader(text = "Welcome to EdgePLM")
         }
         item {
             Text(
-                text = "Iris is an offline Android chat application powered by the llama.cpp framework. Designed to operate entirely offline, it ensures privacy and independence from external servers. Whether you're a developer exploring AI applications or a privacy-conscious user, this app provides a seamless and secure way to experience conversational AI. Please note that the app may occasionally generate inaccurate results.",
+                text = "EdgePLM-Iris is an offline Android chat application powered by the llama.cpp framework. Designed to operate entirely offline, it ensures privacy and independence from external servers. Whether you're a developer exploring AI applications or a privacy-conscious user, this app provides a seamless and secure way to experience conversational AI. Please note that the app may occasionally generate inaccurate results.",
                 fontSize = 16.sp,
-                color = Color.White,
+                color = ChatGPTOnBackground,
                 lineHeight = 24.sp
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -76,7 +77,7 @@ private fun SectionHeader(
         text = text,
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold,
-        color = Color.White,
+        color = ChatGPTOnBackground,
         modifier = modifier.padding(bottom = 12.dp)
     )
 }
@@ -92,13 +93,13 @@ private fun FeatureItem(feature: String) {
         Box(
             modifier = Modifier
                 .size(20.dp)
-                .background(Color(0xFF4CAF50), shape = CircleShape),
+                .background(ChatGPTOnSecondary, shape = CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = null,
-                tint = Color.White,
+                tint = ChatGPTOnBackground,
                 modifier = Modifier.size(14.dp)
             )
         }
@@ -106,7 +107,7 @@ private fun FeatureItem(feature: String) {
         Text(
             text = feature,
             fontSize = 16.sp,
-            color = Color.White,
+            color = ChatGPTOnBackground,
             lineHeight = 24.sp
         )
     }
@@ -128,13 +129,13 @@ private fun FaqItem(
             Box(
                 modifier = Modifier
                     .size(20.dp)
-                    .background(Color(0xFF1b384f), shape = CircleShape),
+                    .background(ChatGPTOnSecondary, shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = ChatGPTOnBackground,
                     modifier = Modifier.size(14.dp)
                 )
             }
@@ -143,7 +144,7 @@ private fun FaqItem(
                 text = question,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = ChatGPTOnBackground,
                 lineHeight = 24.sp
             )
         }
@@ -151,7 +152,7 @@ private fun FaqItem(
         Text(
             text = answer,
             fontSize = 14.sp,
-            color = Color.White.copy(alpha = 0.7f),
+            color = ChatGPTOnBackground.copy(alpha = 0.7f),
             lineHeight = 20.sp,
             modifier = Modifier.padding(start = 32.dp)  // Aligned with question text
         )

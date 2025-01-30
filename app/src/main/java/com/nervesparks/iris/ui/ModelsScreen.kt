@@ -27,6 +27,7 @@ import com.nervesparks.iris.MainViewModel
 import com.nervesparks.iris.R
 import com.nervesparks.iris.ui.components.LoadingModal
 import com.nervesparks.iris.ui.components.ModelCard
+import com.nervesparks.iris.ui.theme.*
 import java.io.File
 
 @Composable
@@ -61,12 +62,12 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
                             modifier = Modifier.size(20.dp), // Icon size
                             painter = painterResource(id = R.drawable.search_svgrepo_com__3_),
                             contentDescription = "Parameters",
-                            tint = Color.White
+                            tint = ChatGPTOnBackground
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
                             text = "Search Hugging-Face Models",
-                            color = Color.White,
+                            color = ChatGPTOnBackground,
                             fontSize = 18.sp,
                             modifier = Modifier
                                 .padding(vertical = 12.dp, horizontal = 7.dp)

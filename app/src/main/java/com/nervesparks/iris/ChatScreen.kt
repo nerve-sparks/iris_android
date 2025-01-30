@@ -60,6 +60,7 @@ import com.nervesparks.iris.ui.ModelsScreen
 import com.nervesparks.iris.ui.ParametersScreen
 import com.nervesparks.iris.ui.SearchResultScreen
 import com.nervesparks.iris.ui.SettingsScreen
+import com.nervesparks.iris.ui.theme.*
 import java.io.File
 
 
@@ -112,13 +113,9 @@ fun ChatScreenAppBar(
     }
 
     val kc = LocalSoftwareKeyboardController.current
-    val darkNavyBlue = Color(0xFF050a14)
     val context = LocalContext.current
 
-    // State to keep track of the current rotation angle
     var rotationAngle by remember { mutableStateOf(0f) }
-
-    // Animation for smooth rotation
     val animatedRotationAngle by animateFloatAsState(
         targetValue = rotationAngle,
         animationSpec = tween(durationMillis = 600, easing = LinearEasing)
@@ -127,22 +124,22 @@ fun ChatScreenAppBar(
     TopAppBar(
         title = {
             Text(
-                stringResource(currentScreen.title),
-                color = Color.White,
+                text = stringResource(currentScreen.title),
+                color = ChatGPTOnBackground,
                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 28.sp)
             )
         },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = Color.Transparent
         ),
-        modifier = modifier.background(darkNavyBlue),
+        modifier = modifier.background(ChatGPTSecondary),
         navigationIcon = {
             if (canNavigateBack) {
                 IconButton(onClick = navigateUp) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.back_button),
-                        tint = Color.White
+                        tint = ChatGPTOnBackground
                     )
                 }
             }
@@ -153,7 +150,7 @@ fun ChatScreenAppBar(
                     Icon(
                         painter = painterResource(id = R.drawable.settings_gear_rounded),
                         contentDescription = stringResource(R.string.setting),
-                        tint = Color.White,
+                        tint = ChatGPTOnBackground,
                         modifier = Modifier.size(25.dp)
                     )
                 }
@@ -170,14 +167,14 @@ fun ChatScreenAppBar(
                         modifier = Modifier.size(25.dp),
                         painter = painterResource(id = R.drawable.edit_3_svgrepo_com),
                         contentDescription = "newChat",
-                        tint = Color.White
+                        tint = ChatGPTOnBackground
                     )
                 }
             }
             if (currentScreen == ChatScreen.ModelsScreen) {
                 IconButton(
                     onClick = {
-                        rotationAngle += 360f // Increment rotation angle
+                        rotationAngle += 360f
                         if (extFileDir != null) {
                             viewModel.loadExistingModels(extFileDir)
                             provideHapticFeedback(context)
@@ -190,7 +187,7 @@ fun ChatScreenAppBar(
                             .graphicsLayer { rotationZ = animatedRotationAngle },
                         imageVector = Icons.Default.Refresh,
                         contentDescription = stringResource(R.string.refresh_button),
-                        tint = Color.White
+                        tint = ChatGPTOnBackground
                     )
                 }
             }
@@ -206,15 +203,13 @@ fun ChatScreenAppBar(
                             .graphicsLayer { rotationZ = animatedRotationAngle },
                         painter = painterResource(id = R.drawable.question_small_svgrepo_com),
                         contentDescription = "question_svg" ,
-                        tint = Color.White
+                        tint = ChatGPTOnBackground
                     )
                 }
             }
         }
     )
 }
-
-
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -226,16 +221,10 @@ fun ChatScreen(
     extFileDir: File?,
     navController: NavHostController = rememberNavController()
 ) {
-    // Define gradient colors
-    val darkNavyBlue = Color(0xFF050a14)
-    val lightNavyBlue = Color(0xFF051633)
-
-    // Create gradient brush
     val gradientBrush = Brush.verticalGradient(
-        colors = listOf(darkNavyBlue, lightNavyBlue)
+        colors = listOf(ChatGPTBackground, ChatGPTSurface)
     )
 
-    // Wrap the entire Scaffold with a Box that has the gradient background
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -244,16 +233,16 @@ fun ChatScreen(
             .imePadding()
     ) {
         Scaffold(
-            backgroundColor = Color.Transparent, // Make Scaffold background transparent
+            backgroundColor = Color.Transparent,
             topBar = {
                 ChatScreenAppBar(
                     currentScreen = ChatScreen.valueOf(
-                        navController.currentBackStackEntryAsState().value?.destination?.route
-                            ?: ChatScreen.Start.name
+                        navController.currentBackStackEntryAsState().value
+                            ?.destination?.route ?: ChatScreen.Start.name
                     ),
                     canNavigateBack = navController.previousBackStackEntry != null,
                     navigateUp = { navController.navigateUp() },
-                    onSettingsClick = {navController.navigate(ChatScreen.Settings.name)},
+                    onSettingsClick = { navController.navigate(ChatScreen.Settings.name) },
                     viewModel = viewModel,
                     extFileDir = extFileDir
                 )
@@ -284,15 +273,14 @@ fun ChatScreen(
                             navController.navigate(ChatScreen.ModelsScreen.name)
                         },
                         onParamsScreenButtonClicked = {
-                          navController.navigate((ChatScreen.ParamsScreen.name))
+                            navController.navigate(ChatScreen.ParamsScreen.name)
                         },
                         onAboutScreenButtonClicked = {
-                            navController.navigate((ChatScreen.AboutScreen.name))
+                            navController.navigate(ChatScreen.AboutScreen.name)
                         },
                         onBenchMarkScreenButtonClicked = {
-                            navController.navigate((ChatScreen.BenchMarkScreen.name))
+                            navController.navigate(ChatScreen.BenchMarkScreen.name)
                         }
-
                     )
                 }
                 composable(route = ChatScreen.SearchResults.name) {
@@ -300,21 +288,27 @@ fun ChatScreen(
                         SearchResultScreen(
                             viewModel,
                             downloadManager,
-                            extFileDir)
+                            extFileDir
+                        )
                     }
                 }
                 composable(route = ChatScreen.ModelsScreen.name) {
-                    ModelsScreen(dm = downloadManager, extFileDir = extFileDir, viewModel = viewModel,onSearchResultButtonClick = {navController.navigate(
-                        ChatScreen.SearchResults.name
-                    )})
+                    ModelsScreen(
+                        dm = downloadManager,
+                        extFileDir = extFileDir,
+                        viewModel = viewModel,
+                        onSearchResultButtonClick = {
+                            navController.navigate(ChatScreen.SearchResults.name)
+                        }
+                    )
                 }
-                composable(route = ChatScreen.ParamsScreen.name){
+                composable(route = ChatScreen.ParamsScreen.name) {
                     ParametersScreen(viewModel)
                 }
-                composable(route = ChatScreen.AboutScreen.name){
+                composable(route = ChatScreen.AboutScreen.name) {
                     AboutScreen()
                 }
-                composable(route = ChatScreen.BenchMarkScreen.name){
+                composable(route = ChatScreen.BenchMarkScreen.name) {
                     BenchMarkScreen(viewModel)
                 }
             }

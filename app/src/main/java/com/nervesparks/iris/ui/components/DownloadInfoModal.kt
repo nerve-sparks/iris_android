@@ -58,7 +58,7 @@ fun InfoModal(
 //                        modifier = Modifier.padding(bottom = 8.dp)
 //                    )
                     Text(
-                        text = "The performance of Iris is directly influenced by the size, speed, and compute requirements of the models you use. Consider your hardware capabilities when selecting models for optimal performance.",
+                        text = "The performance of EdgePLM is directly influenced by the size, speed, and compute requirements of the models you use. Consider your hardware capabilities when selecting models for optimal performance.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.LightGray,
                         modifier = Modifier.padding(bottom = 16.dp)
