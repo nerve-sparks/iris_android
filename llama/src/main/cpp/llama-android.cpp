@@ -168,7 +168,7 @@ Java_android_llama_cpp_LLamaAndroid_load_1model(JNIEnv *env, jobject, jstring fi
     auto path_to_model = env->GetStringUTFChars(filename, 0);
     LOGi("Loading model from %s", path_to_model);
 
-    auto model = llama_load_model_from_file(path_to_model, model_params);
+    auto model = llama_model_load_from_file(path_to_model, model_params);
     env->ReleaseStringUTFChars(filename, path_to_model);
 
     if (!model) {
@@ -183,7 +183,7 @@ Java_android_llama_cpp_LLamaAndroid_load_1model(JNIEnv *env, jobject, jstring fi
 extern "C"
 JNIEXPORT void JNICALL
 Java_android_llama_cpp_LLamaAndroid_free_1model(JNIEnv *, jobject, jlong model) {
-    llama_free_model(reinterpret_cast<llama_model *>(model));
+    llama_model_free(reinterpret_cast<llama_model *>(model));
 }
 
 extern "C"
@@ -209,7 +209,7 @@ Java_android_llama_cpp_LLamaAndroid_new_1context(JNIEnv *env, jobject, jlong jmo
     ctx_params.n_threads_batch = n_threads;
     LOGi("Checking my threads %d", ctx_params.n_threads);
 
-    llama_context * context = llama_new_context_with_model(model, ctx_params);
+    llama_context * context = llama_init_from_model(model, ctx_params);
 
     if (!context) {
         LOGe("llama_new_context_with_model() returned null)");
@@ -535,6 +535,7 @@ Java_android_llama_cpp_LLamaAndroid_completion_1loop(
     const auto batch   = reinterpret_cast<llama_batch   *>(batch_pointer);
     const auto sampler = reinterpret_cast<llama_sampler *>(sampler_pointer);
     const auto model = llama_get_model(context);
+    const auto vocab = llama_model_get_vocab(model);
 
     if (!la_int_var) la_int_var = env->GetObjectClass(intvar_ncur);
     if (!la_int_var_value) la_int_var_value = env->GetMethodID(la_int_var, "getValue", "()I");
@@ -543,12 +544,12 @@ Java_android_llama_cpp_LLamaAndroid_completion_1loop(
     // sample the most likely token
     const auto new_token_id = llama_sampler_sample(sampler, context, -1);
 
-    const auto eot = llama_token_eot(model);
+    const auto eot = llama_vocab_eot(vocab);
     LOGi("eot is: %d", eot);
     LOGi("new_token_id is: %d", new_token_id);
 
     const auto n_cur = env->CallIntMethod(intvar_ncur, la_int_var_value);
-    if (llama_token_is_eog(model, new_token_id) || n_cur == n_len || new_token_id == eot) {
+    if (llama_vocab_is_eog(vocab, new_token_id) || n_cur == n_len || new_token_id == eot) {
         return nullptr;
     }
 
@@ -641,7 +642,8 @@ extern "C"
 JNIEXPORT jstring JNICALL
 Java_android_llama_cpp_LLamaAndroid_get_1eot_1str(JNIEnv *env, jobject , jlong jmodel) {
     auto model = reinterpret_cast<llama_model *>(jmodel);
-    const auto eot = llama_token_eot(model);
+    const auto vocab = llama_model_get_vocab(model);
+    const auto eot = llama_vocab_eot(vocab);
 
     if (eot == -1){
         std::string piece = "<|im_end|>";
@@ -650,10 +652,10 @@ Java_android_llama_cpp_LLamaAndroid_get_1eot_1str(JNIEnv *env, jobject , jlong j
 
     std::string piece;
     piece.resize(piece.capacity());  // using string internal cache, 15 bytes + '\n'
-    const int n_chars = llama_token_to_piece(model, eot, &piece[0], piece.size(), 0, true);
+    const int n_chars = llama_token_to_piece(vocab, eot, &piece[0], piece.size(), 0, true);
     if (n_chars < 0) {
         piece.resize(-n_chars);
-        int check = llama_token_to_piece(model, eot, &piece[0], piece.size(), 0, true);
+        int check = llama_token_to_piece(vocab, eot, &piece[0], piece.size(), 0, true);
         GGML_ASSERT(check == -n_chars);
     }
     else {
