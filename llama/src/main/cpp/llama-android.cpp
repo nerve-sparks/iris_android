@@ -614,7 +614,7 @@ inline std::string format_chat(const llama_model *model, const std::string &tmpl
 
         chat.push_back({role, content});
     }
-
+//this has to change
     const auto formatted_chat = common_chat_apply_template(model, tmpl, chat, true);
     LOGi("formatted_chat: '%s'\n", formatted_chat.c_str());
 
