@@ -138,7 +138,7 @@ fun MainChatScreen (
     println("Thread started: ${Thread.currentThread().name}")
     val Prompts = listOf(
         "Explain how to develop a consistent reading habit.",
-        "Write an email to your manager requesting work-from-home approval for a day.",
+        "Write an email to your manager requesting leave for a day.",
         "Suggest time management strategies for handling multiple deadlines effectively.",
         "Draft a professional LinkedIn message to connect with a recruiter.",
         "Suggest ways to practice mindfulness in a busy daily schedule.",
@@ -153,7 +153,8 @@ fun MainChatScreen (
     val Prompts_Home = listOf(
         "Explains complex topics simply.",
         "Remembers previous inputs.",
-        "May sometimes be inaccurate."
+        "May sometimes be inaccurate.",
+        "Unable to provide current affairs due to no internet connectivity."
     )
     var recognizedText by remember { mutableStateOf("") }
     val speechRecognizerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
