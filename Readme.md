@@ -1,4 +1,4 @@
-# Iris
+<h2><a href="https://play.google.com/store/apps/details?id=com.nervesparks.irisGPT&hl=en_IN"  style="color: white;">Iris</a></h2>
 
 ## Project Description
 
@@ -36,6 +36,10 @@
   </div>
 </div>
 
+## Installation
+- Get IRIS (offline GPT) on Google Play:
+
+  [Get it on Google Play](https://play.google.com/store/apps/details?id=com.nervesparks.irisGPT&hl=en_IN)
 ## Run
 
 - Go to releases : https://github.com/nerve-sparks/iris_android/releases
@@ -89,7 +93,13 @@ On opening the app, users can download suggested models to optimize performance 
 ```bash
  git clone https://github.com/ggerganov/llama.cpp
 ```
+- Navigate to the llama.cpp directory and checkout a specific commit for proper compatibility:
 
+```bash
+cd llama.cpp
+git checkout 1f922254f0c984a8fb9fbaa0c390d7ffae49aedb
+cd ..
+```
 - Open developer options on the Android mobile phone.
 - Enable developer options.
 - Click on developer options and enable wireless debugging.
