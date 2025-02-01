@@ -1,4 +1,4 @@
-package com.nervesparks.iris.data
+package com.nervesparks.irisGPT.data
 
 import android.content.Context
 

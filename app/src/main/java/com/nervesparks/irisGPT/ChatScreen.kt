@@ -1,4 +1,4 @@
-package com.nervesparks.iris
+package com.nervesparks.irisGPT
 
 import android.annotation.SuppressLint
 import android.app.DownloadManager
@@ -53,13 +53,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.nervesparks.iris.ui.AboutScreen
-import com.nervesparks.iris.ui.BenchMarkScreen
-import com.nervesparks.iris.ui.MainChatScreen
-import com.nervesparks.iris.ui.ModelsScreen
-import com.nervesparks.iris.ui.ParametersScreen
-import com.nervesparks.iris.ui.SearchResultScreen
-import com.nervesparks.iris.ui.SettingsScreen
+import com.nervesparks.irisGPT.ui.AboutScreen
+import com.nervesparks.irisGPT.ui.BenchMarkScreen
+import com.nervesparks.irisGPT.ui.MainChatScreen
+import com.nervesparks.irisGPT.ui.ModelsScreen
+import com.nervesparks.irisGPT.ui.ParametersScreen
+import com.nervesparks.irisGPT.ui.ReportScreen
+import com.nervesparks.irisGPT.ui.SearchResultScreen
+import com.nervesparks.irisGPT.ui.SettingsScreen
 import java.io.File
 
 
@@ -71,6 +72,7 @@ enum class ChatScreen(@StringRes val title: Int) {
     ParamsScreen(title = R.string.parameters_screen_title),
     AboutScreen(title = R.string.about_screen_title),
     BenchMarkScreen(title = R.string.benchmark_screen_title),
+    ReportScreen(title = R.string.report_screen_title)
 }
 
 
@@ -291,6 +293,9 @@ fun ChatScreen(
                         },
                         onBenchMarkScreenButtonClicked = {
                             navController.navigate((ChatScreen.BenchMarkScreen.name))
+                        },
+                        onReportScreenButtonClicked = {
+                            navController.navigate((ChatScreen.ReportScreen.name))
                         }
 
                     )
@@ -316,6 +321,9 @@ fun ChatScreen(
                 }
                 composable(route = ChatScreen.BenchMarkScreen.name){
                     BenchMarkScreen(viewModel)
+                }
+                composable(route = ChatScreen.ReportScreen.name){
+                    ReportScreen(viewModel)
                 }
             }
         }

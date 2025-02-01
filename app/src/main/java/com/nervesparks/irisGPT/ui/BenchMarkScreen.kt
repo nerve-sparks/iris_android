@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui
+package com.nervesparks.irisGPT.ui
 
 import android.os.Build
 import android.widget.Toast
@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.nervesparks.iris.MainViewModel
+import com.nervesparks.irisGPT.MainViewModel
 import kotlinx.coroutines.launch
 
 data class BenchmarkState(

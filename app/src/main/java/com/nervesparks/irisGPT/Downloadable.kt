@@ -1,4 +1,4 @@
-package com.nervesparks.iris
+package com.nervesparks.irisGPT
 
 import android.app.DownloadManager
 import android.net.Uri

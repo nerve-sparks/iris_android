@@ -1,16 +1,25 @@
-package com.nervesparks.iris.ui
+package com.nervesparks.irisGPT.ui
 
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
+import android.os.Build
 import android.speech.RecognizerIntent
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
@@ -33,6 +42,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -66,7 +76,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -107,18 +116,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
-import androidx.compose.ui.window.Dialog
-import com.nervesparks.iris.Downloadable
-import com.nervesparks.iris.LinearGradient
-import com.nervesparks.iris.MainViewModel
-
-import com.nervesparks.iris.R
-import com.nervesparks.iris.ui.components.ChatMessageList
-import com.nervesparks.iris.ui.components.DownloadModal
-import com.nervesparks.iris.ui.components.LoadingModal
-
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
+import com.nervesparks.irisGPT.Downloadable
+import com.nervesparks.irisGPT.LinearGradient
+import com.nervesparks.irisGPT.MainViewModel
+import com.nervesparks.irisGPT.R
+import com.nervesparks.irisGPT.ui.components.DownloadModal
+import com.nervesparks.irisGPT.ui.components.LoadingModal
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -152,9 +165,10 @@ fun MainChatScreen (
     val allModelsExist = models.all { model -> model.destination.exists() }
     val Prompts_Home = listOf(
         "Explains complex topics simply.",
-        "Remembers previous inputs.",
         "May sometimes be inaccurate.",
-        "Unable to provide current affairs due to no internet connectivity."
+        "Unable to provide current affairs due to no internet connectivity.",
+        "Long Press on messages to report.",
+
     )
     var recognizedText by remember { mutableStateOf("") }
     val speechRecognizerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
@@ -506,6 +520,12 @@ fun MainChatScreen (
                                             }
                                         }
                                     }
+                                }
+                                item {
+                                    Box (modifier = Modifier.padding(start = 10.dp)) { if(viewModel.showLoader){
+                                        DotsTyping()
+                                    } }
+
                                 }
                                 item {
                                     Spacer(modifier = Modifier
@@ -1063,7 +1083,6 @@ fun MessageBottomSheet(
                     .fillMaxWidth()
                     .fillMaxWidth()
                     .padding(vertical = 5.dp)
-
             ) {
                 // Copy Text Button
                 TextButton(
@@ -1117,6 +1136,54 @@ fun MessageBottomSheet(
                     )
                 }
 
+                // Report Content Button
+                TextButton(
+                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    onClick =  onClick@{
+                        if (!isInternetAvailableMain(context)) {
+                            Toast.makeText(context, "Internet connection required", Toast.LENGTH_LONG).show()
+                            return@onClick
+                        }
+
+                        val deviceName = Build.MODEL
+
+                        // Create report data
+                        val reportData = ReportContent(
+                            message = message,
+                            modelName = viewModel.loadedModelName.value,
+                            deviceName = deviceName,
+                            topP = viewModel.topP,
+                            topK = viewModel.topK,
+                            temperature = viewModel.temp,
+                            chatHistory = viewModel.messages,
+                            timestamp = System.currentTimeMillis()
+                        )
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                val success = sendReportToFirebase(reportData)
+                                withContext(Dispatchers.Main) {
+                                    if (success) {
+                                        Toast.makeText(context, "Report submitted successfully", Toast.LENGTH_SHORT).show()
+                                        onDismiss()
+                                    } else {
+                                        Toast.makeText(context, "Failed to submit report", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, "Failed to submit report: ${e.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    }
+                ) {
+                    Text(text = "Report Content", color = Color(0xFFA0A0A5))
+                }
+
                 // Selection Container
                 LazyColumn(state = sheetScrollState) {
                     item {
@@ -1142,4 +1209,103 @@ fun MessageBottomSheet(
         }
     }
 
+}
+
+data class ReportContent(
+    val message: String,
+    val modelName: String,
+    val deviceName: String,
+    val topP: Float,
+    val topK: Int,
+    val temperature: Float,
+    val chatHistory: List<Map<String, String>>,
+    val timestamp: Long
+)
+
+
+// Function to send report to MongoDB
+suspend fun sendReportToFirebase(reportContent: ReportContent): Boolean = suspendCoroutine { continuation ->
+    try {
+        val db = Firebase.firestore
+
+        db.collection("reports")
+            .add(reportContent)
+            .addOnSuccessListener { documentReference ->
+                Log.d("Firebase", "DocumentSnapshot added with ID: ${documentReference.id}")
+                continuation.resume(true)
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firebase", "Error adding document", e)
+                continuation.resume(false)
+            }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        Log.e("Firebase", "Failed to send report to Firebase Firestore: ${e.message}")
+        continuation.resume(false)
+    }
+}
+
+@Composable
+fun DotsTyping() {
+    val dotSize = 8.dp // made it bigger for demo
+    val delayUnit = 300 // you can change delay to change animation speed
+    val maxOffset = 10f
+
+    @Composable
+    fun Dot(
+        offset: Float
+    ) = Spacer(
+        Modifier
+            .size(dotSize)
+            .offset(y = -offset.dp)
+            .background(
+                color = Color.LightGray,
+                shape = CircleShape
+            )
+    )
+
+    val infiniteTransition = rememberInfiniteTransition()
+
+    @Composable
+    fun animateOffsetWithDelay(delay: Int) = infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = keyframes {
+                durationMillis = delayUnit * 4
+                0f at delay with LinearEasing
+                maxOffset at delay + delayUnit with LinearEasing
+                0f at delay + delayUnit * 2
+            }
+        )
+    )
+
+    val offset1 by animateOffsetWithDelay(0)
+    val offset2 by animateOffsetWithDelay(delayUnit)
+    val offset3 by animateOffsetWithDelay(delayUnit * 2)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.padding(top = maxOffset.dp)
+    ) {
+        val spaceSize = 2.dp
+
+        Dot(offset1)
+        Spacer(Modifier.width(spaceSize))
+        Dot(offset2)
+        Spacer(Modifier.width(spaceSize))
+        Dot(offset3)
+    }
+}
+fun isInternetAvailableMain(context: Context): Boolean {
+    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    } else {
+        val networkInfo = connectivityManager.activeNetworkInfo ?: return false
+        return networkInfo.isConnected
+    }
 }

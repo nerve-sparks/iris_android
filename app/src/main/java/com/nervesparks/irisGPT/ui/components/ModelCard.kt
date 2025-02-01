@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui.components
+package com.nervesparks.irisGPT.ui.components
 
 import android.app.DownloadManager
 import android.net.Uri
@@ -15,8 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nervesparks.iris.Downloadable
-import com.nervesparks.iris.MainViewModel
+import com.nervesparks.irisGPT.Downloadable
+import com.nervesparks.irisGPT.MainViewModel
 import kotlinx.coroutines.launch
 import java.io.File
 

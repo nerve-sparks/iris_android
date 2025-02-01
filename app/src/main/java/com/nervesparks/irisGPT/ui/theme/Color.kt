@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui.theme
+package com.nervesparks.irisGPT.ui.theme
 //
 //import androidx.compose.ui.graphics.Color
 //

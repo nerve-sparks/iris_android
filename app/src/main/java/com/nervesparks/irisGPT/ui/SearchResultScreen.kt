@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui
+package com.nervesparks.irisGPT.ui
 
 import android.app.DownloadManager
 import android.util.Log
@@ -45,11 +45,11 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nervesparks.iris.MainViewModel
-import com.nervesparks.iris.R
-import com.nervesparks.iris.ui.components.InfoModal
-import com.nervesparks.iris.ui.components.LoadingModal
-import com.nervesparks.iris.ui.components.ModelCard
+import com.nervesparks.irisGPT.MainViewModel
+import com.nervesparks.irisGPT.R
+import com.nervesparks.irisGPT.ui.components.InfoModal
+import com.nervesparks.irisGPT.ui.components.LoadingModal
+import com.nervesparks.irisGPT.ui.components.ModelCard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui
+package com.nervesparks.irisGPT.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nervesparks.iris.R
+import com.nervesparks.irisGPT.R
 
 @Composable
 fun SettingsScreen(
@@ -23,6 +23,7 @@ fun SettingsScreen(
     onModelsScreenButtonClicked: () -> Unit,
     onAboutScreenButtonClicked: () -> Unit,
     onBenchMarkScreenButtonClicked: () -> Unit,
+    onReportScreenButtonClicked: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -67,6 +68,13 @@ fun SettingsScreen(
                         text = "About",
                         iconRes = R.drawable.information_outline_svgrepo_com,
                         onClick = onAboutScreenButtonClicked
+                    )
+                    SettingsDivider()
+
+                    SettingsRow(
+                        text = "Report",
+                        iconRes = R.drawable.report_svgrepo_com,
+                        onClick = onReportScreenButtonClicked
                     )
                 }
             }
