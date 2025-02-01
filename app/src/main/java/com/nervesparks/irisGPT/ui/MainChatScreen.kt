@@ -150,22 +150,23 @@ fun MainChatScreen (
     val focusManager = LocalFocusManager.current
     println("Thread started: ${Thread.currentThread().name}")
     val Prompts = listOf(
-        "Explain the strategic turning points of the Battle of Midway during World War II",
-        "Describe the innovative technologies that are transforming renewable energy production",
-        "Outline the core consulting services provided by management consulting firms like McKinsey",
-        "Walk me through a systematic approach to debugging a complex software issue",
-        "Trace the architectural and cultural evolution of Paris from medieval times to the modern era",
-        "Highlight the architectural marvels of Paris, from the Eiffel Tower to the hidden gems of Montmartre",
-        "Recommend a targeted 15-minute daily routine to improve posture and reduce back pain",
+        "Explain how to develop a consistent reading habit.",
+        "Write an email to your manager requesting leave for a day.",
+        "Suggest time management strategies for handling multiple deadlines effectively.",
+        "Draft a professional LinkedIn message to connect with a recruiter.",
+        "Suggest ways to practice mindfulness in a busy daily schedule.",
+        "Recommend a 15-minute daily workout routine to stay fit with a busy schedule.",
+        "Provide a simple and polite Spanish translation of 'Excuse me, can you help me?' with explanation.",
         "List the top 5 science fiction novels that have most influenced modern technological thinking",
-        "Provide a precise Spanish translation of 'Innovation drives progress' with grammatical explanations",
-        "Analyze the impact of artificial intelligence on global economic and social landscapes in 2024"
+        "List security tips to protect personal information online.",
+        "Recommend three books that can improve communication skills."
     )
 
     val allModelsExist = models.all { model -> model.destination.exists() }
     val Prompts_Home = listOf(
         "Explains complex topics simply.",
         "May sometimes be inaccurate.",
+        "Unable to provide current affairs due to no internet connectivity.",
         "Long Press on messages to report.",
 
     )

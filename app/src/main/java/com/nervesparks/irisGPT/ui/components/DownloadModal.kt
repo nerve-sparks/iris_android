@@ -12,9 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.nervesparks.irisGPT.Downloadable
 import com.nervesparks.irisGPT.MainViewModel
+
+
 
 @Composable
 fun DownloadModal(viewModel: MainViewModel, dm: DownloadManager, models: List<Downloadable>) {
@@ -33,7 +36,7 @@ fun DownloadModal(viewModel: MainViewModel, dm: DownloadManager, models: List<Do
             ) {
                 HeaderText("Download Required")
                 HeaderText("Don't close or minimize the app!")
-
+                HeaderModelText("Download at least 1 model")
                 LazyColumn(
                     modifier = Modifier
                         .padding(16.dp)
@@ -50,11 +53,23 @@ fun DownloadModal(viewModel: MainViewModel, dm: DownloadManager, models: List<Do
 }
 
 @Composable
+private fun HeaderModelText(text: String) {
+    Text(
+        text = text,
+        fontWeight = FontWeight.W900,
+        fontSize = 18.sp,
+        color = Color.White,
+        modifier = Modifier
+            .padding(top = 14.dp)
+    )
+}
+
+@Composable
 private fun HeaderText(text: String) {
     Text(
         text = text,
         fontWeight = FontWeight.Bold,
-        color = Color.White
+        color = Color.White,
     )
 }
 
