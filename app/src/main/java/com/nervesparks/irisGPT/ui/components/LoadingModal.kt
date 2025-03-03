@@ -1,4 +1,4 @@
-package com.nervesparks.iris.ui.components
+package com.nervesparks.irisGPT.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.nervesparks.iris.MainViewModel
+import com.nervesparks.irisGPT.MainViewModel
 
 @Composable
 fun LoadingModal(viewModel: MainViewModel){

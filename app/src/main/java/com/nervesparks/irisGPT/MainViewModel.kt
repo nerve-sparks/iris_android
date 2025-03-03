@@ -1,4 +1,4 @@
-package com.nervesparks.iris
+package com.nervesparks.irisGPT
 
 import android.content.Context
 import android.llama.cpp.LLamaAndroid
@@ -14,7 +14,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.nervesparks.iris.data.UserPreferencesRepository
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.nervesparks.irisGPT.data.UserPreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -98,7 +99,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         private set
 
     var eot_str = ""
-
+    var showLoader = false
 
     var refresh by mutableStateOf(false)
 
@@ -253,6 +254,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     }
 
     fun send() {
+        showLoader = true
         val userMessage = removeExtraWhiteSpaces(message)
         message = ""
 
@@ -278,15 +280,18 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
                         .collect { response ->
                             // Create a new assistant message with the response
                             if (getIsMarked()) {
+                                showLoader = false
                                 addMessage("codeBlock", response)
 
                             } else {
+                                showLoader = false
                                 addMessage("assistant", response)
                             }
                         }
                 }
                 finally {
                     if (!getIsCompleteEOT()) {
+                        showLoader = false
                         trimEOT()
                     }
                 }
@@ -487,6 +492,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
     }
 
     fun stop() {
+        showLoader = false
         llamaAndroid.stopTextGeneration()
     }
 
