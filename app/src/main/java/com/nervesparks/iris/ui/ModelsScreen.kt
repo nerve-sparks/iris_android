@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import com.nervesparks.iris.data.UserPreferencesRepository
 import com.nervesparks.iris.MainViewModel
 import com.nervesparks.iris.R
 import com.nervesparks.iris.ui.components.LoadingModal
@@ -42,6 +44,9 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
         viewModel.refresh = false
     }
 
+    val context = LocalContext.current
+    val preferencesRepository = UserPreferencesRepository.getInstance(context)
+
     Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         if (viewModel.showAlert) {
             // Modal dialog to show download options
@@ -56,6 +61,17 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
         LazyColumn(modifier = Modifier.padding(horizontal = ComponentStyles.defaultPadding)) {
             item {
                 Column {
+                    if (!preferencesRepository.hasHuggingFaceCredentials()) {
+                        Text(
+                            text = "Tip: Add your HuggingFace token in Settings to enable online search and downloads",
+                            color = MaterialTheme.colorScheme.tertiary,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = ComponentStyles.defaultSpacing)
+                        )
+                        Spacer(Modifier.height(ComponentStyles.smallPadding))
+                    }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -136,7 +152,7 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
             }
 
             // Show first three suggested models that support reasoning
-            items(suggestedModels) { model ->
+            items(items = suggestedModels, key = { it["name"] ?: it.hashCode().toString() }) { model ->
                 extFileDir?.let {
                     model["source"]?.let { source ->
                         ModelCard(
@@ -172,7 +188,7 @@ fun ModelsScreen(extFileDir: File?, viewModel: MainViewModel, onSearchResultButt
             }
 
             // Display all models not in Suggested Models
-            items(viewModel.allModels.filterNot { suggestedModels.contains(it) }) { model ->
+            items(items = viewModel.allModels.filterNot { suggestedModels.contains(it) }, key = { it["name"] ?: it.hashCode().toString() }) { model ->
                 extFileDir?.let {
                     model["source"]?.let { source ->
                         ModelCard(

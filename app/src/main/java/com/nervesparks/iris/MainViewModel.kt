@@ -37,7 +37,7 @@ import java.util.UUID
 
 import android.app.Application
 import android.content.Context
-import com.nervesparks.iris.data.ChatRepository
+import com.nervesparks.iris.data.repository.ChatRepository
 import com.nervesparks.iris.data.DocumentRepository
 import com.nervesparks.iris.data.db.Chat
 import com.nervesparks.iris.data.db.Message
@@ -89,7 +89,12 @@ class MainViewModel @Inject constructor(
 
     suspend fun embedText(text: String): FloatArray =
         withContext(Dispatchers.Default) {
-            llamaAndroid.getEmbeddings(text)
+            try {
+                llamaAndroid.getEmbeddings(text) ?: floatArrayOf()
+            } catch (e: Exception) {
+                Log.e(tag, "getEmbeddings failed", e)
+                floatArrayOf()
+            }
         }
 
     private var currentChat: com.nervesparks.iris.data.db.Chat? = null
@@ -186,10 +191,7 @@ class MainViewModel @Inject constructor(
         loadModelSettings() // Re-enabled model settings loading
         loadThinkingTokenSettings()
         
-        // Set a default Hugging Face token if none exists
-        if (userPreferencesRepository.getHuggingFaceToken().isEmpty()) {
-            setTestHuggingFaceToken()
-        }
+        // Hugging Face token must be provided by user via Settings
 
         // Detect hardware capabilities at startup - moved to after library loads
         // detectHardwareCapabilities()
@@ -1106,7 +1108,8 @@ class MainViewModel @Inject constructor(
                 Log.e("MainViewModel", "Error loading contextLength, using default", e)
                 modelContextLength = 32768  // Increased for Qwen3 support
             }
-            maxContextLimit = modelContextLength
+            // Guard against early init races
+            try { maxContextLimit = modelContextLength } catch (_: Throwable) {}
             
             try {
                 modelSystemPrompt = userPreferencesRepository.getModelSystemPrompt()
@@ -1230,7 +1233,13 @@ class MainViewModel @Inject constructor(
         Log.d(tag, "Found ${allModels.size} total models")
         
         // Check if we have any models available
-        val availableModels = allModels.filter { model ->
+        // De-duplicate by name while preserving first occurrence (curated > API > local)
+        val deduped = allModels
+            .asReversed()
+            .distinctBy { it["name"] }
+            .asReversed()
+
+        val availableModels = deduped.filter { model ->
             val destinationPath = File(directory, model["destination"].toString())
             destinationPath.exists()
         }
@@ -1323,13 +1332,19 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // New function to get available models
-    fun getAvailableModels(directory: File): List<Map<String, String>> {
-        return allModels.filter { model ->
-            val destinationPath = File(directory, model["destination"].toString())
-            destinationPath.exists()
+    // New function to get available models (delegate to repository cache)
+    fun getAvailableModels(directory: File): List<Map<String, String>> =
+        try {
+            // fast path from cached state if available
+            val cached = allModels.filter { model ->
+                val destinationPath = File(directory, model["destination"].toString())
+                destinationPath.exists()
+            }
+            if (cached.isNotEmpty()) cached else emptyList()
+        } catch (e: Exception) {
+            Log.e(tag, "Error getting available models", e)
+            emptyList()
         }
-    }
 
     // Model selection UI functions
     fun showModelSelectionDialog() {
@@ -1499,6 +1514,18 @@ class MainViewModel @Inject constructor(
             return
         }
 
+        // Preflight: ensure native handles are valid before attempting to send
+        runCatching {
+            val mh = llamaAndroid.getModel()
+            val ch = llamaAndroid.getContext()
+            val bh = llamaAndroid.getBatch()
+            val sh = llamaAndroid.getSampler()
+            if (mh == 0L || ch == 0L || bh == 0L || sh == 0L) {
+                addMessage("error", "Model not loaded or not ready. Load a model first.")
+                return
+            }
+        }
+
         // Add to messages console.
         if (userMessage.isNotBlank()) {
             Log.d(tag, "User message is not blank: $userMessage")
@@ -1519,9 +1546,18 @@ class MainViewModel @Inject constructor(
             startGeneration()
 
             viewModelScope.launch {
+                // If GPU offload is effectively zero, force CPU backend for stability
+                runCatching {
+                    if (llamaAndroid.isAdrenoGpu() && llamaAndroid.getOffloadCounts()[0] == 0) {
+                        Log.i(tag, "Detected zero GPU offload; switching backend to CPU for this session")
+                        llamaAndroid.setBackend("cpu")
+                    }
+                }
                 try {
-                    val userEmbedding = embedText(userMessage).toList()
-                    val similarDocs = documentRepository.topKSimilar(userEmbedding, 3)
+                    val userEmbedding = embedText(userMessage)
+                    val similarDocs = if (userEmbedding.isNotEmpty()) {
+                        documentRepository.topKSimilar(userEmbedding.toList(), 3)
+                    } else emptyList()
                     val contextDocs = similarDocs.joinToString("\n") { it.text }
                     val fullMessage = if (contextDocs.isNotEmpty()) {
                         "Context: $contextDocs\n\nQuestion: $userMessage"
@@ -1732,20 +1768,10 @@ class MainViewModel @Inject constructor(
                         return@launch
                     }
 
-                    // Ensure we're on the correct thread where the library is loaded
-                    val resultsJson = try {
-                        withContext(llamaAndroid.runLoop) {
-                            llamaAndroid.runComparativeBenchmark(modelHandle, contextHandle, batchHandle, samplerHandle)
-                        }
-                    } catch (e: IllegalStateException) {
-                        Log.e(tag, "Comparative benchmark failed", e)
-                        comparativeBenchmarkResults = mapOf("error" to "Benchmark failed: ${e.message}")
-                        return@launch
-                    } catch (e: Exception) {
-                        Log.e(tag, "Comparative benchmark failed", e)
-                        comparativeBenchmarkResults = mapOf("error" to "Benchmark failed: ${e.message}")
-                        return@launch
-                    }
+                // Ensure we're on the correct thread where the library is loaded and call native
+                val resultsJson = withContext(llamaAndroid.runLoop) {
+                    llamaAndroid.runComparativeBenchmark(modelHandle, contextHandle, batchHandle, samplerHandle)
+                }
                 Log.d(tag, "Native benchmark returned: $resultsJson")
                 
                 // Parse the JSON results
@@ -1894,6 +1920,11 @@ class MainViewModel @Inject constructor(
                 } catch (be: Exception) {
                     currentBackend = "CPU"
                     Log.e(tag, "Exception when setting backend to $backend: ${be.message}")
+                }
+                // If GPU was requested but registry is missing, force CPU and retry
+                if (currentBackend.equals("Vulkan", true) && !availableBackends.contains("Vulkan")) {
+                    Log.w(tag, "Vulkan requested but not present; forcing CPU backend")
+                    try { llamaAndroid.setBackend("cpu"); currentBackend = "CPU" } catch (_: Exception) {}
                 }
                 
                 var modelName = pathToModel.split("/")
@@ -2409,13 +2440,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun setTestHuggingFaceToken() {
-        // Set a test token for development purposes
-        // In production, this should be obtained from secure storage
-        val testToken = "hf_test_token_for_development"
-        userPreferencesRepository.setHuggingFaceToken(testToken)
-        Log.d(tag, "Test HuggingFace token set for development")
-    }
+    
 
     // Memory management functions
     fun unloadCurrentModel() {

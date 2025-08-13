@@ -1,4 +1,4 @@
-<h2>IrisStar</h2>
+<h2>IRISStar</h2>
 
 ## Project Description
 
@@ -109,18 +109,24 @@ On opening the app, users can download suggested models to optimize performance 
 
 ## Build
 
-- Download Android studio
-- Clone this repository and import into Android Studio
+- Install Android Studio (or use Cursor + Gradle)
+- Clone this repository and import
 
 ```bash
  git clone https://github.com/lukifer23/IRISStar.git
 ```
 
-- Clone the llama.cpp repository in the same folder as IRISStar
+- Clone the llama.cpp repository alongside IRISStar (same parent folder)
 
 ```bash
  git clone https://github.com/ggerganov/llama.cpp
 ```
+
+## Credentials
+
+- Set your HuggingFace token and username in Settings → HuggingFace Integration.
+- Optional: set Google API Key and Custom Search Engine ID in Settings for web search.
+- Do not hardcode credentials in source; they are stored securely via encrypted preferences.
 
 ### Building with GPU backends
 

@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
+import com.nervesparks.iris.BuildConfig
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -64,6 +65,7 @@ import android.app.Application
 import androidx.compose.foundation.border
 import androidx.activity.viewModels
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import com.nervesparks.iris.data.UserPreferencesRepository
 import com.nervesparks.iris.security.BiometricAuthenticator
 import com.nervesparks.iris.ui.theme.IrisStarTheme
@@ -86,41 +88,22 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Allow network operations on main thread for development
-        val policy = VmPolicy.Builder()
-            .detectAll()
-            .build()
-        StrictMode.setVmPolicy(policy)
+        if (BuildConfig.DEBUG) {
+            // Allow network operations on main thread for development
+            val policy = VmPolicy.Builder()
+                .detectAll()
+                .build()
+            StrictMode.setVmPolicy(policy)
+        }
 
         val extFilesDir = getExternalFilesDir(null)
 
-        val models = listOf(
-            Downloadable(
-                "Llama-3.2-3B-Instruct-Q4_K_L.gguf",
-                Uri.parse("https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_L.gguf?download=true"),
-                File(extFilesDir, "Llama-3.2-3B-Instruct-Q4_K_L.gguf")
-            ),
-            Downloadable(
-                "Llama-3.2-1B-Instruct-Q6_K_L.gguf",
-                Uri.parse("https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q6_K_L.gguf?download=true"),
-                File(extFilesDir, "Llama-3.2-1B-Instruct-Q6_K_L.gguf")
-            ),
-            Downloadable(
-                "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf",
-                Uri.parse("https://huggingface.co/Crataco/stablelm-2-1_6b-chat-imatrix-GGUF/resolve/main/stablelm-2-1_6b-chat.Q4_K_M.imx.gguf?download=true"),
-                File(extFilesDir, "stablelm-2-1_6b-chat.Q4_K_M.imx.gguf")
-            ),
-            Downloadable(
-                "NemoTron-1.5B-Q4_K_M.gguf",
-                Uri.parse("https://huggingface.co/bartowski/nvidia_OpenReasoning-Nemotron-1.5B-GGUF/resolve/main/nvidia_OpenReasoning-Nemotron-1.5B-Q4_K_M.gguf?download=true"),
-                File(extFilesDir, "NemoTron-1.5B-Q4_K_M.gguf")
-            ),
-            Downloadable(
-                "Qwen_Qwen3-0.6B-Q4_K_M.gguf",
-                Uri.parse("https://huggingface.co/bartowski/Qwen_Qwen3-0.6B-GGUF/resolve/main/Qwen_Qwen3-0.6B-Q4_K_M.gguf?download=true"),
-                File(extFilesDir, "Qwen_Qwen3-0.6B-Q4_K_M.gguf")
-            )
-        )
+        // Proactively detect hardware after native init to stabilize backend choice on cold start
+        lifecycleScope.launchWhenStarted {
+            try { viewModel.detectHardwareCapabilities() } catch (_: Exception) {}
+        }
+
+        val models = emptyList<Downloadable>()
 
         if (extFilesDir != null) {
             viewModel.loadExistingModels(extFilesDir)

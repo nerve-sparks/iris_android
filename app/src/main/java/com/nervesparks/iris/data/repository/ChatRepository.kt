@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.Flow
  * Repository interface for chat operations
  */
 interface ChatRepository {
+    /** Observe all chats (ordered by updated desc) */
+    fun observeChats(): Flow<List<Chat>>
     
     /**
      * Get all chats
@@ -33,11 +35,17 @@ interface ChatRepository {
      * Update chat title
      */
     suspend fun updateChatTitle(chatId: Long, title: String)
+
+    /** Convenience: rename chat by entity */
+    suspend fun renameChat(chat: Chat, title: String)
     
     /**
      * Delete a chat
      */
     suspend fun deleteChat(chatId: Long)
+
+    /** Convenience: delete chat by entity */
+    suspend fun deleteChat(chat: Chat)
     
     /**
      * Get messages for a chat
@@ -48,6 +56,9 @@ interface ChatRepository {
      * Load messages for a chat
      */
     suspend fun loadMessages(chatId: Long): List<Message>
+
+    /** Save a chat and replace its messages atomically */
+    suspend fun saveChatWithMessages(chat: Chat, messages: List<Message>): Long
     
     /**
      * Add a message to a chat

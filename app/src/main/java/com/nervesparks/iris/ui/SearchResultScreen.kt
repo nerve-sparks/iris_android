@@ -294,7 +294,7 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(models) { model ->
+                items(items = models, key = { it["modelId"] ?: it.hashCode().toString() }) { model ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()

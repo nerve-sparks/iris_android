@@ -102,6 +102,8 @@ class LLamaAndroid {
                 // Set llama log handler to Android
                 log_to_android()
                 backend_init(false)
+                // Push a higher desired context length for capable devices
+                runCatching { set_context_length(context_size) }
 
                 Log.d(tag, system_info())
             } catch (e: UnsatisfiedLinkError) {
@@ -127,7 +129,8 @@ class LLamaAndroid {
     }.asCoroutineDispatcher()
 
     private val nlen: Int = 256
-    private val context_size: Int = 2048
+    // Allow larger contexts on devices with ample RAM; native defaults to 2048 for GPU stability
+    private val context_size: Int = 8192
 
     private external fun log_to_android()
     private external fun load_model(filename: String): Long
@@ -136,6 +139,7 @@ class LLamaAndroid {
     private external fun free_context(context: Long)
     private external fun backend_init(numa: Boolean)
     private external fun backend_free()
+    private external fun set_context_length(nCtx: Int)
     private external fun set_backend(backend: String): Boolean
     private external fun new_batch(nTokens: Int, embd: Int, nSeqMax: Int): Long
     private external fun free_batch(batch: Long)
@@ -354,6 +358,8 @@ class LLamaAndroid {
                 val ncur = IntVar(completion_init(state.context, state.batch, message, nlen))
                 var end_token_store = ""
                 var chat_len = 0
+                val buffer = StringBuilder()
+                var lastEmitNs = System.nanoTime()
                 while (chat_len <= nlen && ncur.value < context_size && !stopGeneration) {
                     _isSending.value = true
                     val str = completion_loop(state.context, state.batch, state.sampler, nlen, ncur)
@@ -362,6 +368,10 @@ class LLamaAndroid {
                         _isMarked.value = !_isMarked.value
                     }
                     if (str == null) {
+                        if (buffer.isNotEmpty()) {
+                            emit(buffer.toString())
+                            buffer.clear()
+                        }
                         _isSending.value = false
                         _isCompleteEOT.value = true
                         break
@@ -388,7 +398,20 @@ class LLamaAndroid {
                     if (stopGeneration) {
                         break
                     }
-                    emit(str)
+
+                    // Coalesce tokens to reduce recomposition/jank
+                    buffer.append(str)
+                    val now = System.nanoTime()
+                    val elapsedMs = (now - lastEmitNs) / 1_000_000
+                    val shouldFlush = elapsedMs >= 30 || str.contains('\n') || buffer.length >= 64
+                    if (shouldFlush) {
+                        emit(buffer.toString())
+                        buffer.clear()
+                        lastEmitNs = now
+                    }
+                }
+                if (buffer.isNotEmpty()) {
+                    emit(buffer.toString())
                 }
                 kv_cache_clear(state.context)
             }

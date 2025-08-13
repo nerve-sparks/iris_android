@@ -14,6 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Iris"
+rootProject.name = "IRISStar"
 include(":app")
 include(":llama")

@@ -47,4 +47,14 @@ interface ChatDao {
 
     @Query("DELETE FROM messages WHERE chatId = :chatId")
     suspend fun deleteMessages(chatId: Long)
+
+    // Stats queries
+    @Query("SELECT COUNT(*) FROM messages WHERE chatId = :chatId")
+    suspend fun countMessages(chatId: Long): Int
+
+    @Query("SELECT COUNT(*) FROM messages WHERE chatId = :chatId AND LOWER(role) = LOWER(:role)")
+    suspend fun countMessagesByRole(chatId: Long, role: String): Int
+
+    @Query("SELECT timestamp FROM messages WHERE chatId = :chatId AND LOWER(role) IN ('user','assistant') ORDER BY `index`")
+    suspend fun getUserAssistantTimestamps(chatId: Long): List<Long>
 }

@@ -26,11 +26,11 @@ To enable real web search functionality in Iris, you need to set up Google Custo
 6. Go to "Setup" > "Search engine ID"
 7. Copy the Search Engine ID (starts with numbers)
 
-### Step 4: Update the App
+### Step 4: Configure in the App (no code changes)
 
-1. Open `app/src/main/java/com/nervesparks/iris/data/WebSearchService.kt`
-2. Replace `YOUR_GOOGLE_API_KEY` with your actual API key
-3. Replace `YOUR_CUSTOM_SEARCH_ENGINE_ID` with your Search Engine ID
+1. Open the app and go to Settings → HuggingFace & Web Search.
+2. Enter your Google API Key and your Custom Search Engine ID.
+3. These values are stored securely using encrypted preferences. Do not hardcode keys in source.
 
 ### Step 5: Build and Test
 

@@ -63,19 +63,19 @@ fun ModelCard(
                 onLongClick = { showMenu = true }
             )
             .shadow(
-                elevation = ComponentStyles.modalElevation,
+                elevation = ComponentStyles.defaultElevation,
                 shape = ComponentStyles.smallCardShape
             ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = ComponentStyles.largeElevation)
+        elevation = CardDefaults.cardElevation(defaultElevation = ComponentStyles.defaultElevation)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(ComponentStyles.defaultPadding)
+                .padding(ComponentStyles.smallPadding)
         ) {
             Row (horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()){
                 if (modelName == viewModel.loadedModelName.value) {
@@ -88,10 +88,7 @@ fun ModelCard(
 
             Spacer(modifier = Modifier.height(ComponentStyles.smallPadding))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = modelName,
-                    style = MaterialTheme.typography.titleMedium
-                )
+                Text(text = modelName, style = MaterialTheme.typography.titleSmall)
                 if (supportsReasoning) {
                     Spacer(modifier = Modifier.width(ComponentStyles.smallPadding))
                     Text(

@@ -1,6 +1,7 @@
 package com.nervesparks.iris.data
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import com.nervesparks.iris.Template
@@ -62,15 +63,22 @@ open class UserPreferencesRepository protected constructor(context: Context) {
         }
     }
 
-    private val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+    private val appContext: Context = context.applicationContext
 
-    private val sharedPreferences = EncryptedSharedPreferences.create(
-        USER_PREFERENCES_NAME,
-        masterKeyAlias,
-        context,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
+    protected open fun createSharedPreferences(context: Context): SharedPreferences {
+        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        return EncryptedSharedPreferences.create(
+            USER_PREFERENCES_NAME,
+            masterKeyAlias,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
+    protected open val sharedPreferences: SharedPreferences by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        createSharedPreferences(appContext)
+    }
 
     // Get the default model name, returns empty string if not set
     open fun getDefaultModelName(): String {

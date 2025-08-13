@@ -71,7 +71,7 @@ fun TemplatesScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(ComponentStyles.smallPadding)
             ) {
-                items(templates) { template ->
+                items(items = templates, key = { it.id }) { template ->
                     SurfaceCard(
                         modifier = Modifier.fillMaxWidth()
                     ) {

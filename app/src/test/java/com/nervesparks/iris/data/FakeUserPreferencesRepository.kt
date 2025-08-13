@@ -216,11 +216,39 @@ class FakeUserPreferencesRepository(context: Context) : UserPreferencesRepositor
     }
 
     override fun exportConfiguration(): String {
-        return "" // Not needed for tests
+        val json = org.json.JSONObject()
+        json.put(KEY_DEFAULT_MODEL_NAME, getDefaultModelName())
+        json.put(KEY_SHOW_THINKING_TOKENS, getShowThinkingTokens())
+        json.put(KEY_THINKING_TOKEN_STYLE, getThinkingTokenStyle())
+        json.put(KEY_MODEL_THREAD_COUNT, getModelThreadCount())
+        json.put(KEY_MODEL_CONTEXT_LENGTH, getModelContextLength())
+        json.put(KEY_PERF_ENABLE_MEMORY_OPTIMIZATION, getPerfEnableMemoryOptimization())
+        json.put(KEY_PERF_ENABLE_BACKGROUND_PROCESSING, getPerfEnableBackgroundProcessing())
+        json.put(KEY_UI_THEME, getUITheme())
+        json.put(KEY_UI_FONT_SIZE, getUIFontSize())
+        json.put(KEY_UI_ENABLE_ANIMATIONS, getUIEnableAnimations())
+        json.put(KEY_UI_ENABLE_HAPTIC_FEEDBACK, getUIEnableHapticFeedback())
+        return json.toString()
     }
 
     override fun importConfiguration(jsonString: String): Boolean {
-        return true // Not needed for tests
+        return try {
+            val json = org.json.JSONObject(jsonString)
+            if (json.has(KEY_DEFAULT_MODEL_NAME)) setDefaultModelName(json.getString(KEY_DEFAULT_MODEL_NAME))
+            if (json.has(KEY_SHOW_THINKING_TOKENS)) setShowThinkingTokens(json.getBoolean(KEY_SHOW_THINKING_TOKENS))
+            if (json.has(KEY_THINKING_TOKEN_STYLE)) setThinkingTokenStyle(json.getString(KEY_THINKING_TOKEN_STYLE))
+            if (json.has(KEY_MODEL_THREAD_COUNT)) setModelThreadCount(json.getInt(KEY_MODEL_THREAD_COUNT))
+            if (json.has(KEY_MODEL_CONTEXT_LENGTH)) setModelContextLength(json.getInt(KEY_MODEL_CONTEXT_LENGTH))
+            if (json.has(KEY_PERF_ENABLE_MEMORY_OPTIMIZATION)) setPerfEnableMemoryOptimization(json.getBoolean(KEY_PERF_ENABLE_MEMORY_OPTIMIZATION))
+            if (json.has(KEY_PERF_ENABLE_BACKGROUND_PROCESSING)) setPerfEnableBackgroundProcessing(json.getBoolean(KEY_PERF_ENABLE_BACKGROUND_PROCESSING))
+            if (json.has(KEY_UI_THEME)) setUITheme(json.getString(KEY_UI_THEME))
+            if (json.has(KEY_UI_FONT_SIZE)) setUIFontSize(json.getDouble(KEY_UI_FONT_SIZE).toFloat())
+            if (json.has(KEY_UI_ENABLE_ANIMATIONS)) setUIEnableAnimations(json.getBoolean(KEY_UI_ENABLE_ANIMATIONS))
+            if (json.has(KEY_UI_ENABLE_HAPTIC_FEEDBACK)) setUIEnableHapticFeedback(json.getBoolean(KEY_UI_ENABLE_HAPTIC_FEEDBACK))
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 }
 

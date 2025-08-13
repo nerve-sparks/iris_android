@@ -47,10 +47,7 @@ fun DownloadModal(viewModel: MainViewModel, dm: DownloadManager, models: List<Do
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     
-    // Set test token for development
-    LaunchedEffect(Unit) {
-        viewModel.setTestHuggingFaceToken()
-    }
+    // HuggingFace credentials are configured via Settings
 
     Dialog(onDismissRequest = {}) {
         ThemedModalSurface(
@@ -123,12 +120,23 @@ fun DownloadModal(viewModel: MainViewModel, dm: DownloadManager, models: List<Do
                         verticalArrangement = Arrangement.spacedBy(ComponentStyles.smallPadding)
                     ) {
                         val filteredModels = models.filter { !it.destination.exists() }
+                        if (filteredModels.isEmpty()) {
+                            item {
+                                Text(
+                                    text = "All default models are installed",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = SemanticColors.TextInverse.copy(alpha = 0.8f),
+                                    modifier = Modifier.padding(ComponentStyles.defaultPadding),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                         Log.d("DownloadModal", "Total models: ${models.size}")
                         Log.d("DownloadModal", "Filtered models: ${filteredModels.size}")
                         models.forEach { model ->
                             Log.d("DownloadModal", "Model: ${model.name}, exists: ${model.destination.exists()}")
                         }
-                        items(filteredModels) { model ->
+                        items(items = filteredModels, key = { it.name }) { model ->
                             DefaultModelCard(viewModel, dm, model)
                         }
                     }
@@ -243,7 +251,7 @@ fun DownloadModal(viewModel: MainViewModel, dm: DownloadManager, models: List<Do
                                 modifier = Modifier.weight(1f),
                                 verticalArrangement = Arrangement.spacedBy(ComponentStyles.smallPadding)
                             ) {
-                                items(results) { model ->
+                                items(items = results, key = { it["modelId"] ?: it.hashCode().toString() }) { model ->
                                     SearchResultCard(model, dm, context)
                                 }
                             }
@@ -387,7 +395,7 @@ private fun SearchResultCard(model: Map<String, String>, dm: DownloadManager, co
                         modifier = Modifier.height(120.dp),
                         verticalArrangement = Arrangement.spacedBy(ComponentStyles.smallPadding)
                     ) {
-                        items(fileList) { file ->
+                        items(items = fileList, key = { it }) { file ->
                             ThemedModalCard(
                                 modifier = Modifier.fillMaxWidth()
                             ) {

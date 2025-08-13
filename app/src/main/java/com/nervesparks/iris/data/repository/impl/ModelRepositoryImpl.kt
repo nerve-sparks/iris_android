@@ -131,7 +131,11 @@ class ModelRepositoryImpl @Inject constructor(
             // Curated default models (centralized)
             val defaultModels = curatedDefaultModels()
             
-            val allModels = defaultModels + mapped
+            // Merge curated defaults with remote search results, de-duplicated by name
+            val allModels = (defaultModels + mapped)
+                .asReversed()
+                .distinctBy { it["name"] }
+                .asReversed()
             cachedModels = allModels
 
             // persist cache

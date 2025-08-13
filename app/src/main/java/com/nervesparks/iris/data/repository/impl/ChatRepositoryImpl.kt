@@ -17,6 +17,8 @@ class ChatRepositoryImpl @Inject constructor(
     private val chatDao: ChatDao
 ) : ChatRepository {
 
+    override fun observeChats() = chatDao.observeChats()
+
     override suspend fun getAllChats(): List<Chat> = withContext(Dispatchers.IO) {
         chatDao.getAllChats()
     }
@@ -61,11 +63,19 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun renameChat(chat: Chat, title: String) = withContext(Dispatchers.IO) {
+        chatDao.updateChat(chat.copy(title = title, updated = System.currentTimeMillis()))
+    }
+
     override suspend fun deleteChat(chatId: Long) = withContext(Dispatchers.IO) {
         val chat = chatDao.getChat(chatId)
         if (chat != null) {
             chatDao.deleteChat(chat)
         }
+    }
+
+    override suspend fun deleteChat(chat: Chat) = withContext(Dispatchers.IO) {
+        chatDao.deleteChat(chat)
     }
 
     override suspend fun getMessages(chatId: Long): List<Message> = withContext(Dispatchers.IO) {
@@ -74,6 +84,16 @@ class ChatRepositoryImpl @Inject constructor(
 
     override suspend fun loadMessages(chatId: Long): List<Message> = withContext(Dispatchers.IO) {
         chatDao.loadMessages(chatId)
+    }
+
+    override suspend fun saveChatWithMessages(chat: Chat, messages: List<Message>): Long = withContext(Dispatchers.IO) {
+        val id = if (chat.id == 0L) chatDao.insertChat(chat) else {
+            chatDao.updateChat(chat); chat.id
+        }
+        val msgs = messages.mapIndexed { idx, m -> m.copy(chatId = id, index = idx) }
+        chatDao.deleteMessages(id)
+        chatDao.insertMessages(msgs)
+        id
     }
 
     override suspend fun addMessage(chatId: Long, role: String, content: String, index: Int) = withContext(Dispatchers.IO) {
@@ -121,8 +141,34 @@ class ChatRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getChatStats(chatId: Long): ChatStats {
-        // Not implemented
-        return ChatStats(0, 0, 0, 0, 0)
+        val total = chatDao.countMessages(chatId)
+        val users = chatDao.countMessagesByRole(chatId, "user")
+        val assistants = chatDao.countMessagesByRole(chatId, "assistant")
+        val timestamps = chatDao.getUserAssistantTimestamps(chatId)
+
+        var avgResponseMs = 0L
+        if (timestamps.size >= 2) {
+            var pairs = 0
+            var sum = 0L
+            // Approximate: use consecutive deltas as user->assistant cycles
+            for (i in 1 until timestamps.size step 2) {
+                val delta = timestamps[i] - timestamps[i - 1]
+                if (delta > 0) {
+                    sum += delta
+                    pairs += 1
+                }
+            }
+            if (pairs > 0) avgResponseMs = sum / pairs
+        }
+
+        // Token counting would require tokenizer; leave as 0 for now
+        return ChatStats(
+            totalMessages = total,
+            userMessages = users,
+            assistantMessages = assistants,
+            totalTokens = 0,
+            averageResponseTime = avgResponseMs
+        )
     }
 }
 

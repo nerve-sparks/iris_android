@@ -39,7 +39,10 @@ fun ChatMessageList(viewModel: MainViewModel, scrollState: LazyListState) {
     val context = LocalContext.current
 
     LazyColumn(state = scrollState) {
-        itemsIndexed(messages.drop(3), key = { idx, _ -> idx }) { idx, messageMap ->
+        itemsIndexed(messages.drop(3), key = { idx, messageMap ->
+            // Prefer unique message id if present; else fall back to index
+            (messageMap["id"] ?: idx).hashCode()
+        }) { idx, messageMap ->
             val role = messageMap["role"] ?: ""
             val content = (messageMap["content"] ?: "").trimEnd()
             if (role != "system") {
