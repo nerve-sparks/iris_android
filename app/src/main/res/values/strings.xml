@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Iris</string>
+    <string name="app_name">Axia</string>
     <string name="settings_screen_title">Settings</string>
     <string name="search_results_screen_title">Search</string>
     <string name="parameters_screen_title">Parameters</string>
@@ -9,4 +9,23 @@
     <string name="about_screen_title">About</string>
     <string name="benchmark_screen_title">BenchMark</string>
     <string name="refresh_button">Refresh</string>
+
+    <!-- Samsung Galaxy S24 Ultra App Shortcuts -->
+    <string name="shortcut_new_chat_short">New Chat</string>
+    <string name="shortcut_new_chat_long">Start a new conversation with AI</string>
+    <string name="shortcut_voice_chat_short">Voice Chat</string>
+    <string name="shortcut_voice_chat_long">Start voice conversation with AI</string>
+    <string name="shortcut_models_short">Models</string>
+    <string name="shortcut_models_long">Manage AI models and downloads</string>
+
+    <!-- Samsung Galaxy S24 Ultra Performance -->
+    <string name="optimized_for_samsung">Optimized for Samsung Galaxy S24 Ultra</string>
+    <string name="amoled_mode">AMOLED Power Saving</string>
+    <string name="high_refresh_rate">120Hz Smooth Display</string>
+    
+    <!-- Accessibility for Samsung One UI -->
+    <string name="content_description_logo">Iris AI Assistant Logo</string>
+    <string name="content_description_send">Send Message</string>
+    <string name="content_description_voice">Voice Input</string>
+    <string name="content_description_menu">Navigation Menu</string>
 </resources>

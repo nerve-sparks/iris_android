@@ -10,6 +10,17 @@ import android.speech.RecognizerIntent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+
+/**
+ * Data class for chat messages with enhanced functionality
+ */
+data class ChatMessage(
+    val id: String,
+    val message: String,
+    val isFromUser: Boolean,
+    val timestamp: Long,
+    val metadata: Map<String, Any> = emptyMap()
+)
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -108,6 +119,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.Dialog
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.weight
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.ExperimentalComposeUiApi
+import com.nervesparks.iris.streaming.StreamingTokenManager
+import com.nervesparks.iris.profiles.PerformanceProfile
+import com.nervesparks.iris.profiles.PerformanceProfileManager
+import com.nervesparks.iris.actions.MessageActionManager
+import com.nervesparks.iris.performance.ThermalPerformanceManager
+import com.nervesparks.iris.memory.LongTermMemoryManager
+import com.nervesparks.iris.health.ModelHealthChecker
+import com.nervesparks.iris.benchmark.BenchmarkOverlay
+import com.nervesparks.iris.benchmark.rememberBenchmarkOverlayState
+import com.nervesparks.iris.ui.sheets.ParametersBottomSheet
 import com.nervesparks.iris.Downloadable
 import com.nervesparks.iris.LinearGradient
 import com.nervesparks.iris.MainViewModel
@@ -116,6 +146,12 @@ import com.nervesparks.iris.R
 import com.nervesparks.iris.ui.components.ChatMessageList
 import com.nervesparks.iris.ui.components.DownloadModal
 import com.nervesparks.iris.ui.components.LoadingModal
+import com.nervesparks.iris.features.SmartClipboardManager
+import com.nervesparks.iris.features.DynamicThemeManager
+import com.nervesparks.iris.features.QuickActionsManager
+import com.nervesparks.iris.features.ConversationSearchManager
+import com.nervesparks.iris.features.SPenManager
+import com.nervesparks.iris.features.SPenDrawingCanvas
 
 import kotlinx.coroutines.launch
 import java.io.File
@@ -130,11 +166,130 @@ fun MainChatScreen (
     dm: DownloadManager,
     models: List<Downloadable>,
     extFileDir: File?,
-
 ){
     val kc = LocalSoftwareKeyboardController.current
     val windowInsets = WindowInsets.ime
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    
+    // Initialize our quick win features
+    val smartClipboardManager = remember { 
+        SmartClipboardManager(context, clipboard, scope)
+    }
+    val dynamicThemeManager = remember { DynamicThemeManager() }
+    val quickActionsManager = remember { QuickActionsManager() }
+    val searchManager = remember { ConversationSearchManager() }
+    val sPenManager = remember { SPenManager(context) }
+    
+    // === NEW ADVANCED SYSTEMS ===
+    
+    // Streaming token system for ChatGPT-like live typing
+    val streamingTokenManager = remember { StreamingTokenManager() }
+    val streamingTokens by streamingTokenManager.tokenFlow.collectAsState(initial = null)
+    
+    // Performance profiles (Speed/Balanced/Quality)
+    val performanceProfileManager = remember { PerformanceProfileManager(context) }
+    val currentProfile by performanceProfileManager.currentProfile.collectAsState(initial = PerformanceProfile.BALANCED)
+    
+    // Message actions (Copy/Regenerate/Share/Pin)
+    val messageActionManager = remember { MessageActionManager(context) }
+    
+    // Thermal performance management
+    val thermalManager = remember { 
+        ThermalPerformanceManager(context, context as Activity)
+    }
+    val thermalState by thermalManager.thermalState.collectAsState()
+    
+    // Long-term memory system
+    val memoryManager = remember { LongTermMemoryManager(context) }
+    
+    // Model health checker
+    val modelHealthChecker = remember { ModelHealthChecker(context) }
+    
+    // UI State
+    val showBenchmark = rememberBenchmarkOverlayState()
+    var showParametersSheet by rememberSaveable { mutableStateOf(false) }
+    var selectedMessageForActions by remember { mutableStateOf<ChatMessage?>(null) }
+    
+    // 120Hz frame rate optimization
+    LaunchedEffect(Unit) {
+        try {
+            (context as? Activity)?.window?.attributes?.preferredRefreshRate = 120f
+        } catch (e: Exception) {
+            // Ignore if not available
+        }
+    }
+    
+    // Start advanced systems
+    LaunchedEffect(Unit) {
+        thermalManager.startThermalMonitoring()
+        thermalManager.enableSustainedPerformance()
+    }
+    
+    // Cleanup on dispose
+    DisposableEffect(Unit) {
+        onDispose {
+            thermalManager.stopThermalMonitoring()
+            thermalManager.disableSustainedPerformance()
+            streamingTokenManager.stopStreaming()
+        }
+    }
+    
+    // Handle streaming tokens
+    LaunchedEffect(streamingTokens) {
+        streamingTokens?.let { token ->
+            if (token.isComplete) {
+                // Store in long-term memory
+                memoryManager.storeConversation(
+                    messageId = token.messageId,
+                    content = viewModel.messages.lastOrNull()?.message ?: "",
+                    isFromUser = false,
+                    sessionId = "session_${System.currentTimeMillis() / (1000 * 60 * 60)}"
+                )
+            } else if (token.token.isNotEmpty()) {
+                // Update streaming display (placeholder - implement in viewModel)
+                // viewModel.updateStreamingMessage(token.token)
+                thermalManager.updateTokenRate(token.tokensPerSecond)
+            }
+        }
+    }
+    
+    // Auto-adjust performance based on thermal state
+    LaunchedEffect(thermalState) {
+        if (thermalState.isThrottling && thermalState.temperature > 45f) {
+            // Switch to power-save profile when overheating
+            performanceProfileManager.setProfile(PerformanceProfile.SPEED)
+        }
+    }
+    val conversationSearchManager = remember { ConversationSearchManager(scope) }
+    val sPenManager = remember { SPenManager(context, scope) }
+    
+    // Feature states
+    var showSearchDialog by remember { mutableStateOf(false) }
+    var showSPenCanvas by remember { mutableStateOf(false) }
+    var showClipboardHelper by remember { mutableStateOf(false) }
+    
+    // Check clipboard periodically
+    LaunchedEffect(Unit) {
+        while (true) {
+            smartClipboardManager.checkClipboard()
+            if (smartClipboardManager.showClipboardHelper && !showClipboardHelper) {
+                showClipboardHelper = true
+            }
+            kotlinx.coroutines.delay(2000) // Check every 2 seconds
+        }
+    }
+    
+    // Update theme based on conversation
+    LaunchedEffect(viewModel.messages) {
+        if (viewModel.messages.isNotEmpty()) {
+            val lastMessage = viewModel.messages.lastOrNull()?.get("content") ?: ""
+            val history = viewModel.messages.takeLast(5).mapNotNull { it["content"] }
+            dynamicThemeManager.analyzeAndUpdateTheme(lastMessage, history)
+        }
+    }
+
     println("Thread started: ${Thread.currentThread().name}")
     val Prompts = listOf(
         "Explain how to develop a consistent reading habit.",
@@ -178,10 +333,35 @@ fun MainChatScreen (
     }
     Box(
         modifier = Modifier.fillMaxSize()
-
-
     ) {
         LinearGradient()
+        
+        // === BENCHMARK OVERLAY ===
+        BenchmarkOverlay(
+            thermalManager = thermalManager,
+            streamingManager = streamingTokenManager,
+            isVisible = showBenchmark.value
+        )
+
+        // === PARAMETERS BOTTOM SHEET ===
+        ParametersBottomSheet(
+            isVisible = showParametersSheet,
+            onDismiss = { showParametersSheet = false },
+            profileManager = performanceProfileManager,
+            onParametersChanged = { profile, customParams ->
+                // Apply performance settings
+                scope.launch {
+                    performanceProfileManager.setProfile(profile)
+                    customParams?.let {
+                        performanceProfileManager.setCustomParameters(
+                            it.temperature, it.topP, it.threads, it.contextLength
+                        )
+                    }
+                    // Update viewModel with new settings (placeholder)
+                    // viewModel.updatePerformanceSettings(profile)
+                }
+            }
+        )
 
 
 
@@ -201,8 +381,86 @@ fun MainChatScreen (
                     LoadingModal(viewModel)
                 }
 
+                // Smart Clipboard Helper Dialog
+                if (clipboardState.showDialog) {
+                    SmartClipboardDialog(
+                        clipboardText = clipboardState.clipboardText,
+                        suggestions = clipboardState.suggestions,
+                        onSuggestionSelected = { suggestion ->
+                            viewModel.updateMessage(suggestion)
+                            smartClipboardManager.clearClipboard()
+                        },
+                        onDismiss = {
+                            smartClipboardManager.clearClipboard()
+                        }
+                    )
+                }
+
+                // Conversation Search Dialog
+                if (searchState.isSearching) {
+                    ConversationSearchDialog(
+                        messages = viewModel.messages,
+                        searchResults = searchState.searchResults,
+                        bookmarks = searchState.bookmarks,
+                        onSearch = { query ->
+                            searchManager.searchMessages(query, viewModel.messages)
+                        },
+                        onBookmark = { messageId ->
+                            searchManager.bookmarkMessage(messageId)
+                        },
+                        onJumpToMessage = { messageId ->
+                            // Scroll to message in chat
+                            // Implementation would need scroll state management
+                        },
+                        onDismiss = {
+                            searchManager.stopSearch()
+                        }
+                    )
+                }
+
                 Column {
 
+                    // Quick Actions Overlay
+                    quickActionsState?.let { actions ->
+                        QuickActionsOverlay(
+                            actions = actions,
+                            onActionSelected = { action ->
+                                when (action) {
+                                    "Copy Last Response" -> {
+                                        viewModel.messages.lastOrNull { !it.isFromUser }?.let { lastBot ->
+                                            smartClipboardManager.copyToClipboard(lastBot.message)
+                                        }
+                                    }
+                                    "Clear Chat" -> {
+                                        viewModel.clearMessages()
+                                    }
+                                    "Voice Input" -> {
+                                        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                                            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak now...")
+                                        }
+                                        speechRecognizerLauncher.launch(intent)
+                                    }
+                                }
+                            },
+                            onDismiss = {
+                                quickActionsManager.hideActions()
+                            }
+                        )
+                    }
+
+                    // S Pen Drawing Canvas
+                    if (sPenState.showDrawingMode) {
+                        SPenDrawingCanvas(
+                            onHandwritingRecognized = { text ->
+                                viewModel.updateMessage(text)
+                                sPenManager.exitDrawingMode()
+                            },
+                            onCancel = {
+                                sPenManager.exitDrawingMode()
+                            }
+                        )
+                    }
 
                     val scrollState = rememberLazyListState()
 
@@ -217,9 +475,21 @@ fun MainChatScreen (
                                 onDoubleTap = { kc?.hide() },
                                 onLongPress = { kc?.hide() },
                                 onPress = { kc?.hide() },
-
-
-                                )
+                            )
+                        }
+                        .pointerInput(Unit) {
+                            // Quick Actions Gesture Detection
+                            detectDragGestures(
+                                onDragStart = { offset ->
+                                    quickActionsManager.handleGestureStart(offset)
+                                },
+                                onDrag = { change, _ ->
+                                    quickActionsManager.handleGestureMove(change.position)
+                                },
+                                onDragEnd = {
+                                    quickActionsManager.handleGestureEnd()
+                                }
+                            )
                         }) {
 
                         if (viewModel.messages.isEmpty() && !viewModel.showModal && !viewModel.showAlert) {
@@ -598,6 +868,72 @@ fun MainChatScreen (
                                     painter = painterResource(id = R.drawable.microphone_new_svgrepo_com),
                                     contentDescription = "Mic",
                                     tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
+                                )
+                            }
+
+                            // Search Button
+                            IconButton(onClick = {
+                                searchManager.startSearch()
+                                focusManager.clearFocus()
+                            }) {
+                                Icon(
+                                    modifier = Modifier
+                                        .size(25.dp)
+                                        .weight(1f),
+                                    painter = painterResource(id = R.drawable.search_svgrepo_com__3_),
+                                    contentDescription = "Search",
+                                    tint = Color(0xFFDDDDE4)
+                                )
+                            }
+
+                            // S Pen Button (only show on Samsung devices)
+                            if (sPenState.isSupported) {
+                                IconButton(onClick = {
+                                    sPenManager.enterDrawingMode()
+                                    focusManager.clearFocus()
+                                }) {
+                                    Icon(
+                                        modifier = Modifier
+                                            .size(25.dp)
+                                            .weight(1f),
+                                        painter = painterResource(id = R.drawable.edit_3_svgrepo_com),
+                                        contentDescription = "S Pen",
+                                        tint = if (sPenState.showDrawingMode) Color(0xFF4CAF50) else Color(0xFFDDDDE4)
+                                    )
+                                }
+                            }
+
+                            // Performance Parameters Button
+                            IconButton(onClick = {
+                                showParametersSheet = true
+                                focusManager.clearFocus()
+                            }) {
+                                Icon(
+                                    modifier = Modifier
+                                        .size(25.dp)
+                                        .weight(1f),
+                                    painter = painterResource(id = R.drawable.setting_4_svgrepo_com),
+                                    contentDescription = "Performance Settings",
+                                    tint = when (currentProfile) {
+                                        PerformanceProfile.SPEED -> Color(0xFFFF6B6B)     // Red for Speed
+                                        PerformanceProfile.BALANCED -> Color(0xFF4ECDC4)  // Teal for Balanced  
+                                        PerformanceProfile.QUALITY -> Color(0xFF45B7D1)   // Blue for Quality
+                                    }
+                                )
+                            }
+
+                            // Benchmark Toggle Button
+                            IconButton(onClick = {
+                                showBenchmark.value = !showBenchmark.value
+                                focusManager.clearFocus()
+                            }) {
+                                Icon(
+                                    modifier = Modifier
+                                        .size(25.dp)
+                                        .weight(1f),
+                                    painter = painterResource(id = R.drawable.bench_mark_icon),
+                                    contentDescription = if (showBenchmark.value) "Hide Benchmark" else "Show Benchmark",
+                                    tint = if (showBenchmark.value) Color(0xFF4ECDC4) else Color(0xFFDDDDE4)
                                 )
                             }
 
@@ -1043,63 +1379,135 @@ fun MessageBottomSheet(
     onDismiss: () -> Unit,
     sheetState: SheetState
 ) {
-
+    // Enhanced message actions
+    val messageActionManager = remember { MessageActionManager(context) }
+    
+    // Create a temporary ChatMessage for action handling
+    val chatMessage = remember(message) {
+        ChatMessage(
+            id = "temp_${System.currentTimeMillis()}",
+            message = message,
+            isFromUser = false, // Assume it's an AI message for action purposes
+            timestamp = System.currentTimeMillis()
+        )
+    }
+    
+    val isPinned = messageActionManager.isMessagePinned(chatMessage.id)
 
     ModalBottomSheet(
         sheetState = sheetState,
-        containerColor = Color(0xFF01081a),
+        containerColor = Color(0xFF0D1117),
         onDismissRequest = onDismiss
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(20.dp)
-                .background(color = Color(0xFF01081a))
+                .background(color = Color(0xFF0D1117))
         ) {
             var sheetScrollState = rememberLazyListState()
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxWidth()
                     .padding(vertical = 5.dp)
-
             ) {
-                // Copy Text Button
-                TextButton(
-                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                // Header
+                Text(
+                    text = "Message Actions",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = Color(0xFFE6EDF3),
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                // === ENHANCED ACTIONS ===
+                
+                // Copy Text Button (Enhanced)
+                MessageActionButton(
+                    icon = "📋",
+                    text = "Copy Message",
+                    description = "Copy to clipboard",
                     onClick = {
-                        clipboard.setText(AnnotatedString(message))
-                        Toast.makeText(context, "Text copied!", Toast.LENGTH_SHORT).show()
+                        messageActionManager.executeAction(
+                            MessageAction.COPY, 
+                            chatMessage
+                        )
                         onDismiss()
                     }
-                ) {
-                    Text(text = "Copy Text", color = Color(0xFFA0A0A5))
+                )
+
+                // Regenerate Button (for AI messages)
+                if (!chatMessage.isFromUser) {
+                    MessageActionButton(
+                        icon = "🔄",
+                        text = "Regenerate Response",
+                        description = "Generate a new response",
+                        onClick = {
+                            messageActionManager.executeAction(
+                                MessageAction.REGENERATE,
+                                chatMessage,
+                                onRegenerate = { messageId ->
+                                    // Trigger regeneration in viewModel (placeholder)
+                                    // viewModel.regenerateLastResponse()
+                                }
+                            )
+                            onDismiss()
+                        }
+                    )
                 }
 
+                // Share Button
+                MessageActionButton(
+                    icon = "🔗",
+                    text = "Share Message",
+                    description = "Share via other apps",
+                    onClick = {
+                        messageActionManager.executeAction(
+                            MessageAction.SHARE,
+                            chatMessage
+                        )
+                        onDismiss()
+                    }
+                )
+
+                // Pin/Unpin Button
+                MessageActionButton(
+                    icon = if (isPinned) "📌" else "📌",
+                    text = if (isPinned) "Unpin Message" else "Pin Message",
+                    description = if (isPinned) "Remove from pinned" else "Save as important",
+                    iconTint = if (isPinned) Color(0xFFFFD700) else Color(0xFFE6EDF3),
+                    onClick = {
+                        val action = if (isPinned) MessageAction.UNPIN else MessageAction.PIN
+                        messageActionManager.executeAction(action, chatMessage)
+                        onDismiss()
+                    }
+                )
+
+                Divider(
+                    color = Color(0xFF30363D),
+                    modifier = Modifier.padding(vertical = 12.dp)
+                )
+
+                // === ORIGINAL ACTIONS ===
+
                 // Select Text Button
-                TextButton(
-                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                MessageActionButton(
+                    icon = "✂️",
+                    text = "Select Text To Copy",
+                    description = "Select portions to copy",
                     enabled = !viewModel.getIsSending(),
                     onClick = {
                         viewModel.toggler = !viewModel.toggler
                     }
-                ) {
-                    Text(text = "Select Text To Copy", color = Color(0xFFA0A0A5))
-                }
+                )
 
                 // Text to Speech Button
-                TextButton(
-                    colors = ButtonDefaults.buttonColors(Color(0xFF171E2C)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
+                MessageActionButton(
+                    icon = if (viewModel.stateForTextToSpeech) "🔊" else "🔇",
+                    text = if (viewModel.stateForTextToSpeech) "Text To Speech" else "Stop TTS",
+                    description = "Read message aloud",
                     enabled = !viewModel.getIsSending(),
                     onClick = {
                         if (viewModel.stateForTextToSpeech) {
@@ -1110,36 +1518,387 @@ fun MessageBottomSheet(
                         }
                         onDismiss()
                     }
-                ) {
-                    Text(
-                        text = if (viewModel.stateForTextToSpeech) "Text To Speech" else "Stop",
-                        color = Color(0xFFA0A0A5)
-                    )
-                }
+                )
 
-                // Selection Container
-                LazyColumn(state = sheetScrollState) {
-                    item {
+                // Selection Container (for text selection)
+                if (viewModel.toggler) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2128)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         SelectionContainer {
-                            if (viewModel.toggler) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(color = Color.Black)
-                                        .padding(25.dp)
-                                ) {
-                                    Text(
-                                        text = AnnotatedString(message),
-                                        color = Color.White
-                                    )
-                                }
-                            }
+                            Text(
+                                text = message,
+                                color = Color(0xFFE6EDF3),
+                                modifier = Modifier.padding(16.dp),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                     }
                 }
             }
         }
     }
+}
 
+@Composable
+private fun MessageActionButton(
+    icon: String,
+    text: String,
+    description: String,
+    enabled: Boolean = true,
+    iconTint: Color = Color(0xFFE6EDF3),
+    onClick: () -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = if (enabled) Color(0xFF21262D) else Color(0xFF161B22)
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable(enabled = enabled) { onClick() }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = icon,
+                style = MaterialTheme.typography.titleMedium,
+                color = iconTint,
+                modifier = Modifier.padding(end = 12.dp)
+            )
+            
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = if (enabled) Color(0xFFE6EDF3) else Color(0xFF656D76),
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = if (enabled) Color(0xFF8B949E) else Color(0xFF656D76)
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SmartClipboardDialog(
+    clipboardText: String,
+    suggestions: List<String>,
+    onSuggestionSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1E2329),
+        title = {
+            Text(
+                text = "Smart Clipboard",
+                color = Color(0xFFDDDDE4),
+                style = MaterialTheme.typography.titleMedium
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Clipboard content:",
+                    color = Color(0xFF9CA3AF),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = clipboardText.take(100) + if (clipboardText.length > 100) "..." else "",
+                    color = Color(0xFFBECBD1),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                
+                if (suggestions.isNotEmpty()) {
+                    Text(
+                        text = "AI Suggestions:",
+                        color = Color(0xFF9CA3AF),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
+                    LazyColumn(
+                        modifier = Modifier.heightIn(max = 200.dp)
+                    ) {
+                        items(suggestions) { suggestion ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clickable { onSuggestionSelected(suggestion) },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFF2A3441)
+                                )
+                            ) {
+                                Text(
+                                    text = suggestion,
+                                    color = Color(0xFFBECBD1),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(12.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onDismiss
+            ) {
+                Text("Close", color = Color(0xFF4A90E2))
+            }
+        }
+    )
+}
+
+@Composable
+fun ConversationSearchDialog(
+    messages: List<ChatMessage>,
+    searchResults: List<ChatMessage>,
+    bookmarks: List<String>,
+    onSearch: (String) -> Unit,
+    onBookmark: (String) -> Unit,
+    onJumpToMessage: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var searchQuery by remember { mutableStateOf("") }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = Color(0xFF1E2329),
+        title = {
+            Text(
+                text = "Search Conversations",
+                color = Color(0xFFDDDDE4),
+                style = MaterialTheme.typography.titleMedium
+            )
+        },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { 
+                        searchQuery = it
+                        onSearch(it)
+                    },
+                    label = { Text("Search messages...") },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color(0xFFBECBD1),
+                        unfocusedTextColor = Color(0xFFBECBD1),
+                        focusedLabelColor = Color(0xFF9CA3AF),
+                        unfocusedLabelColor = Color(0xFF9CA3AF),
+                        focusedBorderColor = Color(0xFF4A90E2),
+                        unfocusedBorderColor = Color(0xFF626568)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                if (searchResults.isNotEmpty()) {
+                    Text(
+                        text = "Search Results:",
+                        color = Color(0xFF9CA3AF),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    LazyColumn(
+                        modifier = Modifier.heightIn(max = 300.dp)
+                    ) {
+                        items(searchResults) { message ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clickable { onJumpToMessage(message.id) },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFF2A3441)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = message.message.take(80) + if (message.message.length > 80) "..." else "",
+                                        color = Color(0xFFBECBD1),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    IconButton(
+                                        onClick = { onBookmark(message.id) }
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(
+                                                id = if (bookmarks.contains(message.id)) 
+                                                    android.R.drawable.btn_star_big_on 
+                                                else 
+                                                    android.R.drawable.btn_star_big_off
+                                            ),
+                                            contentDescription = "Bookmark",
+                                            tint = if (bookmarks.contains(message.id)) Color(0xFFFFD700) else Color(0xFF626568)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onDismiss
+            ) {
+                Text("Close", color = Color(0xFF4A90E2))
+            }
+        }
+    )
+}
+
+@Composable
+fun QuickActionsOverlay(
+    actions: List<String>,
+    onActionSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.7f))
+            .clickable { onDismiss() },
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFF1E2329)
+            ),
+            modifier = Modifier.padding(32.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "Quick Actions",
+                    color = Color(0xFFDDDDE4),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                actions.forEach { action ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .clickable { onActionSelected(action) },
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF2A3441)
+                        )
+                    ) {
+                        Text(
+                            text = action,
+                            color = Color(0xFFBECBD1),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun SPenDrawingCanvas(
+    onHandwritingRecognized: (String) -> Unit,
+    onCancel: () -> Unit
+) {
+    var drawingPaths by remember { mutableStateOf(listOf<androidx.compose.ui.graphics.Path>()) }
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.9f))
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "S Pen Writing",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Row {
+                    TextButton(onClick = {
+                        // Simulate handwriting recognition
+                        onHandwritingRecognized("Write your message here")
+                    }) {
+                        Text("Recognize", color = Color(0xFF4A90E2))
+                    }
+                    TextButton(onClick = onCancel) {
+                        Text("Cancel", color = Color(0xFFE74C3C))
+                    }
+                }
+            }
+            
+            // Drawing Area
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, _ ->
+                            val newPath = androidx.compose.ui.graphics.Path().apply {
+                                moveTo(change.position.x, change.position.y)
+                                lineTo(change.position.x, change.position.y)
+                            }
+                            drawingPaths = drawingPaths + newPath
+                        }
+                    }
+            ) {
+                drawingPaths.forEach { path ->
+                    drawPath(
+                        path = path,
+                        color = androidx.compose.ui.graphics.Color.White,
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3.dp.toPx())
+                    )
+                }
+            }
+            
+            // Instructions
+            Text(
+                text = "Write with your S Pen on the canvas above",
+                color = Color.Gray,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+        }
+    }
 }

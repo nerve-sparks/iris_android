@@ -1,7 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.LlamaAndroid" parent="android:Theme.Material.Light.NoActionBar" >
-    <item name="android:windowSplashScreenBackground">@color/black</item>
+    <!-- Samsung Galaxy S24 Ultra Base Theme -->
+    <style name="Theme.IrisSamsung" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
+        <!-- Samsung AMOLED optimization - pure black for power efficiency -->
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="colorSurface">@color/samsung_surface</item>
+        <item name="colorOnSurface">@color/samsung_on_surface</item>
+        
+        <!-- Samsung Galaxy S24 Ultra status bar optimization -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        
+        <!-- Edge-to-edge optimization for Samsung's curved display -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+        
+        <!-- Samsung Galaxy S24 Ultra performance optimizations -->
+        <item name="android:hardwareAccelerated">true</item>
+        <item name="android:largeHeap">true</item>
+        
+        <!-- Smooth animations for 120Hz display -->
+        <item name="android:windowAnimationStyle">@style/SamsungWindowAnimation</item>
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:windowActivityTransitions">true</item>
     </style>
+
+    <!-- Samsung Galaxy S24 Ultra Splash Theme -->
+    <style name="Theme.IrisSamsung.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/black</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo</item>
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/black</item>
+        <item name="windowSplashScreenBrandingImage">@drawable/logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.IrisSamsung</item>
+        
+        <!-- Samsung optimization for smooth splash transition -->
+        <item name="android:windowAnimationStyle">@style/SamsungSplashAnimation</item>
+    </style>
+
+    <!-- Samsung Galaxy S24 Ultra Window Animations -->
+    <style name="SamsungWindowAnimation" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/samsung_slide_in_right</item>
+        <item name="android:activityOpenExitAnimation">@anim/samsung_slide_out_left</item>
+        <item name="android:activityCloseEnterAnimation">@anim/samsung_slide_in_left</item>
+        <item name="android:activityCloseExitAnimation">@anim/samsung_slide_out_right</item>
+        <item name="android:taskOpenEnterAnimation">@anim/samsung_zoom_in</item>
+        <item name="android:taskOpenExitAnimation">@anim/samsung_zoom_out</item>
+        <item name="android:taskCloseEnterAnimation">@anim/samsung_zoom_in</item>
+        <item name="android:taskCloseExitAnimation">@anim/samsung_zoom_out</item>
+    </style>
+
+    <!-- Samsung Galaxy S24 Ultra Splash Animations -->
+    <style name="SamsungSplashAnimation" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/samsung_fade_in</item>
+        <item name="android:activityOpenExitAnimation">@anim/samsung_fade_out</item>
+    </style>
+
+    <!-- Legacy theme for backward compatibility -->
+    <style name="Theme.LlamaAndroid" parent="Theme.IrisSamsung" />
+
 </resources>

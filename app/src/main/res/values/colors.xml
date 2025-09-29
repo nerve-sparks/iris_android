@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Legacy Material Colors -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -7,4 +8,46 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Samsung Galaxy S24 Ultra Optimized Colors -->
+    <!-- Pure black for AMOLED power efficiency -->
+    <color name="samsung_black">#FF000000</color>
+    <color name="samsung_near_black">#FF0A0A0A</color>
+    <color name="samsung_dark_surface">#FF1A1A1A</color>
+    <color name="samsung_surface">#FF1F1F1F</color>
+    <color name="samsung_surface_variant">#FF2A2A2A</color>
+    
+    <!-- Samsung brand colors with OLED optimization -->
+    <color name="samsung_blue">#FF1976D2</color>
+    <color name="samsung_light_blue">#FF42A5F5</color>
+    <color name="samsung_dark_blue">#FF0D47A1</color>
+    <color name="samsung_accent">#FF00BCD4</color>
+    
+    <!-- High contrast text colors for Samsung display -->
+    <color name="samsung_on_surface">#FFE3E3E3</color>
+    <color name="samsung_on_surface_variant">#FFB3B3B3</color>
+    <color name="samsung_outline">#FF3A3A3A</color>
+    <color name="samsung_outline_variant">#FF1F1F1F</color>
+    
+    <!-- Samsung Galaxy S24 Ultra specific accent colors -->
+    <color name="samsung_primary">#FF6366F1</color>
+    <color name="samsung_secondary">#FF8B5CF6</color>
+    <color name="samsung_tertiary">#FF06B6D4</color>
+    <color name="samsung_error">#FFFF1744</color>
+    <color name="samsung_success">#FF00C853</color>
+    <color name="samsung_warning">#FFFF6D00</color>
+    
+    <!-- Chat message colors optimized for AMOLED -->
+    <color name="user_message_bg">#FF6366F1</color>
+    <color name="bot_message_bg">#FF1E1E1E</color>
+    <color name="code_block_bg">#FF0D1117</color>
+    
+    <!-- Selection and interaction colors -->
+    <color name="samsung_selection">#4D6366F1</color>
+    <color name="samsung_ripple">#1A6366F1</color>
+    <color name="samsung_focus">#FF8B5CF6</color>
+    
+    <!-- Status and navigation bar colors -->
+    <color name="status_bar_scrim">#40000000</color>
+    <color name="navigation_bar_scrim">#40000000</color>
 </resources>

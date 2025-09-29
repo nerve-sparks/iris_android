@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Iris"
+rootProject.name = "Axia"
 include(":app")
 include(":llama")
