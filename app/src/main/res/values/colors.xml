@@ -48,6 +48,23 @@
     <color name="samsung_focus">#FF8B5CF6</color>
     
     <!-- Status and navigation bar colors -->
+    <color name="samsung_status_bar">#FF000000</color>
+    <color name="samsung_navigation_bar">#FF000000</color>
+    
+    <!-- Additional colors for integration testing -->
+    <color name="background_dark">#FF0A0A0A</color>
+    <color name="surface_dark">#FF1A1A1A</color>
+    <color name="primary_dark">#FF1F1F1F</color>
+    <color name="text_primary">#FFE3E3E3</color>
+    <color name="text_secondary">#FFB3B3B3</color>
+    <color name="input_background">#FF2A2A2A</color>
+    <color name="accent_blue">#FF1976D2</color>
+    <color name="primary_blue">#FF6366F1</color>
+    <color name="accent_purple">#FF8B5CF6</color>
+    <color name="accent_pink">#FFEC407A</color>
+    <color name="accent_orange">#FFFF7043</color>
+    <color name="error_dark">#FF3F1B1B</color>
+    <color name="error_red">#FFFF1744</color>
     <color name="status_bar_scrim">#40000000</color>
     <color name="navigation_bar_scrim">#40000000</color>
 </resources>

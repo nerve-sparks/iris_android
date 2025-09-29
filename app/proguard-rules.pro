@@ -52,9 +52,9 @@
 }
 
 # Application specific classes - keep main components
--keep class com.nervesparks.iris.** { *; }
--keep class com.nervesparks.iris.MainActivity { *; }
--keep class com.nervesparks.iris.MainViewModel { *; }
+-keep class com.nervesparks.axia.** { *; }
+-keep class com.nervesparks.axia.MainActivity { *; }
+-keep class com.nervesparks.axia.MainViewModel { *; }
 
 # DataStore optimizations for Samsung performance
 -keep class androidx.datastore.** { *; }

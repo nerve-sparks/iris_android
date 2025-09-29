@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/background_dark">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:spacing="12dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="αξία (Axia.OS) Integration Test"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:gravity="center"
+            android:background="@color/primary_dark"
+            android:padding="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Status Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface_dark"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Status: Initializing..."
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/personalityIndicator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🤖 NOMAD (Safe Mode)"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/authStatusText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🔓 Not Authenticated"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <!-- Message Input Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface_dark"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Message Testing"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/messageInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter test message..."
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_secondary"
+                android:background="@color/input_background"
+                android:padding="12dp"
+                android:minLines="2"
+                android:gravity="top"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/sendButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Send Message"
+                android:background="@color/accent_blue"
+                android:textColor="@android:color/white"
+                android:padding="12dp" />
+
+        </LinearLayout>
+
+        <!-- Control Buttons Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface_dark"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="System Controls"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <Button
+                    android:id="@+id/switchPersonalityButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Switch Mode"
+                    android:background="@color/primary_blue"
+                    android:textColor="@android:color/white"
+                    android:layout_marginEnd="4dp" />
+
+                <Button
+                    android:id="@+id/edgePanelButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Edge Panel"
+                    android:background="@color/accent_purple"
+                    android:textColor="@android:color/white"
+                    android:layout_marginStart="4dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/testRolePlayButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Test Role-Play"
+                    android:background="@color/accent_pink"
+                    android:textColor="@android:color/white"
+                    android:layout_marginEnd="4dp" />
+
+                <Button
+                    android:id="@+id/testEnhancementButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Test Enhancement"
+                    android:background="@color/accent_orange"
+                    android:textColor="@android:color/white"
+                    android:layout_marginStart="4dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Emergency Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/error_dark"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Emergency Controls"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/panicButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🚨 PANIC MODE"
+                android:background="@color/error_red"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:padding="16dp" />
+
+        </LinearLayout>
+
+        <!-- Response Area -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface_dark"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="System Response"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:background="@color/input_background">
+
+                <TextView
+                    android:id="@+id/responseArea"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Response will appear here..."
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:padding="12dp"
+                    android:gravity="top" />
+
+            </ScrollView>
+
+        </LinearLayout>
+
+        <!-- Feature Status Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface_dark"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Feature Status"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="✅ Dual Personality System (Nomad/Monique)
+✅ Role-Playing with Girlfriend Scenarios
+✅ Kink Profile Management
+✅ AI Body Enhancement Tool
+✅ Edge Panel Overlay Service
+✅ Voice Chat Integration
+✅ Biometric Security
+✅ Panic Mode Protection"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:lineSpacingMultiplier="1.2" />
+
+        </LinearLayout>
+
+        <!-- Company Branding -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Axia Research © 2024"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+
+</ScrollView>

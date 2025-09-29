@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Axia</string>
+    <string name="app_name">αξία</string>
     <string name="settings_screen_title">Settings</string>
     <string name="search_results_screen_title">Search</string>
     <string name="parameters_screen_title">Parameters</string>
@@ -24,7 +24,7 @@
     <string name="high_refresh_rate">120Hz Smooth Display</string>
     
     <!-- Accessibility for Samsung One UI -->
-    <string name="content_description_logo">Iris AI Assistant Logo</string>
+    <string name="content_description_logo">αξία AI Assistant Logo</string>
     <string name="content_description_send">Send Message</string>
     <string name="content_description_voice">Voice Input</string>
     <string name="content_description_menu">Navigation Menu</string>

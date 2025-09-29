@@ -1,8 +1,8 @@
-# Iris Development Environment & Knowledge Base Implementation
+# αξία (Axia.OS) Development Environment & Knowledge Base Implementation
 
 ## 🚀 Implementation Complete
 
-We've successfully implemented the requested features for the Iris AI Android app:
+We've successfully implemented the requested features for the αξία AI Android app:
 
 ### 1. ✅ Knowledge Base System (Specialized Dataset Training)
 

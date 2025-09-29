@@ -1,53 +1,124 @@
 package com.nervesparks.axia
 
-import android.app.DownloadManager
-import android.content.ClipboardManager
-import android.content.Intent
-import android.content.res.Configuration
-import android.llama.cpp.LLamaAndroid
-import android.net.Uri
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.os.StrictMode
-import android.os.StrictMode.VmPolicy
-import android.view.WindowManager
+import android.speech.tts.TextToSpeech
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.*
-import androidx.core.content.getSystemService
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
-import java.io.File
+import androidx.lifecycle.lifecycleScope
+import com.nervesparks.axia.ui.theme.AxiaTheme
+import com.nervesparks.axia.ui.AxiaChatInterface
+import com.nervesparks.axia.core.AxiaIntelligenceCore
+import com.nervesparks.axia.optimization.IntelligentHardwareOptimizer
+import com.nervesparks.axia.research.DeepWebResearcher
+import com.nervesparks.axia.execution.AutonomousTaskExecutor
+import com.nervesparks.axia.development.AndroidDevelopmentAssistant
+import java.util.Locale
+import kotlinx.coroutines.*
 
-// Axia imports
-import com.nervesparks.axia.memory.*
-import com.nervesparks.axia.autonomous.*
-import com.nervesparks.axia.monitoring.*
-import com.nervesparks.axia.generation.*
-import com.nervesparks.axia.ui.agent.*
+class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
+
+    private var textToSpeech: TextToSpeech? = null
+    private lateinit var axiaCore: AxiaIntelligenceCore
+    private lateinit var hardwareOptimizer: IntelligentHardwareOptimizer
+    private lateinit var webResearcher: DeepWebResearcher
+    private lateinit var taskExecutor: AutonomousTaskExecutor
+    private lateinit var developmentAssistant: AndroidDevelopmentAssistant
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        // Initialize TTS
+        textToSpeech = TextToSpeech(this, this)
+        
+        // Initialize Axia components
+        initializeAxiaSystem()
+
+        setContent {
+            AxiaTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    // Use the new Axia Chat Interface
+                    AxiaChatInterface(
+                        axiaCore = axiaCore,
+                        onSpeak = { text -> speak(text) },
+                        onSystemAction = { action -> 
+                            // Handle system actions through task executor
+                            handleSystemAction(action)
+                        }
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun initializeAxiaSystem() {
+        // Initialize hardware optimization first
+        hardwareOptimizer = IntelligentHardwareOptimizer(this)
+        
+        // Initialize research capabilities
+        webResearcher = DeepWebResearcher()
+        
+        // Initialize task execution
+        taskExecutor = AutonomousTaskExecutor(this)
+        
+        // Initialize development assistant
+        developmentAssistant = AndroidDevelopmentAssistant(this, webResearcher)
+        
+        // Initialize core AI with all components
+        axiaCore = AxiaIntelligenceCore(
+            context = this,
+            hardwareOptimizer = hardwareOptimizer,
+            webResearcher = webResearcher,
+            taskExecutor = taskExecutor,
+            developmentAssistant = developmentAssistant
+        )
+        
+        // Start hardware optimization
+        lifecycleScope.launch {
+            hardwareOptimizer.optimizeForDevice()
+        }
+    }
+    
+    private fun handleSystemAction(action: String) {
+        lifecycleScope.launch {
+            try {
+                taskExecutor.executeSystemAction(action)
+            } catch (e: Exception) {
+                // Log error but don't crash
+                e.printStackTrace()
+            }
+        }
+    }
+
+    override fun onInit(status: Int) {
+        if (status == TextToSpeech.SUCCESS) {
+            textToSpeech?.setLanguage(Locale.US)
+        }
+    }
+
+    private fun speak(text: String) {
+        textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+    }
+
+    override fun onDestroy() {
+        textToSpeech?.stop()
+        textToSpeech?.shutdown()
+        super.onDestroy()
+    }
+}
 import com.nervesparks.axia.ui.monitoring.*
 import com.nervesparks.axia.ui.generation.*
 import com.nervesparks.axia.ui.chat.*

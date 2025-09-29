@@ -1,4 +1,4 @@
-<h2><a href="https://play.google.com/store/apps/details?id=com.nervesparks.irisGPT&hl=en_IN"  style="color: white;">Iris</a></h2>
+<h2><a href="https://play.google.com/store/apps/details?id=com.nervesparks.axiaGPT&hl=en_IN"  style="color: white;">αξία (Axia.OS)</a></h2>
 
 ## Project Description
 
@@ -37,12 +37,12 @@
 </div>
 
 ## Installation
-- Get IRIS (offline GPT) on Google Play:
+- Get αξία (Axia.OS) on Google Play:
 
-  [Get it on Google Play](https://play.google.com/store/apps/details?id=com.nervesparks.irisGPT&hl=en_IN)
+  [Get it on Google Play](https://play.google.com/store/apps/details?id=com.nervesparks.axiaGPT&hl=en_IN)
 ## Run
 
-- Go to releases : https://github.com/nerve-sparks/iris_android/releases
+- Go to releases : https://github.com/AxiaResearch/axia_android/releases
 - Download app
 - Install app
 
@@ -57,9 +57,9 @@
 - Speech To Text: Support for Speech-to-Text functionality.
 - Default Model Selection: Set a default model to load automatically on startup.
 
-## Optimizing Your Experience with Iris
+## Optimizing Your Experience with αξία (Axia.OS)
 
-The performance of Iris is directly influenced by the size, speed, and compute requirements of the models you use. These factors also impact the overall user experience. For a faster and smoother experience, consider downloading smaller models.
+The performance of αξία is directly influenced by the size, speed, and compute requirements of the models you use. These factors also impact the overall user experience. For a faster and smoother experience, consider downloading smaller models.
 
 **Example Recommendation:**  
 On opening the app, users can download suggested models to optimize performance based on their preferences and device capabilities.
@@ -76,7 +76,7 @@ On opening the app, users can download suggested models to optimize performance 
 
 #### Disclaimer:
 
-- Iris may produce **inaccurate results** depending on the complexity of queries and model limitations.
+- αξία may produce **inaccurate results** depending on the complexity of queries and model limitations.
 - Performance and accuracy are influenced by the size and type of model selected.
 
 ## Build
@@ -84,11 +84,9 @@ On opening the app, users can download suggested models to optimize performance 
 - Download Android studio
 - Clone this repository and import into Android Studio
 
-```bash
- git clone https://github.com/nerve-sparks/iris_android.git
-```
+ git clone https://github.com/AxiaResearch/axia_android.git
 
-- Clone the llama.cpp repository in the same folder as iris_android
+- Clone the llama.cpp repository in the same folder as axia_android
 
 ```bash
  git clone https://github.com/ggerganov/llama.cpp

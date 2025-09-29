@@ -3,13 +3,14 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
     id("kotlin-kapt")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
     namespace = "com.nervesparks.axia"
     compileSdk = 35
 
-    ndkVersion = "26.1.10909125"
+    ndkVersion = "27.0.12077973"
 
     defaultConfig {
         applicationId = "com.nervesparks.axia"
@@ -134,8 +135,6 @@ dependencies {
     // Material 3 with full feature set
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material3:material3-window-size-class")
-    implementation("androidx.compose.material3:material3-adaptive")
-    implementation("androidx.compose.material3:material3-adaptive-navigation-suite")
     implementation("androidx.compose.material:material-icons-extended")
     
     // Navigation optimized for large screens
@@ -179,13 +178,23 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-saveable:1.7.6")
     implementation("androidx.compose.runtime:runtime-livedata:1.7.6")
     
-    // Network and HTTP
+    // Network dependencies for Hugging Face & Contractor APIs
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     
-    // Games Activity for high-performance gaming experience
-    implementation("androidx.games:games-activity:3.0.5")
-    implementation("androidx.games:games-controller:3.0.5")
+    // JSON processing
+    implementation("com.google.code.gson:gson:2.11.0")
+    
+    // Security and encryption
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
+    
+    // System permissions for autonomous phone control
+    implementation("androidx.core:core-role:1.1.0")
+    implementation("androidx.concurrent:concurrent-futures-ktx:1.2.0")
     
     // Project modules
     implementation(project(":llama"))
