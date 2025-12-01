@@ -20,6 +20,7 @@ android {
             cmake {
                 arguments += "-DLLAMA_BUILD_COMMON=ON"
                 arguments += "-DCMAKE_BUILD_TYPE=Release"
+                arguments += "-DLLAMA_CURL=OFF"
                 cppFlags += listOf()
                 arguments += listOf()
 
