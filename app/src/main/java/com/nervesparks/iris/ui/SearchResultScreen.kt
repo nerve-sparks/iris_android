@@ -53,6 +53,7 @@ import com.nervesparks.iris.ui.components.ModelCard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
@@ -65,6 +66,8 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
     var modelData by rememberSaveable { mutableStateOf<List<Map<String, String>>?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showingFiles by remember { mutableStateOf(false) }
+    var selectedModelId by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
     val kc = LocalSoftwareKeyboardController.current
     val clipboardManager = LocalClipboardManager.current
@@ -154,12 +157,15 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
 
                     try {
                         val response = withContext(Dispatchers.IO) {
-                            val url = URL("https://huggingface.co/api/models/${UserGivenModel.text}")
+                            // Use Hugging Face search API to find models matching the search term
+                            // Filter for models with "gguf" in their tags
+                            val searchTerm = java.net.URLEncoder.encode(UserGivenModel.text, "UTF-8")
+                            val url = URL("https://huggingface.co/api/models?search=$searchTerm&filter=gguf&sort=downloads&direction=-1&limit=20")
                             val connection = url.openConnection() as HttpURLConnection
                             connection.requestMethod = "GET"
                             connection.setRequestProperty("Accept", "application/json")
-                            connection.connectTimeout = 10000
-                            connection.readTimeout = 10000
+                            connection.connectTimeout = 15000
+                            connection.readTimeout = 15000
 
                             val responseCode = connection.responseCode
                             if (responseCode == HttpURLConnection.HTTP_OK) {
@@ -173,18 +179,25 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
                             }
                         }
 
-                        val jsonResponse = JSONObject(response)
-                        val siblingsArray = jsonResponse.getJSONArray("siblings")
-                        modelData = (0 until siblingsArray.length()).mapNotNull { index ->
-                            val jsonObject = siblingsArray.getJSONObject(index)
-                            val filename = jsonObject.optString("rfilename", "")
-
-                            if (filename.isNotEmpty()) {
-                                mapOf("rfilename" to filename)
-                            } else {
-                                null
+                        // Parse the search results (returns an array of model objects)
+                        val jsonArray = JSONArray(response)
+                        val searchResults = mutableListOf<Map<String, String>>()
+                        
+                        for (i in 0 until jsonArray.length()) {
+                            val modelObj = jsonArray.getJSONObject(i)
+                            val modelId = modelObj.optString("id", "")
+                            
+                            if (modelId.isNotEmpty()) {
+                                // For each model found, we'll add it to results
+                                // The actual files will be fetched when user selects the model
+                                searchResults.add(mapOf(
+                                    "modelId" to modelId,
+                                    "rfilename" to modelId // Using modelId as placeholder
+                                ))
                             }
                         }
+                        
+                        modelData = searchResults
                     } catch (e: Exception) {
                         Log.e("ModelFetch", "Failed to fetch model", e)
                         errorMessage = when (e) {
@@ -232,20 +245,129 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
         
         // Model Results
         modelData?.let { models ->
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                val filteredModels = models.filter { model -> model["rfilename"]?.endsWith("gguf") == true }
-                items(filteredModels) { model ->
-                    ModelCard(
-                        modelName = model["rfilename"] ?: "Unknown Model",
-                        dm = dm,
-                        viewModel = viewModel,
-                        extFilesDir = extFilesDir,
-                        downloadLink = "",
-                        showDeleteButton = false
+            if (models.isEmpty()) {
+                Text(
+                    text = "No GGUF models found matching '${UserGivenModel.text}'",
+                    color = Color.Gray,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                )
+            } else if (showingFiles) {
+                // Showing GGUF files from a selected repository
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "GGUF files in $selectedModelId:",
+                        color = Color.White,
+                        fontSize = 14.sp
                     )
+                    Button(
+                        onClick = {
+                            showingFiles = false
+                            selectedModelId = null
+                            // Search again to show repositories
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF374151),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("← Back", fontSize = 12.sp)
+                    }
+                }
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(models) { model ->
+                        ModelCard(
+                            modelName = model["rfilename"] ?: "Unknown Model",
+                            dm = dm,
+                            viewModel = viewModel,
+                            extFilesDir = extFilesDir,
+                            downloadLink = "https://huggingface.co/${model["modelId"]}/resolve/main/${model["rfilename"]}",
+                            showDeleteButton = false
+                        )
+                    }
+                }
+            } else {
+                // Showing model repositories
+                Text(
+                    text = "Found ${models.size} model(s). Click to view GGUF files:",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(models) { model ->
+                        ModelRepositoryCard(
+                            modelId = model["modelId"] ?: "Unknown",
+                            dm = dm,
+                            viewModel = viewModel,
+                            extFilesDir = extFilesDir,
+                            onModelClick = { modelId ->
+                                coroutineScope.launch {
+                                    isLoading = true
+                                    errorMessage = null
+                                    try {
+                                        val response = withContext(Dispatchers.IO) {
+                                            val url = URL("https://huggingface.co/api/models/$modelId")
+                                            val connection = url.openConnection() as HttpURLConnection
+                                            connection.requestMethod = "GET"
+                                            connection.setRequestProperty("Accept", "application/json")
+                                            connection.connectTimeout = 15000
+                                            connection.readTimeout = 15000
+
+                                            val responseCode = connection.responseCode
+                                            if (responseCode == HttpURLConnection.HTTP_OK) {
+                                                connection.inputStream.bufferedReader().use { it.readText() }
+                                            } else {
+                                                throw Exception("Failed to fetch model files: HTTP $responseCode")
+                                            }
+                                        }
+
+                                        val jsonResponse = JSONObject(response)
+                                        val siblingsArray = jsonResponse.getJSONArray("siblings")
+                                        val files = (0 until siblingsArray.length()).mapNotNull { index ->
+                                            val jsonObject = siblingsArray.getJSONObject(index)
+                                            val filename = jsonObject.optString("rfilename", "")
+
+                                            if (filename.endsWith(".gguf", ignoreCase = true)) {
+                                                mapOf(
+                                                    "rfilename" to filename,
+                                                    "modelId" to modelId
+                                                )
+                                            } else {
+                                                null
+                                            }
+                                        }
+                                        
+                                        if (files.isEmpty()) {
+                                            errorMessage = "No GGUF files found in this repository"
+                                        } else {
+                                            modelData = files
+                                            showingFiles = true
+                                            selectedModelId = modelId
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.e("ModelFileFetch", "Failed to fetch files", e)
+                                        errorMessage = "Failed to fetch files: ${e.localizedMessage}"
+                                    } finally {
+                                        isLoading = false
+                                    }
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -259,6 +381,60 @@ fun SearchResultScreen(viewModel: MainViewModel, dm: DownloadManager, extFilesDi
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun ModelRepositoryCard(
+    modelId: String,
+    dm: DownloadManager,
+    viewModel: MainViewModel,
+    extFilesDir: File,
+    onModelClick: (String) -> Unit
+) {
+    androidx.compose.material3.Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(
+            containerColor = Color(0xFF1a1d24)
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = modelId,
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = "Click to view GGUF files",
+                    color = Color.Gray,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+            
+            Button(
+                onClick = { onModelClick(modelId) },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2563EB),
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(6.dp),
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Text("View Files", fontSize = 14.sp)
+            }
         }
     }
 }
