@@ -116,6 +116,13 @@ import com.nervesparks.iris.R
 import com.nervesparks.iris.ui.components.ChatMessageList
 import com.nervesparks.iris.ui.components.DownloadModal
 import com.nervesparks.iris.ui.components.LoadingModal
+import com.nervesparks.iris.ui.MatrixRainBackground
+import com.nervesparks.iris.ui.MatrixBg
+import com.nervesparks.iris.ui.MatrixGreen
+import com.nervesparks.iris.ui.MatrixGreenBright
+import com.nervesparks.iris.ui.MatrixGreenDark
+import com.nervesparks.iris.ui.MatrixGreenMid
+import com.nervesparks.iris.ui.MatrixLoadingModal
 
 import kotlinx.coroutines.launch
 import java.io.File
@@ -178,10 +185,11 @@ fun MainChatScreen (
     }
     Box(
         modifier = Modifier.fillMaxSize()
-
-
     ) {
-        LinearGradient()
+        // Matrix digital rain background
+        MatrixRainBackground(modifier = Modifier.fillMaxSize())
+        // Dark overlay so text is readable
+        Box(modifier = Modifier.fillMaxSize().background(MatrixBg.copy(alpha = 0.82f)))
 
 
 
@@ -197,8 +205,7 @@ fun MainChatScreen (
                 }
 
                 if (viewModel.showAlert) {
-                    // Modal dialog to show download options
-                    LoadingModal(viewModel)
+                    MatrixLoadingModal(viewModel)
                 }
 
                 Column {
@@ -233,69 +240,75 @@ fun MainChatScreen (
 //                                item { Spacer(Modifier.height(55.dp).fillMaxWidth()) }
                                 // Header Text
                                 item {
-                                    Text(
-                                        text = "Hello, Ask me " + "Anything",
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            color = Color.White,
-                                            fontWeight = FontWeight.W300,
-                                            letterSpacing = 1.sp,
-                                            fontSize = 50.sp,
-                                            lineHeight = 60.sp
-                                        ),
-                                        fontFamily = FontFamily.SansSerif,
-                                        textAlign = TextAlign.Center,
+                                    Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(16.dp)
-                                            .wrapContentHeight()
-                                    )
+                                            .wrapContentHeight(),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            text = "MATRIX AI",
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                color = MatrixGreenBright,
+                                                fontWeight = FontWeight.ExtraBold,
+                                                letterSpacing = 8.sp,
+                                                fontSize = 36.sp,
+                                                lineHeight = 44.sp
+                                            ),
+                                            fontFamily = FontFamily.Monospace,
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Text(
+                                            text = "> enter your query_",
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                color = MatrixGreen.copy(alpha = 0.7f),
+                                                fontSize = 16.sp,
+                                                letterSpacing = 2.sp
+                                            ),
+                                            fontFamily = FontFamily.Monospace,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
                                 }
 
-                                // Items for Prompts_Home
+                                // Items for Prompts_Home — Matrix style
                                 items(Prompts_Home.size) { index ->
                                     Box(
-                                        contentAlignment = Alignment.Center,
+                                        contentAlignment = Alignment.CenterStart,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(60.dp)
-                                            .padding(8.dp)
+                                            .height(52.dp)
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
                                             .background(
-                                                Color(0xFF010825),
-                                                shape = RoundedCornerShape(20.dp)
+                                                MatrixGreenDark.copy(alpha = 0.35f),
+                                                shape = RoundedCornerShape(6.dp)
+                                            )
+                                            .border(
+                                                width = 1.dp,
+                                                color = MatrixGreenDark,
+                                                shape = RoundedCornerShape(6.dp)
                                             )
                                     ) {
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(horizontal = 8.dp)
+                                                .padding(horizontal = 12.dp)
                                         ) {
-                                            // Circle Icon
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(20.dp) // Icon size
-                                                    .background(Color.White, shape = CircleShape)
-                                                    .padding(4.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(id = R.drawable.info_svgrepo_com),
-                                                    contentDescription = null,
-                                                    tint = Color.Black
-                                                )
-                                            }
-
-                                            Spacer(modifier = Modifier.width(12.dp))
-
-                                            // Text
+                                            Text(
+                                                text = ">",
+                                                color = MatrixGreenBright,
+                                                fontSize = 14.sp,
+                                                fontFamily = FontFamily.Monospace
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
                                             Text(
                                                 text = Prompts_Home.getOrNull(index) ?: "",
-                                                style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
-                                                textAlign = TextAlign.Start, // Left align the text
+                                                color = MatrixGreen.copy(alpha = 0.85f),
                                                 fontSize = 12.sp,
-                                                modifier = Modifier
-                                                    .weight(1f)
-                                                    .padding(horizontal = 8.dp)
+                                                fontFamily = FontFamily.Monospace,
+                                                modifier = Modifier.weight(1f)
                                             )
                                         }
                                     }
@@ -360,7 +373,7 @@ fun MainChatScreen (
                                                     if(role == "assistant") {
                                                         Image(
                                                             painter = painterResource(
-                                                                id = R.drawable.logo
+                                                                id = R.drawable.matrix_logo
                                                             ),
                                                             contentDescription =  "Bot Icon",
                                                             modifier = Modifier.size(20.dp)
@@ -369,9 +382,8 @@ fun MainChatScreen (
                                                     Box(modifier = Modifier
                                                         .padding(horizontal = 2.dp)
                                                         .background(
-                                                            color = if (role == "user") Color(
-                                                                0xFF171E2C
-                                                            ) else Color.Transparent,
+                                                            color = if (role == "user") MatrixGreenDark.copy(alpha = 0.4f)
+                                                                    else Color.Transparent,
                                                             shape = RoundedCornerShape(12.dp),
                                                         )
                                                         .combinedClickable(
@@ -410,7 +422,7 @@ fun MainChatScreen (
                                                                     } else {
                                                                         trimmedMessage
                                                                     },
-                                                                    style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
+                                                                    style = MaterialTheme.typography.bodyLarge.copy(color = MatrixGreen.copy(alpha = 0.9f), fontFamily = FontFamily.Monospace),
                                                                     modifier = Modifier
                                                                         .padding(start = 1.dp, end = 1.dp)
                                                                 )
@@ -498,7 +510,7 @@ fun MainChatScreen (
                                                             trimmedMessage
                                                         },
                                                         style = MaterialTheme.typography.bodyLarge.copy(
-                                                            color = Color(0xFFA0A0A5)
+                                                            color = MatrixGreen.copy(alpha = 0.85f)
                                                         ),
                                                         modifier = Modifier.padding(16.dp)
                                                     )
@@ -539,15 +551,16 @@ fun MainChatScreen (
                                         }
                                         .padding(horizontal = 8.dp),
                                     shape = MaterialTheme.shapes.medium,
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF030815))
+                                    colors = CardDefaults.cardColors(containerColor = MatrixGreenDark.copy(alpha = 0.25f))
                                 ) {
 
                                     Text(
                                         text = Prompts[index],
                                         style = MaterialTheme.typography.bodySmall.copy(
-                                            color = Color(0xFFA0A0A5),
+                                            color = MatrixGreen.copy(alpha = 0.85f),
                                             fontSize = 12.sp,
                                         ),
+                                        fontFamily = FontFamily.Monospace,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .width(200.dp)
@@ -564,7 +577,7 @@ fun MainChatScreen (
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFF050B16))
+                            .background(MatrixBg.copy(alpha = 0.95f))
 
 
                     ) {
@@ -597,7 +610,7 @@ fun MainChatScreen (
                                         .weight(1f),
                                     painter = painterResource(id = R.drawable.microphone_new_svgrepo_com),
                                     contentDescription = "Mic",
-                                    tint = Color(0xFFDDDDE4) // Optional: set the color of the icon
+                                    tint = MatrixGreen
                                 )
                             }
 
@@ -647,7 +660,7 @@ fun MainChatScreen (
                                     lastKnownText.value = newValue.text
                                     viewModel.updateMessage(newValue.text)
                                 },
-                                placeholder = { Text("Message") },
+                                placeholder = { Text("> Message...", color = MatrixGreenMid, fontFamily = FontFamily.Monospace) },
                                 modifier = Modifier
                                     .weight(1f)
                                     .onGloballyPositioned { coordinates ->
@@ -659,14 +672,14 @@ fun MainChatScreen (
                                     },
                                 shape = RoundedCornerShape(size = 18.dp),
                                 colors = TextFieldDefaults.colors(
-                                    focusedTextColor = Color(0xFFBECBD1),
-                                    unfocusedTextColor = Color(0xFFBECBD1),
+                                    focusedTextColor = MatrixGreen,
+                                    unfocusedTextColor = MatrixGreen.copy(alpha = 0.8f),
                                     focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent, // Optional, makes the indicator disappear
-                                    focusedLabelColor = Color(0xFF626568),
-                                    cursorColor = Color(0xFF626568),
-                                    unfocusedContainerColor = Color(0xFF171E2C),
-                                    focusedContainerColor = Color(0xFF22314A)
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    focusedLabelColor = MatrixGreenMid,
+                                    cursorColor = MatrixGreenBright,
+                                    unfocusedContainerColor = MatrixGreenDark.copy(alpha = 0.3f),
+                                    focusedContainerColor = MatrixGreenDark.copy(alpha = 0.5f)
                                 )
                             )
 
@@ -693,7 +706,7 @@ fun MainChatScreen (
                                             .weight(1f),
                                         painter = painterResource(id = R.drawable.send_2_svgrepo_com),
                                         contentDescription = "Send",
-                                        tint = Color(0xFFDDDDE4)
+                                        tint = MatrixGreenBright
                                     )
                                 }
                             } else if (viewModel.getIsSending()) {
@@ -705,7 +718,7 @@ fun MainChatScreen (
                                             .size(28.dp),
                                         painter = painterResource(id = R.drawable.square_svgrepo_com),
                                         contentDescription = "Stop",
-                                        tint = Color(0xFFDDDDE4)
+                                        tint = MatrixGreenBright
                                     )
                                 }
                             }
@@ -1077,7 +1090,7 @@ fun MessageBottomSheet(
                         onDismiss()
                     }
                 ) {
-                    Text(text = "Copy Text", color = Color(0xFFA0A0A5))
+                    Text(text = "Copy Text", color = MatrixGreen.copy(alpha = 0.85f))
                 }
 
                 // Select Text Button
@@ -1091,7 +1104,7 @@ fun MessageBottomSheet(
                         viewModel.toggler = !viewModel.toggler
                     }
                 ) {
-                    Text(text = "Select Text To Copy", color = Color(0xFFA0A0A5))
+                    Text(text = "Select Text To Copy", color = MatrixGreen.copy(alpha = 0.85f))
                 }
 
                 // Text to Speech Button
@@ -1113,7 +1126,7 @@ fun MessageBottomSheet(
                 ) {
                     Text(
                         text = if (viewModel.stateForTextToSpeech) "Text To Speech" else "Stop",
-                        color = Color(0xFFA0A0A5)
+                        color = MatrixGreen.copy(alpha = 0.85f)
                     )
                 }
 

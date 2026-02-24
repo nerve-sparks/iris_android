@@ -112,7 +112,7 @@ fun ChatScreenAppBar(
     }
 
     val kc = LocalSoftwareKeyboardController.current
-    val darkNavyBlue = Color(0xFF050a14)
+    val darkNavyBlue = Color(0xFF000D00)   // Matrix black-green
     val context = LocalContext.current
 
     // State to keep track of the current rotation angle
@@ -127,9 +127,13 @@ fun ChatScreenAppBar(
     TopAppBar(
         title = {
             Text(
-                stringResource(currentScreen.title),
-                color = Color.White,
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 28.sp)
+                "> " + stringResource(currentScreen.title),
+                color = Color(0xFF00FF41),   // Matrix green
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 22.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
             )
         },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
@@ -142,7 +146,7 @@ fun ChatScreenAppBar(
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.back_button),
-                        tint = Color.White
+                        tint = Color(0xFF00FF41)
                     )
                 }
             }
@@ -153,7 +157,7 @@ fun ChatScreenAppBar(
                     Icon(
                         painter = painterResource(id = R.drawable.settings_gear_rounded),
                         contentDescription = stringResource(R.string.setting),
-                        tint = Color.White,
+                        tint = Color(0xFF00FF41),
                         modifier = Modifier.size(25.dp)
                     )
                 }
@@ -226,11 +230,11 @@ fun ChatScreen(
     extFileDir: File?,
     navController: NavHostController = rememberNavController()
 ) {
-    // Define gradient colors
-    val darkNavyBlue = Color(0xFF050a14)
-    val lightNavyBlue = Color(0xFF051633)
+    // Matrix black background
+    val darkNavyBlue = Color(0xFF000000)
+    val lightNavyBlue = Color(0xFF000D00)
 
-    // Create gradient brush
+    // Create gradient brush — very dark black to Matrix night green
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(darkNavyBlue, lightNavyBlue)
     )

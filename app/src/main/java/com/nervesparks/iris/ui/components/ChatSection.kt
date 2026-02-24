@@ -76,13 +76,13 @@ private fun UserOrAssistantMessage(role: String, message: String, onLongClick: (
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        if (role == "assistant") MessageIcon(iconRes = R.drawable.logo, description = "Bot Icon")
+        if (role == "assistant") MessageIcon(iconRes = R.drawable.matrix_logo, description = "Matrix AI")
 
         Box(
             modifier = Modifier
                 .padding(horizontal = 2.dp)
                 .background(
-                    color = if (role == "user") Color(0xFF171E2C) else Color.Transparent,
+                    color = if (role == "user") Color(0xFF003B00).copy(alpha = 0.4f) else Color.Transparent,
                     shape = RoundedCornerShape(12.dp)
                 )
                 .combinedClickable(
@@ -93,7 +93,7 @@ private fun UserOrAssistantMessage(role: String, message: String, onLongClick: (
         ) {
             Text(
                 text = message.removePrefix("```"),
-                style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
+                style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFF00DD35)),
                 maxLines = 10,
                 overflow = TextOverflow.Ellipsis
             )
@@ -113,7 +113,7 @@ private fun CodeBlockMessage(content: String) {
     ) {
         Text(
             text = content.removePrefix("```"),
-            style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFA0A0A5)),
+            style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFF00DD35)),
             modifier = Modifier.padding(16.dp)
         )
     }

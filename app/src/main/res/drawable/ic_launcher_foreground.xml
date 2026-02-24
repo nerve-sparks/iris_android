@@ -1,30 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Matrix AI icon foreground: glowing M with code rain drops -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
-                android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
+
+    <!-- Outer circle border (Matrix green) -->
     <path
-        android:fillColor="#FFFFFF"
-        android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+        android:fillColor="#00000000"
+        android:pathData="M54,8m-42,0a42,42 0 1,0 84,0a42,42 0 1,0 -84,0"
+        android:strokeWidth="2.5"
+        android:strokeColor="#00FF41" />
+
+    <!-- Inner circle (subtle) -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,8m-38,0a38,38 0 1,0 76,0a38,38 0 1,0 -76,0"
+        android:strokeWidth="0.8"
+        android:strokeColor="#44003B00" />
+
+    <!-- Letter M — constructed from paths -->
+    <!-- Left vertical stroke of M -->
+    <path
+        android:fillColor="#00FF41"
+        android:pathData="M28,32 L28,76 L34,76 L34,44 L50,60 L58,60 L74,44 L74,76 L80,76 L80,32 L74,32 L54,54 L34,32 Z" />
+
+    <!-- Glow layer on M (slightly transparent brighter green) -->
+    <path
+        android:fillColor="#6639FF14"
+        android:pathData="M28,32 L28,76 L34,76 L34,44 L50,60 L58,60 L74,44 L74,76 L80,76 L80,32 L74,32 L54,54 L34,32 Z" />
+
+    <!-- "AI" text bar below M -->
+    <path
+        android:fillColor="#008F11"
+        android:pathData="M34,80 L74,80 L74,83 L34,83 Z" />
+
+    <!-- Matrix code drops (decorative, small green rectangles like falling code) -->
+    <!-- Column 1 -->
+    <path android:fillColor="#AA00FF41" android:pathData="M16,10 L18,10 L18,16 L16,16 Z" />
+    <path android:fillColor="#6600FF41" android:pathData="M16,18 L18,18 L18,24 L16,24 Z" />
+    <path android:fillColor="#3300FF41" android:pathData="M16,26 L18,26 L18,32 L16,32 Z" />
+    <!-- Column 2 -->
+    <path android:fillColor="#AA00FF41" android:pathData="M90,60 L92,60 L92,66 L90,66 Z" />
+    <path android:fillColor="#6600FF41" android:pathData="M90,68 L92,68 L92,74 L90,74 Z" />
+    <path android:fillColor="#3300FF41" android:pathData="M90,76 L92,76 L92,82 L90,82 Z" />
+    <!-- Column 3 -->
+    <path android:fillColor="#AA00FF41" android:pathData="M20,88 L22,88 L22,94 L20,94 Z" />
+    <path android:fillColor="#6600FF41" android:pathData="M20,96 L22,96 L22,102 L20,102 Z" />
+    <!-- Column 4 -->
+    <path android:fillColor="#AA00FF41" android:pathData="M86,10 L88,10 L88,16 L86,16 Z" />
+    <path android:fillColor="#5500FF41" android:pathData="M86,18 L88,18 L88,24 L86,24 Z" />
+
+    <!-- Corner dots — look like matrix cursor -->
+    <path android:fillColor="#00FF41" android:pathData="M10,10m-3,0a3,3 0 1,0 6,0a3,3 0 1,0 -6,0" />
+    <path android:fillColor="#00FF41" android:pathData="M98,10m-3,0a3,3 0 1,0 6,0a3,3 0 1,0 -6,0" />
+    <path android:fillColor="#00FF41" android:pathData="M10,98m-3,0a3,3 0 1,0 6,0a3,3 0 1,0 -6,0" />
+    <path android:fillColor="#00FF41" android:pathData="M98,98m-3,0a3,3 0 1,0 6,0a3,3 0 1,0 -6,0" />
 </vector>

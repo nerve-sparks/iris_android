@@ -259,7 +259,7 @@ class MainViewModel(private val llamaAndroid: LLamaAndroid = LLamaAndroid.instan
         // Add to messages console.
         if (userMessage != "" && userMessage != " ") {
             if(first){
-                addMessage("system", "This is a conversation between User and Iris, a friendly chatbot. Iris is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.")
+                addMessage("system", "This is a conversation between User and Matrix AI, a friendly chatbot. Matrix AI is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.")
                 addMessage("user", "Hi")
                 addMessage("assistant", "How may I help You?")
                 first = false

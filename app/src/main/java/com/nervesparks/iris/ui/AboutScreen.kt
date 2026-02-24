@@ -23,10 +23,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
 
 @Composable
 fun AboutScreen() {
@@ -36,14 +36,19 @@ fun AboutScreen() {
             .padding(16.dp)
     ) {
         item {
-            SectionHeader(text = "Welcome to Iris")
+            SectionHeader(text = "Welcome to Matrix AI")
         }
         item {
             Text(
-                text = "Iris is an offline Android chat application powered by the llama.cpp framework. Designed to operate entirely offline, it ensures privacy and independence from external servers. Whether you're a developer exploring AI applications or a privacy-conscious user, this app provides a seamless and secure way to experience conversational AI. Please note that the app may occasionally generate inaccurate results.",
-                fontSize = 16.sp,
-                color = Color.White,
-                lineHeight = 24.sp
+                text = "Matrix AI is an offline Android chat application powered by the llama.cpp framework. " +
+                        "Designed to operate entirely offline, it ensures privacy and independence from external servers. " +
+                        "Whether you're a developer exploring AI applications or a privacy-conscious user, " +
+                        "Matrix AI provides a seamless and secure way to experience conversational AI. " +
+                        "Please note that the app may occasionally generate inaccurate results.",
+                fontSize = 15.sp,
+                color = MatrixGreen.copy(alpha = 0.85f),
+                lineHeight = 22.sp,
+                fontFamily = FontFamily.Monospace
             )
             Spacer(modifier = Modifier.height(24.dp))
         }
@@ -73,10 +78,11 @@ private fun SectionHeader(
     modifier: Modifier = Modifier
 ) {
     Text(
-        text = text,
-        fontSize = 20.sp,
+        text = "> $text",
+        fontSize = 18.sp,
         fontWeight = FontWeight.Bold,
-        color = Color.White,
+        color = MatrixGreenBright,
+        fontFamily = FontFamily.Monospace,
         modifier = modifier.padding(bottom = 12.dp)
     )
 }
@@ -87,73 +93,71 @@ private fun FeatureItem(feature: String) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 6.dp)
     ) {
         Box(
             modifier = Modifier
                 .size(20.dp)
-                .background(Color(0xFF4CAF50), shape = CircleShape),
+                .background(MatrixGreenDark, shape = CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = null,
-                tint = Color.White,
+                tint = MatrixGreenBright,
                 modifier = Modifier.size(14.dp)
             )
         }
         Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = feature,
-            fontSize = 16.sp,
-            color = Color.White,
-            lineHeight = 24.sp
+            fontSize = 14.sp,
+            color = MatrixGreen.copy(alpha = 0.8f),
+            lineHeight = 20.sp,
+            fontFamily = FontFamily.Monospace
         )
     }
 }
 
 @Composable
-private fun FaqItem(
-    question: String,
-    answer: String
-) {
+private fun FaqItem(question: String, answer: String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
                     .size(20.dp)
-                    .background(Color(0xFF1b384f), shape = CircleShape),
+                    .background(MatrixGreenDark, shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Star,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = MatrixGreenBright,
                     modifier = Modifier.size(14.dp)
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = question,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
-                lineHeight = 24.sp
+                color = MatrixGreenBright,
+                lineHeight = 20.sp,
+                fontFamily = FontFamily.Monospace
             )
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = answer,
-            fontSize = 14.sp,
-            color = Color.White.copy(alpha = 0.7f),
-            lineHeight = 20.sp,
-            modifier = Modifier.padding(start = 32.dp)  // Aligned with question text
+            fontSize = 13.sp,
+            color = MatrixGreen.copy(alpha = 0.65f),
+            lineHeight = 18.sp,
+            fontFamily = FontFamily.Monospace,
+            modifier = Modifier.padding(start = 32.dp)
         )
     }
 }
@@ -162,25 +166,16 @@ private val features = listOf(
     "Offline Functionality: Runs without the need for an internet connection.",
     "Privacy First: All data is processed locally on your device.",
     "Customizable Models: Download and use your preferred AI model with ease.",
-    "Open Source: Built on the foundations of the llama.cpp Android example, enabling developers to contribute and modify."
+    "Matrix Interface: Immersive digital rain aesthetic powered by real-time Canvas.",
+    "Open Source: Built on the foundations of llama.cpp, enabling developers to contribute."
 )
 
 private val faqs = listOf(
-    "What is llama.cpp?" to "llama.cpp is an open-source project that enables running large language models (LLMs) on edge devices such as smartphones and laptops.",
-    "Do I need an internet connection to use this app?" to "Yes, but only to download models to your device. After that, the app operates entirely offline. All operations are performed locally on your device.",
-    "Which AI models are supported?" to "The app supports GGUF models. You can download and integrate them as needed.",
-    "Is my data safe while using this app?" to "Yes, since the app works offline, no data is transmitted to external servers, ensuring complete privacy.",
-    "How do I change parameters?" to "You can adjust thread parameters to modify the text generation speed by navigating to:\n" +
-            "Settings > Change Parameters > Modify the parameters > Save changes.",
-    "How do I download models online?" to "You can download models from Hugging Face by providing the gguf model names:\n" +
-            "\n" +
-            "Go to Settings > Models.\n" +
-            "Click on Search Hugging Face Models.\n" +
-            "Enter the model name and click the search button.\n" +
-            "A list of matching models will appear. Select the model you want to download.",
-    "How do I delete a model?" to "To free up device storage, you can delete downloaded models:\n" +
-            "\n" +
-            "Go to Settings > Models.\n" +
-            "Select the model you want to delete.\n" +
-            "Click the Delete button."
+    "What is Matrix AI?" to "Matrix AI is an offline AI chat assistant with a Matrix-themed interface, powered by llama.cpp running entirely on your device.",
+    "Do I need an internet connection?" to "Only to download models. After that, Matrix AI operates entirely offline. All inference is done locally.",
+    "Which AI models are supported?" to "Matrix AI supports GGUF models. You can download and integrate them as needed from Hugging Face.",
+    "Is my data safe?" to "Yes. Since Matrix AI works offline, no data is transmitted to external servers, ensuring complete privacy.",
+    "How do I change parameters?" to "Settings > Change Parameters > Modify the parameters > Save changes.",
+    "How do I download models online?" to "Go to Settings > Models > Search Hugging Face Models > Enter the model name > Download.",
+    "How do I delete a model?" to "Go to Settings > Models > Select the model > Click the Delete button."
 )

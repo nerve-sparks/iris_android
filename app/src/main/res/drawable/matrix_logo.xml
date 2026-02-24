@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Matrix AI chat avatar icon -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Black background circle -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M24,2m-22,0a22,22 0 1,0 44,0a22,22 0 1,0 -44,0" />
+    <!-- Green ring -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M24,2m-22,0a22,22 0 1,0 44,0a22,22 0 1,0 -44,0"
+        android:strokeWidth="1.5"
+        android:strokeColor="#00FF41" />
+    <!-- Letter M -->
+    <path
+        android:fillColor="#00FF41"
+        android:pathData="M10,14 L10,34 L14,34 L14,20 L22,28 L26,28 L34,20 L34,34 L38,34 L38,14 L34,14 L24,24 L14,14 Z" />
+    <!-- Green underline bar (represents AI) -->
+    <path
+        android:fillColor="#008F11"
+        android:pathData="M14,36 L34,36 L34,37.5 L14,37.5 Z" />
+</vector>

@@ -1,6 +1,7 @@
 package com.nervesparks.iris.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nervesparks.iris.R
@@ -34,37 +36,29 @@ fun SettingsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            color = Color(0xff0f172a),
-                            shape = RoundedCornerShape(12.dp),
-                        )
+                        .background(MatrixGreenDark.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                        .border(1.dp, MatrixGreenDark, RoundedCornerShape(12.dp))
                 ) {
-                    SettingsRow(
+                    MatrixSettingsRow(
                         text = "Models",
                         iconRes = R.drawable.data_exploration_models_svgrepo_com,
                         onClick = onModelsScreenButtonClicked
                     )
-
-                    SettingsDivider()
-
-                    SettingsRow(
+                    MatrixSettingsDivider()
+                    MatrixSettingsRow(
                         text = "Change Parameters",
                         iconRes = R.drawable.setting_4_svgrepo_com,
                         onClick = onParamsScreenButtonClicked
                     )
-
-                    SettingsDivider()
-
-                    SettingsRow(
+                    MatrixSettingsDivider()
+                    MatrixSettingsRow(
                         text = "BenchMark",
                         iconRes = R.drawable.bench_mark_icon,
                         onClick = onBenchMarkScreenButtonClicked
                     )
-
-                    SettingsDivider()
-
-                    SettingsRow(
-                        text = "About",
+                    MatrixSettingsDivider()
+                    MatrixSettingsRow(
+                        text = "About Matrix AI",
                         iconRes = R.drawable.information_outline_svgrepo_com,
                         onClick = onAboutScreenButtonClicked
                     )
@@ -75,7 +69,7 @@ fun SettingsScreen(
 }
 
 @Composable
-fun SettingsRow(text: String, iconRes: Int, onClick: () -> Unit) {
+fun MatrixSettingsRow(text: String, iconRes: Int, onClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -87,13 +81,14 @@ fun SettingsRow(text: String, iconRes: Int, onClick: () -> Unit) {
             modifier = Modifier.size(20.dp),
             painter = painterResource(id = iconRes),
             contentDescription = null,
-            tint = Color.White
+            tint = MatrixGreen
         )
         Spacer(Modifier.width(10.dp))
         Text(
-            text = text,
-            color = Color.White,
-            fontSize = 18.sp,
+            text = "> $text",
+            color = MatrixGreen,
+            fontSize = 16.sp,
+            fontFamily = FontFamily.Monospace,
             modifier = Modifier.padding(vertical = 12.dp, horizontal = 7.dp)
         )
         Spacer(Modifier.weight(1f))
@@ -101,18 +96,23 @@ fun SettingsRow(text: String, iconRes: Int, onClick: () -> Unit) {
             modifier = Modifier.size(20.dp),
             painter = painterResource(id = R.drawable.right_arrow_svgrepo_com),
             contentDescription = null,
-            tint = Color.White
+            tint = MatrixGreenMid
         )
     }
 }
 
 @Composable
-fun SettingsDivider() {
+fun MatrixSettingsDivider() {
     Divider(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        color = Color.DarkGray,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        color = MatrixGreenDark,
         thickness = 1.dp
     )
 }
+
+// Legacy aliases for code that still calls old names
+@Composable
+fun SettingsRow(text: String, iconRes: Int, onClick: () -> Unit) = MatrixSettingsRow(text, iconRes, onClick)
+
+@Composable
+fun SettingsDivider() = MatrixSettingsDivider()

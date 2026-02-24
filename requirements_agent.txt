@@ -1,0 +1,20 @@
+# Autonomous AI Agent — Python dependencies
+# Install with:  pip install -r requirements_agent.txt
+
+# ── Core (required) ─────────────────────────────────────────────────────────
+anthropic>=0.40.0          # Claude API — planning, coding, all agents
+
+# ── Optional: Image generation ──────────────────────────────────────────────
+openai>=1.50.0             # DALL-E 3 (set OPENAI_API_KEY)
+# banana-dev>=6.0.0        # Banana.dev / Potassium inference (uncomment if needed)
+
+# ── Optional: Audio / TTS ────────────────────────────────────────────────────
+requests>=2.31.0           # ElevenLabs & Suno API calls
+gTTS>=2.5.0               # Offline TTS fallback (no key required)
+
+# ── Optional: Environment ────────────────────────────────────────────────────
+python-dotenv>=1.0.0       # .env file support
+
+# ── AI Studio (web UI) ───────────────────────────────────────────────────────
+fastapi>=0.115.0           # Web framework
+uvicorn[standard]>=0.30.0  # ASGI server

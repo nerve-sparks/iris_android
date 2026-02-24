@@ -5,12 +5,18 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.nervesparks.iris.ui.DownloadingAnimation
+import com.nervesparks.iris.ui.MatrixGreen
+import com.nervesparks.iris.ui.MatrixGreenBright
+import com.nervesparks.iris.ui.MatrixGreenDark
+import com.nervesparks.iris.ui.MatrixBg
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -191,65 +197,45 @@ data class Downloadable(val name: String, val source: Uri, val destination: File
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Button(
-                    onClick = { onClick() },
-                    enabled = status !is Downloading && !viewModel.getIsSending(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2563EB) // Navy Blue color
-                    ),
-
-                ) {
-                    when (status) {
-                        is Downloading -> Text(
-                            text = buildAnnotatedString {
-                                append("Downloading ")
-                                withStyle(style = SpanStyle(color = Color.Cyan)) {
-                                    append("${(progress * 100).toInt()}%")
-                                }
-                            },
-                            color = Color.White
-                        )
-
-                        is Downloaded -> Text(
-                            "Load",
-                            color = Color.White
-                        )
-
-                        is Ready -> Text(
-                            "Download",
-                            color = Color.White
-                        )
-
-                        is Error -> Text(
-                            "Download}",
-                            color = Color.White
-                        )
-
-                        is Stopped -> Text(
-                            "Stopped",
-                            color = Color.White
-                        )
-                    }
-                }
-
-
-                Spacer(Modifier.height(10.dp))
-
+                // Show downloading animation when downloading
                 if (status is Downloading) {
+                    DownloadingAnimation(
+                        progress = progress.toFloat(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(90.dp)
+                    )
+                    Spacer(Modifier.height(8.dp))
                     Button(
                         onClick = { onStop() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White // Red color for stop button
-                        )
+                        colors = ButtonDefaults.buttonColors(containerColor = MatrixGreenDark)
                     ) {
-                        Text("Stop Download", color = Color.Black)
+                        Text("■ ABORT", color = MatrixGreenBright,
+                            style = MaterialTheme.typography.bodySmall)
+                    }
+                } else {
+                    Button(
+                        onClick = { onClick() },
+                        enabled = !viewModel.getIsSending(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MatrixGreenDark
+                        ),
+                    ) {
+                        when (status) {
+                            is Downloaded -> Text("▶ LOAD", color = MatrixGreenBright)
+                            is Ready      -> Text("↓ DOWNLOAD", color = MatrixGreenBright)
+                            is Error      -> Text("↓ RETRY", color = MatrixGreenBright)
+                            is Stopped    -> Text("↓ DOWNLOAD", color = MatrixGreenBright)
+                            else          -> Text("...", color = MatrixGreenBright)
+                        }
                     }
                 }
 
                 totalSize?.let {
+                    Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "File size: ${it / (1024 * 1024)} MB",
-                        color = Color.Gray,
+                        text = "SIZE: ${it / (1024 * 1024)} MB",
+                        color = MatrixGreen.copy(alpha = 0.6f),
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
